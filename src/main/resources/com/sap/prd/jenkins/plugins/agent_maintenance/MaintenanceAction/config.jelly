@@ -1,0 +1,60 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
+         xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <l:layout title="Edit Maintenances" norefresh="true" permissions="${it.permissions}">
+     <st:include it="${it.computer}" page="sidepanel.jelly"/>
+    <l:main-panel>
+      <h1>${%Edit Planned Maintenances}</h1>
+      <br/>
+      <f:form action="configSubmit" method="post" name="config">
+<link type="text/css" rel="stylesheet" href="${rootURL}/plugin/agent-maintenance/css/tail.datetime-default-blue.css" />
+<script   src="${rootURL}/plugin/agent-maintenance/js/tail.datetime-full.js"></script>
+<script>
+var mutationObserver = new MutationObserver(function(mutations) {
+  var maintenanceList = document.querySelector("form[name=\"config\"]");
+  var x = maintenanceList.getElementsByClassName("tail-datetime-field");
+  var oldCount = Number(maintenanceList.getAttribute("tail-datetime-count"));
+  if (x.length != oldCount)
+  {
+    tail.datetime.count = 0;
+    tail.datetime.inst = {};
+    for (var node of x)
+    {
+        node.removeAttribute("data-tail-datetime");
+        node.removeAttribute("data-value");
+        tail.DateTime(node,{ animate: true, timeFormat: "HH:ii", weekStart: 1, timeSeconds: false, timeStepMinutes: 1 });
+    }
+    maintenanceList.setAttribute("tail-datetime-count",x.length);
+  }
+});
+
+var t = document.querySelector("form[name=\"config\"");
+mutationObserver.observe(t, {
+  childList: true,
+  subtree: true,
+});
+
+</script>
+        <f:entry title="${%Maintenance Windows}" help="/plugin/agent-maintenance/help/help-maintenanceList.html">
+          <f:helpArea />
+          <f:repeatable name="maintenanceWindows" var="mw" items="${it.maintenanceWindows}" minimum="0">
+              <st:include class="${it.getMaintenanceWindowClass()}" page="config.jelly"/>
+              <f:invisibleEntry>
+                <f:textbox field="userid" value="${mw.userid}"/>
+              </f:invisibleEntry>
+              <f:invisibleEntry>
+                <f:textbox field="id" value="${mw.id}"/>
+              </f:invisibleEntry>
+              <div align="right">
+                <f:repeatableDeleteButton />
+              </div>
+          </f:repeatable>
+        </f:entry>
+
+        <f:bottomButtonBar>
+          <f:submit value="${%Save}"/>
+        </f:bottomButtonBar>
+      </f:form>
+    </l:main-panel>
+  </l:layout>
+</j:jelly>

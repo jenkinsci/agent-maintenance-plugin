@@ -1,0 +1,25 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+    <j:invokeStatic var="defaultStart" method="getDefaultStartTime" className="com.sap.prd.jenkins.plugins.agent_maintenance.MaintenanceAction"/>
+    <j:invokeStatic var="defaultEnd" method="getDefaultEndTime" className="com.sap.prd.jenkins.plugins.agent_maintenance.MaintenanceAction"/>
+    <f:entry title="${%startTime}" help="/descriptor/com.sap.prd.jenkins.plugins.agent_maintenance.MaintenanceWindow/help/startTime">
+      <f:textbox id="startTime" name="startTime" clazz="tail-datetime-field" value="${mw.startTime}" default="${defaultStart}" onload="enableDateTimePicker()"
+          checkUrl="'${rootURL}/descriptorByName/com.sap.prd.jenkins.plugins.agent_maintenance.MaintenanceWindow/checkStartTime?startTime='+escape(this.value)+'&amp;endTime='+escape(Form.findMatchingInput(this,'endTime').value)"/>
+    </f:entry>
+    <f:entry title="${%endTime}" help="/descriptor/com.sap.prd.jenkins.plugins.agent_maintenance.MaintenanceWindow/help/endTime">
+        <f:textbox id="endTime" name="endTime" clazz="tail-datetime-field" value="${mw.endTime}" default="${defaultEnd}"
+          onchange="Form.findMatchingInput(this,'startTime').onchange()"/>
+    </f:entry>
+    <f:entry field="reason" title="${%Reason}" help="/plugin/agent-maintenance/help/help-reason.html">
+        <f:textbox value="${mw.reason}"/>
+    </f:entry>
+    <f:entry field="keepUpWhenActive" title="${%keepUpWhenActive}" help="/plugin/agent-maintenance/help/help-keepUpWhenActive.html">
+        <f:checkbox default="true" checked="${mw.keepUpWhenActive}"/>
+    </f:entry>
+    <f:entry field="maxWaitMinutes" title="${%maxWaitMinutes}" help="/plugin/agent-maintenance/help/help-maxWaitMinutes.html">
+        <f:number default="-1" value="${mw.maxWaitMinutes}"/>
+    </f:entry>
+    <f:entry field="takeOnline" title="${%takeOnline}" help="/plugin/agent-maintenance/help/help-takeOnline.html">
+        <f:checkbox default="true" checked="${mw.takeOnline}"/>
+    </f:entry>
+</j:jelly>

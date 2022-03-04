@@ -1,0 +1,118 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
+         xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:p="/lib/permissions">
+  <l:layout title="Planned Maintenance" norefresh="true">
+     <st:include it="${it.computer}" page="sidepanel.jelly"/>
+    <l:main-panel>
+      <j:if test="${it.enabled}">
+        <h1>${%Planned Maintenances}</h1>
+<link type="text/css" rel="stylesheet" href="${rootURL}/plugin/agent-maintenance/css/tail.datetime-default-blue.css" />
+<link type="text/css" rel="stylesheet" href="${rootURL}/plugin/agent-maintenance/css/agent-maintenance.css" />
+<script src="${rootURL}/plugin/agent-maintenance/js/tail.datetime-full.js"></script>
+<script src="${rootURL}/plugin/agent-maintenance/js/agent-maintenance.js"></script>
+
+<div class="modal" id="maintenance-add-form">
+
+    <div class="modal-content">
+        <f:form action="add" method="post" name="config" tableClass="form-container">
+		    <h3>${%Add Maintenance Window}</h3>
+		    <st:include class="${it.getMaintenanceWindowClass()}" page="config.jelly"/>
+		    <f:block>
+    	    	<f:submit value="${%Add}"/>
+			    <input type="button"
+			           id="cancel-button"
+			           value="${%Cancel}"
+			           onclick="closeForm()"
+			           class="submit-button primary"/>
+		    </f:block>
+        </f:form>
+    </div>
+</div>
+        <br/>
+        <f:form action="deleteMultiple" method="post" name="delete">
+          <table class="bigtable sortable" style="border: 1px; border-collapse: collapse;" id="maintenance-table">
+            <tr>
+              <th initialSortDir="down" style="border: 1px solid #bbb;" align="left">
+                ${%Start Time}
+              </th>
+              <th style="border: 1px solid #bbb;" align="left">${%End Time}</th>
+              <th style="border: 1px solid #bbb;" align="left">${%Reason}</th>
+              <th style="border: 1px solid #bbb;" align="left">${%Keep Online}</th>
+              <th style="border: 1px solid #bbb;" align="left">${%Max Wait}</th>
+              <th style="border: 1px solid #bbb;" align="left">${%Auto Connect}</th>
+              <th style="border: 1px solid #bbb;" align="left">${%Created By}</th>
+              <p:hasAnyPermission permissions="${it.permissions}">
+                <th style="background-color:transparent;border: 1px solid transparent; padding: unset" align="left"></th>
+                <th style="background-color:transparent;border: 1px solid transparent; padding: unset" align="left"></th>
+              </p:hasAnyPermission>
+            </tr>
+            <j:forEach var="m" items="${it.maintenanceWindows}">
+              <tr style="background: ${m.isMaintenanceScheduled() ? 'orange': 'white'}">
+                <td style="border: 1px solid #bbb;" align="left">${m.startTime}</td>
+                <td style="border: 1px solid #bbb;" align="left">${m.endTime}</td>
+                <td style="border: 1px solid #bbb;" align="left">${m.reason}</td>
+                <td style="border: 1px solid #bbb;" align="center"><input type="checkbox" readonly="true" checked="${m.keepUpWhenActive ? 'true' : null}"/></td>
+                <td style="border: 1px solid #bbb;" align="right">${m.maxWaitMinutes}</td>
+                <td style="border: 1px solid #bbb;" align="center">${m.takeOnline}</td>
+                <td style="border: 1px solid #bbb;" align="left">${m.userid}</td>
+                <p:hasAnyPermission permissions="${it.CONFIGURE_AND_DISCONNECT}">
+                  <td style="background-color:white ; border: 1px solid transparent; width: auto; padding: unset;">
+                    <input id="${m.id}-cb" style="vertical-align: middle" type="checkbox" name="${m.id}"/>
+                  </td>
+                  <td style="background-color:white ; border: 1px solid transparent;">
+                    <a id="${m.id}" class="stop-button-link"
+                       href="deleteMaintenance?id=${m.id}"
+                       onclick='if(confirm("${%Delete maintenance window}"))
+                         new Ajax.Request("deleteMaintenance?id=${m.id}",
+                           {
+                             asynchronous: false,
+                           }
+                         ); location.reload(); return false;'>
+                      <l:icon class="icon-stop icon-sm" tooltip="Delete this maintenance window"/>
+                    </a>
+                  </td>
+                </p:hasAnyPermission>
+              </tr>
+            </j:forEach>
+          </table>
+          <p:hasAnyPermission permissions="${it.CONFIGURE_AND_DISCONNECT}">
+            <f:bottomButtonBar>
+              <j:if test="${it.maintenanceWindows.size() > 0}">
+                <input type="button" value="${%Edit}" onclick="location.href='config'" class="submit-button primary"/>
+              </j:if>
+              <input type="button" value="${%Add}" onclick="openForm()" class="submit-button primary"/>
+              <input type="submit" value="${%Delete selected}" class="submit-button primary"/>
+            </f:bottomButtonBar>
+          </p:hasAnyPermission>
+        </f:form>
+        <br/>
+        <br/>
+        <l:hasPermission permission="${it.computer.CONFIGURE}">
+          <f:entry title="${%Disable Agent Maintenance Availability}" help="/plugin/agent-maintenance/help/help-disable.html">
+            <input type="button" value="${%Disable}" onclick='if(confirm("${%Disable Agent Maintenance Availability}"))
+                           new Ajax.Request("disable",
+                             {
+                               asynchronous: false,
+                             }
+                           ); location.reload(); return false;' class="primary"/>
+          </f:entry>
+        </l:hasPermission>
+      </j:if>
+      <j:if test="${!it.enabled}">
+        <l:hasPermission permission="${it.computer.CONFIGURE}">
+          <f:entry title="${%Enable Agent Maintenance Availability}" help="/plugin/agent-maintenance/help/help-enable.html">
+            <input type="button" value="${%Enable}" onclick='if(confirm("${%Enable Agent Maintenance Availability}"))
+                           new Ajax.Request("enable",
+                             {
+                               asynchronous: false,
+                             }
+                           ); location.reload(); return false;' class="primary"/>
+          </f:entry>
+        </l:hasPermission>
+        <j:if test="${!h.hasPermission(it, it.computer.CONFIGURE)}">
+          ${%missingPermission}
+        </j:if>
+      </j:if>
+    </l:main-panel>
+  </l:layout>
+</j:jelly>

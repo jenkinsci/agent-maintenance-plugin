@@ -1,0 +1,105 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
+         xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:p="/lib/permissions">
+  <l:layout title="Planned Maintenance" norefresh="true" permissions="${app.MANAGE_AND_SYSTEM_READ}">
+    <st:include page="sidepanel.jelly" it="${app}"/>
+    <l:main-panel>
+      <h1>${%Planned Maintenances}</h1>
+<link type="text/css" rel="stylesheet" href="${rootURL}/plugin/agent-maintenance/css/tail.datetime-default-blue.css" />
+<link type="text/css" rel="stylesheet" href="${rootURL}/plugin/agent-maintenance/css/agent-maintenance.css" />
+<script src="${rootURL}/plugin/agent-maintenance/js/tail.datetime-full.js"></script>
+<script src="${rootURL}/plugin/agent-maintenance/js/agent-maintenance.js"></script>
+
+<div class="modal" id="maintenance-add-form">
+
+    <div class="modal-content">
+        <f:form action="add" method="post" name="config" tableClass="form-container">
+            <h3>${%Add Maintenance Window for multiple agents}</h3>
+            <f:entry field="label" title="${%Label}" help="/plugin/agent-maintenance/help/help-label.html">
+              <f:textbox
+                checkUrl="'${rootURL}/agent-maintenances/checkLabel?value='+escape(this.value)"
+                autoCompleteUrl="${rootURL}/agent-maintenances/autoCompleteLabel"
+                autoCompleteDelimChar=" "
+              />
+            </f:entry>
+            <st:include class="${it.getMaintenanceWindowClass()}" page="config.jelly"/>
+            <f:block>
+                <f:submit value="${%Add}"/>
+                <input type="button"
+                       id="cancel-button"
+                       value="${%Cancel}"
+                       onclick="closeForm()"
+                       class="submit-button primary"/>
+            </f:block>
+        </f:form>
+    </div>
+</div>
+
+      <br/>
+      <f:form action="delete" method="post" name="delete">
+      <j:set var="mwcount" value="0"/>
+      <table class="bigtable sortable" style="border: 1px; border-collapse: collapse;" id="maintenance-table">
+        <tr>
+          <th style="border: 1px solid #bbb;" align="left">${%Agent}</th>
+          <th style="border: 1px solid #bbb;" align="left">${%Start Time}</th>
+          <th style="border: 1px solid #bbb;" align="left">${%End Time}</th>
+          <th style="border: 1px solid #bbb;" align="left">${%Reason}</th>
+          <th style="border: 1px solid #bbb;" align="left">${%Keep Online}</th>
+          <th style="border: 1px solid #bbb;" align="left">${%Max Wait}</th>
+          <th style="border: 1px solid #bbb;" align="left">${%Auto Connect}</th>
+          <th style="border: 1px solid #bbb;" align="left">${%Created By}</th>
+          <th style="background-color:transparent;border: 1px solid transparent; width: auto; padding: unset" align="left" ></th>
+          <th style="background-color:transparent;border: 1px solid transparent; width: auto; padding: unset" align="left"></th>
+        </tr>
+        <j:forEach var="a" items="${it.agents}">
+          <j:set var="c" value="${a.computer}"/>
+          <j:set var="mwcount" value="${mwcount + a.maintenanceWindows.size()}"/>
+          <j:forEach var="m" items="${a.maintenanceWindows}">
+            <tr style="background: ${m.isMaintenanceScheduled() ? 'orange': 'white'}">
+              <td style="border: 1px solid #bbb;" align="left"><a href="${rootURL}/${c.url}" class="model-link inside" style="text-decoration: none"><l:icon class="icon-computer icon-sm"/> ${c.displayName}</a></td>
+              <td style="border: 1px solid #bbb;" align="left">${m.startTime}</td>
+              <td style="border: 1px solid #bbb;" align="left">${m.endTime}</td>
+              <td style="border: 1px solid #bbb;" align="left">${m.reason}</td>
+              <td style="border: 1px solid #bbb;" align="center"><input type="checkbox" readonly="true" checked="${m.keepUpWhenActive ? 'true' : null}"/></td>
+              <td style="border: 1px solid #bbb;" align="right">${m.maxWaitMinutes}</td>
+              <td style="border: 1px solid #bbb;" align="center">${m.takeOnline}</td>
+              <td style="border: 1px solid #bbb;" align="left">${m.userid}</td>
+              <p:hasAnyPermission it="${c}" permissions="${a.CONFIGURE_AND_DISCONNECT}">
+                <td style="background-color:white ; border: 1px solid transparent; width: auto; padding: unset">
+                  <input type="hidden" name="${m.id}" value="${c.name}"/>
+                  <input id="${m.id}-cb" style="vertical-align: middle" type="checkbox" name="${m.id}"/>
+                </td>
+                <td style="background-color:white ; border: 1px solid transparent; width: auto; padding: unset">
+                  <a id="${m.id}" class="stop-button-link"
+                      href="${rootURL}/${c.url}maintenanceWindows/deleteMaintenance?id=${m.id}"
+                      onclick='if(confirm("${%deleteMaintenanceOf(c.displayName)}"))
+                      new Ajax.Request("${rootURL}/${c.url}/maintenanceWindows/deleteMaintenance?id=${m.id}",
+                        {
+                          asynchronous: false,
+                        }
+                      );
+                      location.reload(); return false;'
+                  >
+                    <l:icon class="icon-stop icon-sm" tooltip="Delete this maintenance windows for ${c.displayName}"/>
+                  </a>
+                </td>
+              </p:hasAnyPermission>
+            </tr>
+          </j:forEach>
+        </j:forEach>
+      </table>
+      <j:if test="${it.hasError()}">
+        <br/>
+        <div class="error">
+          ${it.getError()}
+        </div>
+      </j:if>
+      <br/>
+      <input type="button" value="${%Add}" onclick="openForm()" class="submit-button primary"/>
+      <j:if test="${mwcount > 0}">
+        <input type="submit" value="${%Delete selected}" class="submit-button primary"/>
+      </j:if>
+      </f:form>
+    </l:main-panel>
+  </l:layout>
+</j:jelly>

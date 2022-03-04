@@ -1,0 +1,5 @@
+<?jelly escape-by-default='true'?>
+<div>
+  This plugin allows to take agents offline for one or more dedicated time windows on specific dates, e.g. due to a hardware maintenance.<br/>
+  It is possible to define other agent availabilities, e.g. to take agent offline on a schedule.
+</div>
