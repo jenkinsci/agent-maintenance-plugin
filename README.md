@@ -4,6 +4,7 @@ Agent Maintenance Plugin for Jenkins
 [![Jenkins Plugin](https://img.shields.io/jenkins/plugin/v/kubernetes.svg)](https://plugins.jenkins.io/agent-maintenance)
 [![GitHub release](https://img.shields.io/github/release/jenkinsci/kubernetes-plugin.svg?label=release)](https://github.com/jenkinsci/agent-maintenance-plugin/releases/latest)
 [![Jenkins Plugin Installs](https://img.shields.io/jenkins/plugin/i/agent-maintenance.svg?color=blue)](https://plugins.jenkins.io/agent-maintenance)
+[![REUSE status](https://api.reuse.software/badge/github.com/jenkinsci/agent-maintenance-plugin)](https://api.reuse.software/info/github.com/jenkinsci/agent-maintenance-plugin)
 
 This plugin allows to take agents offline for one or more dedicated time windows on specific dates (e.g. due to a hardware/network maintenance)
 while allowing to configure any of the other availability strategies (e.g *Keep online as much as possible* or *Bring this agent online according to a schedule*) for the times when no maintenance window is active.
@@ -53,4 +54,4 @@ Refer to our [contribution guidelines](CONTRIBUTING.md).
 
 ## License
 
-Licensed under the [Apache License, Version 2.0](LICENSE).
+Copyright 2022 SAP SE or an SAP affiliate company and agent-maintenance-plugin contributors. Licensed under the [Apache License, Version 2.0](LICENSE). Detailed information including third-party components and their licensing/copyright information is available [via the REUSE tool](https://api.reuse.software/info/github.com/jenkinsci/agent-maintenance-plugin).
