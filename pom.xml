@@ -161,26 +161,4 @@
       <url>https://repo.jenkins-ci.org/public/</url>
     </pluginRepository>
   </pluginRepositories>
-
-  <!--
-    the profile https allows to start jenkins with https when running maven -Phttps hpi:run
-    for this you need a file keystore in this directory containing the key of the instance 
-    and the trusted certificates. The password is defined in the jetty-ssl.xml
-  -->
-  <profiles>
-    <profile>
-      <id>https</id>
-        <build>
-          <plugins>
-            <plugin>
-              <groupId>org.jenkins-ci.tools</groupId>
-              <artifactId>maven-hpi-plugin</artifactId>
-              <configuration>
-                <jettyXml>jetty.xml,jetty-ssl.xml,jetty-https.xml</jettyXml>
-              </configuration>
-            </plugin>
-          </plugins>
-        </build>
-    </profile>
-  </profiles>
 </project>
