@@ -28,3 +28,6 @@ Files: **
 Copyright:  2022 SAP SE or an SAP affiliate company and agent-maintenance-plugin contributors
 License: Apache-2.0
 
+Files: src/main/webapp/js/tail.datetime-full*
+Copyright: Copyright © 2018 - 2019 SamBrishes, pytesNET <info@pytes.net>
+License: MIT
