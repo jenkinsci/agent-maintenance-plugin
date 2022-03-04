@@ -1,5 +1,7 @@
 package com.sap.prd.jenkins.plugins.agent_maintenance;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.XmlFile;
 import hudson.model.Computer;
@@ -17,8 +19,6 @@ import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
 import jenkins.model.Jenkins;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -81,7 +81,7 @@ public class MaintenanceHelper {
    * @throws IOException when an error occured reading the xml
    */
   @SuppressWarnings("unchecked")
-  @Nonnull
+  @NonNull
   public SortedSet<MaintenanceWindow> getMaintenanceWindows(String computerName) throws IOException {
 
     SortedSet<MaintenanceWindow> list = cache.get(computerName);
