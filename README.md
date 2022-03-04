@@ -49,8 +49,8 @@ At 7:15 the agent will stop accepting new tasks, running build should have enoug
 
 ## Contributing
 
-Refer to our [contribution guidelines](https://github.com/jenkinsci/agent-maintenance-plugin/blob/main/CONTRIBUTING.md).
+Refer to our [contribution guidelines](CONTRIBUTING.md).
 
 ## License
 
-Licensed under the [Apache License, Version 2.0](https://github.com/jenkinsci/agent-maintenance-plugin/blob/main/LICENSE).
+Licensed under the [Apache License, Version 2.0](LICENSE).
