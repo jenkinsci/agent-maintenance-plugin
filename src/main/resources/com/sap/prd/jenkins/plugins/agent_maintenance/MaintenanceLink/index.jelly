@@ -5,9 +5,7 @@
     <st:include page="sidepanel.jelly" it="${app}"/>
     <l:main-panel>
       <h1>${%Planned Maintenances}</h1>
-<link type="text/css" rel="stylesheet" href="${rootURL}/plugin/agent-maintenance/css/tail.datetime-default-blue.css" />
 <link type="text/css" rel="stylesheet" href="${rootURL}/plugin/agent-maintenance/css/agent-maintenance.css" />
-<script src="${rootURL}/plugin/agent-maintenance/js/tail.datetime-full.js"></script>
 <script src="${rootURL}/plugin/agent-maintenance/js/agent-maintenance.js"></script>
 
 <div class="modal" id="maintenance-add-form">

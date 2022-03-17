@@ -7,34 +7,6 @@
       <h1>${%Edit Planned Maintenances}</h1>
       <br/>
       <f:form action="configSubmit" method="post" name="config">
-<link type="text/css" rel="stylesheet" href="${rootURL}/plugin/agent-maintenance/css/tail.datetime-default-blue.css" />
-<script   src="${rootURL}/plugin/agent-maintenance/js/tail.datetime-full.js"></script>
-<script>
-var mutationObserver = new MutationObserver(function(mutations) {
-  var maintenanceList = document.querySelector("form[name=\"config\"]");
-  var x = maintenanceList.getElementsByClassName("tail-datetime-field");
-  var oldCount = Number(maintenanceList.getAttribute("tail-datetime-count"));
-  if (x.length != oldCount)
-  {
-    tail.datetime.count = 0;
-    tail.datetime.inst = {};
-    for (var node of x)
-    {
-        node.removeAttribute("data-tail-datetime");
-        node.removeAttribute("data-value");
-        tail.DateTime(node,{ animate: true, timeFormat: "HH:ii", weekStart: 1, timeSeconds: false, timeStepMinutes: 1 });
-    }
-    maintenanceList.setAttribute("tail-datetime-count",x.length);
-  }
-});
-
-var t = document.querySelector("form[name=\"config\"]");
-mutationObserver.observe(t, {
-  childList: true,
-  subtree: true,
-});
-
-</script>
         <f:entry title="${%Maintenance Windows}" help="/plugin/agent-maintenance/help/help-maintenanceList.html">
           <f:helpArea />
           <f:repeatable name="maintenanceWindows" var="mw" items="${it.maintenanceWindows}" minimum="0">
