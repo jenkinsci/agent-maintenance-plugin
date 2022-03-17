@@ -65,15 +65,16 @@
               <td style="border: 1px solid #bbb;" align="center">${m.takeOnline}</td>
               <td style="border: 1px solid #bbb;" align="left">${m.userid}</td>
               <p:hasAnyPermission it="${c}" permissions="${a.CONFIGURE_AND_DISCONNECT}">
+                <j:set var="mid" value="${h.escape(m.id)}"/>
                 <td style="background-color:white ; border: 1px solid transparent; width: auto; padding: unset">
-                  <input type="hidden" name="${m.id}" value="${c.name}"/>
-                  <input id="${m.id}-cb" style="vertical-align: middle" type="checkbox" name="${m.id}"/>
+                  <input type="hidden" name="${mid}" value="${c.name}"/>
+                  <input id="${mid}-cb" style="vertical-align: middle" type="checkbox" name="${mid}"/>
                 </td>
                 <td style="background-color:white ; border: 1px solid transparent; width: auto; padding: unset">
                   <a id="${m.id}" class="stop-button-link"
-                      href="${rootURL}/${c.url}maintenanceWindows/deleteMaintenance?id=${m.id}"
+                      href="${rootURL}/${c.url}maintenanceWindows/deleteMaintenance?id=${h.urlEncode(m.id)}"
                       onclick='if(confirm("${%deleteMaintenanceOf(c.displayName)}"))
-                      new Ajax.Request("${rootURL}/${c.url}/maintenanceWindows/deleteMaintenance?id=${m.id}",
+                      new Ajax.Request("${rootURL}/${c.url}/maintenanceWindows/deleteMaintenance?id=${h.urlEncode(m.id)}",
                         {
                           asynchronous: false,
                         }

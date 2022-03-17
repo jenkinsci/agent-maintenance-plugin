@@ -56,14 +56,15 @@
                 <td style="border: 1px solid #bbb;" align="center">${m.takeOnline}</td>
                 <td style="border: 1px solid #bbb;" align="left">${m.userid}</td>
                 <p:hasAnyPermission permissions="${it.CONFIGURE_AND_DISCONNECT}">
+                  <j:set var="mid" value="${h.escape(m.id)}"/>
                   <td style="background-color:white ; border: 1px solid transparent; width: auto; padding: unset;">
-                    <input id="${m.id}-cb" style="vertical-align: middle" type="checkbox" name="${m.id}"/>
+                    <input id="${mid}-cb" style="vertical-align: middle" type="checkbox" name="${mid}"/>
                   </td>
                   <td style="background-color:white ; border: 1px solid transparent;">
-                    <a id="${m.id}" class="stop-button-link"
-                       href="deleteMaintenance?id=${m.id}"
+                    <a id="${mid}" class="stop-button-link"
+                       href="deleteMaintenance?id=${h.urlEncode(m.id)}"
                        onclick='if(confirm("${%Delete maintenance window}"))
-                         new Ajax.Request("deleteMaintenance?id=${m.id}",
+                         new Ajax.Request("deleteMaintenance?id=${h.urlEncode(m.id)}",
                            {
                              asynchronous: false,
                            }

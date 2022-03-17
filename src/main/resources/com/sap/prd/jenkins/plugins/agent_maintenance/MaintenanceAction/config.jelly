@@ -28,7 +28,7 @@ var mutationObserver = new MutationObserver(function(mutations) {
   }
 });
 
-var t = document.querySelector("form[name=\"config\"");
+var t = document.querySelector("form[name=\"config\"]");
 mutationObserver.observe(t, {
   childList: true,
   subtree: true,
