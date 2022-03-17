@@ -80,7 +80,9 @@
                 <input type="button" value="${%Edit}" onclick="location.href='config'" class="submit-button primary"/>
               </j:if>
               <input type="button" value="${%Add}" onclick="openForm()" class="submit-button primary"/>
-              <input type="submit" value="${%Delete selected}" class="submit-button primary"/>
+              <j:if test="${it.maintenanceWindows.size() > 0}">
+                <input type="submit" value="${%Delete selected}" class="submit-button primary"/>
+              </j:if>
             </f:bottomButtonBar>
           </p:hasAnyPermission>
         </f:form>
