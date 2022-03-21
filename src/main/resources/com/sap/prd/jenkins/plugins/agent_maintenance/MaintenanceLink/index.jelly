@@ -66,20 +66,22 @@
                 <j:set var="mid" value="${h.escape(m.id)}"/>
                 <td style="background-color:white ; border: 1px solid transparent; width: auto; padding: unset">
                   <input type="hidden" name="${mid}" value="${c.name}"/>
-                  <input id="${mid}-cb" style="vertical-align: middle" type="checkbox" name="${mid}"/>
+                  <input style="vertical-align: middle" type="checkbox" name="${mid}"/>
                 </td>
                 <td style="background-color:white ; border: 1px solid transparent; width: auto; padding: unset">
-                  <a id="${m.id}" class="stop-button-link"
+                  <a class="stop-button-link" data-computer-name="${c.displayName}"
                       href="${rootURL}/${c.url}maintenanceWindows/deleteMaintenance?id=${h.urlEncode(m.id)}"
-                      onclick='if(confirm("${%deleteMaintenanceOf(c.displayName)}"))
-                      new Ajax.Request("${rootURL}/${c.url}/maintenanceWindows/deleteMaintenance?id=${h.urlEncode(m.id)}",
-                        {
-                          asynchronous: false,
-                        }
-                      );
-                      location.reload(); return false;'
+                      onclick='var computerName = this.getAttribute("data-computer-name");
+                        if(confirm("${%deleteMaintenanceOf} " + computerName)) {
+                          new Ajax.Request(&quot;${rootURL}/${c.url}maintenanceWindows/deleteMaintenance?id=${h.urlEncode(m.id)}&quot;,
+                            {
+                              asynchronous: false,
+                            }
+                          );
+                          location.reload();
+                        }; return false'
                   >
-                    <l:icon class="icon-stop icon-sm" tooltip="Delete this maintenance windows for ${c.displayName}"/>
+                    <l:icon class="icon-stop icon-sm" tooltip="Delete this maintenance windows for ${h.escape(c.displayName)}"/>
                   </a>
                 </td>
               </p:hasAnyPermission>
