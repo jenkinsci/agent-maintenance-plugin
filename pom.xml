@@ -11,7 +11,7 @@
 
   <groupId>io.jenkins.plugins</groupId>
   <artifactId>agent-maintenance</artifactId>
-  <version>1.${changelist}</version>
+  <version>${revision}.${changelist}</version>
   <packaging>hpi</packaging>
 
   <name>Agent Maintenance</name>
@@ -39,6 +39,7 @@
   </scm>
 
   <properties>
+    <revision>1</revision>
     <changelist>999999-SNAPSHOT</changelist>
     <gitHubRepo>jenkinsci/agent-maintenance-plugin</gitHubRepo>
     <jenkins.version>2.303.3</jenkins.version>
