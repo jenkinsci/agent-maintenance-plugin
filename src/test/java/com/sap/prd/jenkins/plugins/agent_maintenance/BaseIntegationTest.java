@@ -17,7 +17,7 @@ public abstract class BaseIntegationTest {
   public static JenkinsRule rule = new JenkinsRule();
 
   static {
-    rule.timeout = 1800;
+    rule.timeout = 2400;
   }
 
   protected MaintenanceHelper maintenanceHelper = MaintenanceHelper.getInstance();
