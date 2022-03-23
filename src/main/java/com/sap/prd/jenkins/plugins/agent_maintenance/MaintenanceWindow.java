@@ -22,16 +22,17 @@ import org.springframework.security.core.Authentication;
 public class MaintenanceWindow extends AbstractDescribableImpl<MaintenanceWindow> implements Comparable<MaintenanceWindow> {
 
   public static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-  private final String startTime;
-  private final String endTime;
+  public static final DateTimeFormatter DATE_INPUT_FORMATTER = DateTimeFormatter.ofPattern("yyyy-M-d H:m");
+  private transient String startTime;
+  private transient String endTime;
   private final String reason;
   private final boolean takeOnline;
   private final boolean keepUpWhenActive;
   private final int maxWaitMinutes;
   private final String userid;
   private String id;
-  private transient LocalDateTime startDateTime;
-  private transient LocalDateTime endDateTime;
+  private LocalDateTime startDateTime;
+  private LocalDateTime endDateTime;
   private transient boolean aborted;
 
   /**
@@ -42,7 +43,7 @@ public class MaintenanceWindow extends AbstractDescribableImpl<MaintenanceWindow
    * @param reason           Reason
    * @param takeOnline       Take online at end of maintenance
    * @param keepUpWhenActive Keep up while builds are running
-   * @param maxWaitMinutes   Max waitung time before cancelling running builds
+   * @param maxWaitMinutes   Max waiting time before canceling running builds
    * @param userid           Userid that created the maintenance window
    * @param id               ID of the maintenance, use <code>null</code> to
    *                         generate a new id
@@ -50,10 +51,8 @@ public class MaintenanceWindow extends AbstractDescribableImpl<MaintenanceWindow
   @DataBoundConstructor
   public MaintenanceWindow(String startTime, String endTime, String reason, boolean takeOnline, boolean keepUpWhenActive,
       int maxWaitMinutes, String userid, String id) {
-    startDateTime = LocalDateTime.parse(startTime, DATE_FORMATTER);
-    endDateTime = LocalDateTime.parse(endTime, DATE_FORMATTER);
-    this.startTime = startTime;
-    this.endTime = endTime;
+    startDateTime = LocalDateTime.parse(startTime, DATE_INPUT_FORMATTER);
+    endDateTime = LocalDateTime.parse(endTime, DATE_INPUT_FORMATTER);
     this.reason = reason;
     this.takeOnline = takeOnline;
     this.maxWaitMinutes = maxWaitMinutes;
@@ -101,8 +100,10 @@ public class MaintenanceWindow extends AbstractDescribableImpl<MaintenanceWindow
   }
 
   protected Object readResolve() {
-    startDateTime = LocalDateTime.parse(startTime, DATE_FORMATTER);
-    endDateTime = LocalDateTime.parse(endTime, DATE_FORMATTER);
+    if (startTime != null) {
+      startDateTime = LocalDateTime.parse(startTime, DATE_INPUT_FORMATTER);
+      endDateTime = LocalDateTime.parse(endTime, DATE_INPUT_FORMATTER);
+    }
 
     if (id == null) {
       id = UUID.randomUUID().toString();
@@ -111,11 +112,11 @@ public class MaintenanceWindow extends AbstractDescribableImpl<MaintenanceWindow
   }
 
   public String getStartTime() {
-    return startTime;
+    return startDateTime.format(DATE_FORMATTER);
   }
 
   public String getEndTime() {
-    return endTime;
+    return endDateTime.format(DATE_FORMATTER);
   }
 
   public String getReason() {
@@ -182,7 +183,7 @@ public class MaintenanceWindow extends AbstractDescribableImpl<MaintenanceWindow
 
     private boolean isValidDate(String date) {
       try {
-        LocalDateTime.parse(date, DATE_FORMATTER);
+        LocalDateTime.parse(date, DATE_INPUT_FORMATTER);
       } catch (DateTimeParseException e) {
         return false;
       }
@@ -191,8 +192,8 @@ public class MaintenanceWindow extends AbstractDescribableImpl<MaintenanceWindow
   }
 
   private static int compareTimes(String time1, String time2) {
-    LocalDateTime startTimeCalendar = LocalDateTime.parse(time1, DATE_FORMATTER);
-    LocalDateTime endTimeCalendar = LocalDateTime.parse(time2, DATE_FORMATTER);
+    LocalDateTime startTimeCalendar = LocalDateTime.parse(time1, DATE_INPUT_FORMATTER);
+    LocalDateTime endTimeCalendar = LocalDateTime.parse(time2, DATE_INPUT_FORMATTER);
     return startTimeCalendar.compareTo(endTimeCalendar);
   }
 
@@ -200,11 +201,11 @@ public class MaintenanceWindow extends AbstractDescribableImpl<MaintenanceWindow
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    result = prime * result + ((endTime == null) ? 0 : endDateTime.hashCode());
+    result = prime * result + ((endDateTime == null) ? 0 : endDateTime.hashCode());
     result = prime * result + (keepUpWhenActive ? 1231 : 1237);
     result = prime * result + maxWaitMinutes;
     result = prime * result + ((reason == null) ? 0 : reason.hashCode());
-    result = prime * result + ((startTime == null) ? 0 : startDateTime.hashCode());
+    result = prime * result + ((startDateTime == null) ? 0 : startDateTime.hashCode());
     result = prime * result + (takeOnline ? 1231 : 1237);
     return result;
   }
@@ -219,8 +220,8 @@ public class MaintenanceWindow extends AbstractDescribableImpl<MaintenanceWindow
     if (getClass() != obj.getClass())
       return false;
     MaintenanceWindow other = (MaintenanceWindow) obj;
-    if (endTime == null) {
-      if (other.endTime != null)
+    if (endDateTime == null) {
+      if (other.endDateTime != null)
         return false;
     } else if (!endDateTime.equals(other.endDateTime))
       return false;
@@ -233,8 +234,8 @@ public class MaintenanceWindow extends AbstractDescribableImpl<MaintenanceWindow
         return false;
     } else if (!reason.equals(other.reason))
       return false;
-    if (startTime == null) {
-      if (other.startTime != null)
+    if (startDateTime == null) {
+      if (other.startDateTime != null)
         return false;
     } else if (!startDateTime.equals(other.startDateTime))
       return false;
@@ -242,7 +243,6 @@ public class MaintenanceWindow extends AbstractDescribableImpl<MaintenanceWindow
       return false;
     return true;
   }
-  // CHECKSTYLE:ON: EmptyBlock
 
   @Override
   public int compareTo(MaintenanceWindow other) {
