@@ -12,6 +12,7 @@ import hudson.slaves.OfflineCause;
 import java.time.LocalDateTime;
 import java.util.concurrent.TimeUnit;
 import org.junit.Test;
+import org.jvnet.hudson.test.recipes.WithTimeout;
 
 /** Integration tests for the maintenance strategy. */
 public class AgentMaintenanceRetentionStrategyTest extends BaseIntegationTest {
@@ -25,6 +26,7 @@ public class AgentMaintenanceRetentionStrategyTest extends BaseIntegationTest {
   }
 
   @Test
+  @WithTimeout(600)
   public void activeMaintenanceWindow() throws Exception {
     Slave agent = getAgent("activeMaintenanceWindow");
     LocalDateTime start = LocalDateTime.now().minusMinutes(1);
@@ -49,6 +51,7 @@ public class AgentMaintenanceRetentionStrategyTest extends BaseIntegationTest {
   }
 
   @Test
+  @WithTimeout(600)
   public void agentGetsDisconnected() throws Exception {
     Slave agent = getAgent("agentGetsDisconnected");
     LocalDateTime start = LocalDateTime.now().minusMinutes(2);
@@ -73,6 +76,7 @@ public class AgentMaintenanceRetentionStrategyTest extends BaseIntegationTest {
   }
 
   @Test
+  @WithTimeout(600)
   public void agentComesBackOnline() throws Exception {
     String agentName = "agentComesBackOnline";
     Slave agent = getAgent(agentName);
@@ -107,6 +111,7 @@ public class AgentMaintenanceRetentionStrategyTest extends BaseIntegationTest {
   }
 
   @Test
+  @WithTimeout(600)
   public void agentStaysOffline() throws Exception {
     String agentName = "agentStaysOffline";
     Slave agent = getAgent(agentName);

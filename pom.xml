@@ -132,8 +132,8 @@
             </dependency>
           </dependencies>
           <configuration>
-              <configLocation>.build-config/checkstyle.xml</configLocation>
-              <suppressionsLocation>.build-config/checkstyle-suppressions.xml</suppressionsLocation>
+              <configLocation>${project.basedir}/.build-config/checkstyle.xml</configLocation>
+              <suppressionsLocation>${project.basedir}/.build-config/checkstyle-suppressions.xml</suppressionsLocation>
               <suppressionsFileExpression>checkstyle.suppressions.file</suppressionsFileExpression>
               <includeTestSourceDirectory>true</includeTestSourceDirectory>
               <consoleOutput>true</consoleOutput>

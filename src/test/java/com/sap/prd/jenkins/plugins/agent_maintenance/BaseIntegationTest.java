@@ -5,7 +5,7 @@ import hudson.slaves.RetentionStrategy;
 import hudson.slaves.RetentionStrategy.Always;
 import hudson.slaves.SlaveComputer;
 import java.util.concurrent.TimeUnit;
-import org.junit.ClassRule;
+import org.junit.Rule;
 import org.jvnet.hudson.test.JenkinsRule;
 
 /**
@@ -13,12 +13,8 @@ import org.jvnet.hudson.test.JenkinsRule;
  */
 public abstract class BaseIntegationTest {
 
-  @ClassRule
-  public static JenkinsRule rule = new JenkinsRule();
-
-  static {
-    rule.timeout = 2400;
-  }
+  @Rule
+  public JenkinsRule rule = new JenkinsRule();
 
   protected MaintenanceHelper maintenanceHelper = MaintenanceHelper.getInstance();
 
