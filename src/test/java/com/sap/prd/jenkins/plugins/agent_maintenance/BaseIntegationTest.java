@@ -4,6 +4,7 @@ import hudson.model.Slave;
 import hudson.slaves.RetentionStrategy;
 import hudson.slaves.RetentionStrategy.Always;
 import hudson.slaves.SlaveComputer;
+import java.time.LocalDateTime;
 import java.util.concurrent.TimeUnit;
 import org.junit.Rule;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -34,9 +35,18 @@ public abstract class BaseIntegationTest {
     return agent;
   }
 
-  protected void waitForDisconnect(Slave agent) throws InterruptedException {
+  protected void waitForDisconnect(Slave agent, MaintenanceWindow mw) throws Exception {
+    LocalDateTime timeout = LocalDateTime.now().plusMinutes(4);
     while (agent.getChannel() != null) {
       TimeUnit.SECONDS.sleep(10);
+      LocalDateTime now = LocalDateTime.now();
+      if (now.isAfter(timeout)) {
+        String active = "unknown"; 
+        if (mw != null) {
+          active = "" + mw.isMaintenanceScheduled();
+        }
+        throw new Exception("Agent did not disconnect within 4 minutes. Active: " + active);
+      }
     }
   }
 }

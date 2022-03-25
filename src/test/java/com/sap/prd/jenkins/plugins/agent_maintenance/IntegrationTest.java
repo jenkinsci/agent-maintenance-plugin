@@ -44,7 +44,7 @@ public class IntegrationTest extends BaseIntegationTest {
     FreeStyleBuild build = project.scheduleBuild2(0).get();
     assertThat(agent.toComputer().isAcceptingTasks(), is(false));
     assertThat(build.getResult(), is(Result.SUCCESS));
-    waitForDisconnect(agent);
+    waitForDisconnect(agent, mw);
     maintenanceHelper.deleteMaintenanceWindow(agent.getNodeName(), id);
   }
 
@@ -74,7 +74,7 @@ public class IntegrationTest extends BaseIntegationTest {
     FreeStyleBuild build = project.scheduleBuild2(0).get();
     assertThat(agent.toComputer().isAcceptingTasks(), is(false));
     assertThat(build.getResult(), is(Result.ABORTED));
-    waitForDisconnect(agent);
+    waitForDisconnect(agent, mw);
     maintenanceHelper.deleteMaintenanceWindow(agent.getNodeName(), id);
   }
 
@@ -104,7 +104,7 @@ public class IntegrationTest extends BaseIntegationTest {
     FreeStyleBuild build = project.scheduleBuild2(0).get();
     assertThat(agent.toComputer().isAcceptingTasks(), is(false));
     assertThat(build.getResult(), is(Result.ABORTED));
-    waitForDisconnect(agent);
+    waitForDisconnect(agent, mw);
     maintenanceHelper.deleteMaintenanceWindow(agent.getNodeName(), id);
   }
 
@@ -117,10 +117,10 @@ public class IntegrationTest extends BaseIntegationTest {
     project.setAssignedLabel(agent.getSelfLabel());
     project.getBuildersList().add(new SleepBuilder(1000));
     assertThat(agent.toComputer().isAcceptingTasks(), is(true));
-    waitForDisconnect(agent);
+    waitForDisconnect(agent, null);
     FreeStyleBuild build = project.scheduleBuild2(0).get();
     assertThat(build.getResult(), is(Result.SUCCESS));
-    waitForDisconnect(agent);
+    waitForDisconnect(agent, null);
     assertThat(agent.getChannel(), is(nullValue()));
   }
 }

@@ -70,7 +70,7 @@ public class AgentMaintenanceRetentionStrategyTest extends BaseIntegationTest {
     assertThat(agent.getChannel(), is(notNullValue()));
     maintenanceHelper.addMaintenanceWindow(agent.getNodeName(), mw);
     assertThat(mw.isMaintenanceScheduled(), is(true));
-    waitForDisconnect(agent);
+    waitForDisconnect(agent, mw);
     assertThat(agent.getChannel(), is(nullValue()));
     maintenanceHelper.deleteMaintenanceWindow(agent.getNodeName(), id);
   }
@@ -100,7 +100,7 @@ public class AgentMaintenanceRetentionStrategyTest extends BaseIntegationTest {
             null);
     assertThat(agent.toComputer().isOnline(), is(true));
     maintenanceHelper.addMaintenanceWindow(agentName, mw);
-    waitForDisconnect(agent);
+    waitForDisconnect(agent, mw);
     // Instead of waiting for the maintenance window to be over just delete it
     maintenanceHelper.deleteMaintenanceWindow(agentName, mw.getId());
     while (!agent.toComputer().isOnline()) {
@@ -128,7 +128,7 @@ public class AgentMaintenanceRetentionStrategyTest extends BaseIntegationTest {
             "test",
             null);
     maintenanceHelper.addMaintenanceWindow(agentName, mw);
-    waitForDisconnect(agent);
+    waitForDisconnect(agent, mw);
     // Instead of waiting for the maintenance window to be over just delete it
     maintenanceHelper.deleteMaintenanceWindow(agentName, mw.getId());
     TimeUnit.MINUTES.sleep(3);
