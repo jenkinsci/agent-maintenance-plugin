@@ -1,11 +1,13 @@
 Agent Maintenance Plugin for Jenkins
 =========================
 
-[![Build Status](https://ci.jenkins.io/job/Plugins/job/agent-maintenance-plugin/job/master/badge/icon)](https://ci.jenkins.io/job/Plugins/job/agent-maintenance-plugin/job/master/)
+[![Build Status](https://ci.jenkins.io/job/Plugins/job/agent-maintenance-plugin/job/main/badge/icon)](https://ci.jenkins.io/job/Plugins/job/agent-maintenance-plugin/job/main/)
 [![Jenkins Plugin](https://img.shields.io/jenkins/plugin/v/agent-maintenance)](https://plugins.jenkins.io/agent-maintenance)
 [![GitHub release](https://img.shields.io/github/release/jenkinsci/agent-maintenance-plugin.svg?label=release)](https://github.com/jenkinsci/agent-maintenance-plugin/releases/latest)
 [![Jenkins Plugin Installs](https://img.shields.io/jenkins/plugin/i/agent-maintenance.svg?color=blue)](https://plugins.jenkins.io/agent-maintenance)
+[![Language grade: Java](https://img.shields.io/lgtm/grade/java/g/jenkinsci/agent-maintenance-plugin.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/jenkinsci/agent-maintenance-plugin/context:java)
 [![REUSE status](https://api.reuse.software/badge/github.com/jenkinsci/agent-maintenance-plugin)](https://api.reuse.software/info/github.com/jenkinsci/agent-maintenance-plugin)
+
 
 This plugin allows to take agents offline for one or more dedicated time windows on specific dates (e.g. due to a hardware/network maintenance)
 while allowing to configure any of the other availability strategies (e.g *Keep online as much as possible* or *Bring this agent online according to a schedule*) for the times when no maintenance window is active.
