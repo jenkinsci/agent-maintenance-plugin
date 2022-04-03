@@ -88,10 +88,9 @@ public class MaintenanceHelper {
     LOGGER.log(Level.FINEST, "Loading maintenance list for {0}", computerName);
 
     if (list == null) {
-      File maintenanceFile = getMaintenanceWindowsFile(computerName);
-      if (maintenanceFile.exists()) {
+      XmlFile xmlMaintenanceFile = getMaintenanceWindowsFile(computerName);
+      if (xmlMaintenanceFile.exists()) {
         LOGGER.log(Level.FINER, "Loading maintenance list from file for {0}", computerName);
-        XmlFile xmlMaintenanceFile = new XmlFile(maintenanceFile);
         list = (SortedSet<MaintenanceWindow>) xmlMaintenanceFile.read();
       } else {
         LOGGER.log(Level.FINER, "Creating empty maintenance list for {0}", computerName);
@@ -163,12 +162,12 @@ public class MaintenanceHelper {
    */
   public void saveMaintenanceWindows(String computerName, SortedSet<MaintenanceWindow> maintenanceWindows) throws IOException {
     LOGGER.log(Level.FINER, "Saving maintenance window for {0}: {1}", new Object[] { computerName, maintenanceWindows.size() });
-    XmlFile xmlMaintenanceFile = new XmlFile(getMaintenanceWindowsFile(computerName));
+    XmlFile xmlMaintenanceFile = getMaintenanceWindowsFile(computerName);
     xmlMaintenanceFile.write(maintenanceWindows);
   }
 
-  private File getMaintenanceWindowsFile(String computerName) throws IOException {
-    return new File(new File(getNodesDirectory(), computerName), "maintenance-windows.xml");
+  private XmlFile getMaintenanceWindowsFile(String computerName) throws IOException {
+    return new XmlFile(new File(new File(getNodesDirectory(), computerName), "maintenance-windows.xml"));
   }
 
   private File getNodesDirectory() throws IOException {
@@ -258,8 +257,8 @@ public class MaintenanceHelper {
           try {
             node.save();
             deleteAgent(computerName);
-            File maintenanceFile = getMaintenanceWindowsFile(computerName);
-            if (maintenanceFile.isFile()) {
+            XmlFile maintenanceFile = getMaintenanceWindowsFile(computerName);
+            if (maintenanceFile.exists()) {
               maintenanceFile.delete();
             }
           } catch (IOException e) {
