@@ -75,7 +75,7 @@
             </j:forEach>
           </table>
           <p:hasAnyPermission permissions="${it.CONFIGURE_AND_DISCONNECT}">
-            <f:bottomButtonBar>
+              <br/>
               <j:if test="${it.maintenanceWindows.size() > 0}">
                 <input type="button" value="${%Edit}" onclick="location.href='config'" class="submit-button primary"/>
               </j:if>
@@ -83,7 +83,6 @@
               <j:if test="${it.maintenanceWindows.size() > 0}">
                 <input type="submit" value="${%Delete selected}" class="submit-button primary"/>
               </j:if>
-            </f:bottomButtonBar>
           </p:hasAnyPermission>
         </f:form>
         <br/>
