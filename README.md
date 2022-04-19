@@ -49,7 +49,7 @@ Use the "x" to directly delete a single maintenance window or use the checkboxes
 
 When defining a maintenance window one has to consider the time it takes for any running build to finish. So if the actual maintenance starts at 8 AM and your builds usually run for 30 minutes you might set the start time to 7:15 AM and define a "Max waiting time in minutes for builds to finish" of 45 minutes.
 
-At 7:15 the agent will stop accepting new tasks, running build should have enough time to finish. If a build is still running when the max waiting time is reached an abort request is sent to the build. 
+At 7:15 the agent will stop accepting new tasks, running builds should have enough time to finish. If a build is still running when the max waiting time is reached an abort request is sent to the build. 
 
 ## Contributing
 
