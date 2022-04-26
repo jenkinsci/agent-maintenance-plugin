@@ -8,6 +8,20 @@
 <link type="text/css" rel="stylesheet" href="${rootURL}/plugin/agent-maintenance/css/agent-maintenance.css" />
 <script src="${rootURL}/plugin/agent-maintenance/js/agent-maintenance.js"></script>
 
+      <j:set var="jenkinsversion" value="${app.version}"/>
+      <j:new var="newversion" className="hudson.util.VersionNumber">
+        <j:arg value="2.321" type="java.lang.String"/>
+      </j:new>
+      <j:if test="${jenkinsversion.isOlderThan(newversion)}">
+        <j:set var="tableclasses" value="bigtable bigtable--compact pane maintenance-table-old"/>
+        <j:set var="rowclasses" value="maintenance-row-old"/>
+      </j:if>
+      <j:if test="${jenkinsversion.isNewerThanOrEqualTo(newversion)}">
+        <j:set var="tableclasses" value="jenkins-table jenkins-table--small maintenance-table-new"/>
+        <j:set var="rowclasses" value="maintenance-row-new"/>
+      </j:if>
+
+
 <div class="modal" id="maintenance-add-form">
 
     <div class="modal-content">
@@ -36,39 +50,41 @@
       <br/>
       <f:form action="delete" method="post" name="delete">
       <j:set var="mwcount" value="0"/>
-      <table class="bigtable sortable" style="border: 1px; border-collapse: collapse;" id="maintenance-table">
-        <tr>
-          <th style="border: 1px solid #bbb;" align="left">${%Agent}</th>
-          <th style="border: 1px solid #bbb;" align="left">${%Start Time}</th>
-          <th style="border: 1px solid #bbb;" align="left">${%End Time}</th>
-          <th style="border: 1px solid #bbb;" align="left">${%Reason}</th>
-          <th style="border: 1px solid #bbb;" align="left">${%Keep Online}</th>
-          <th style="border: 1px solid #bbb;" align="left">${%Max Wait}</th>
-          <th style="border: 1px solid #bbb;" align="left">${%Auto Connect}</th>
-          <th style="border: 1px solid #bbb;" align="left">${%Created By}</th>
-          <th style="background-color:transparent;border: 1px solid transparent; width: auto; padding: unset" align="left" ></th>
-          <th style="background-color:transparent;border: 1px solid transparent; width: auto; padding: unset" align="left"></th>
-        </tr>
+      <table class="${tableclasses} sortable" style="width: auto" id="maintenance-table">
+        <thead>
+          <tr>
+            <th class="${rowclasses}">${%Agent}</th>
+            <th class="${rowclasses}">${%Start Time}</th>
+            <th class="${rowclasses}">${%End Time}</th>
+            <th class="${rowclasses}">${%Reason}</th>
+            <th class="${rowclasses}">${%Keep Online}</th>
+            <th class="${rowclasses}">${%Max Wait}</th>
+            <th class="${rowclasses}">${%Auto Connect}</th>
+            <th class="${rowclasses}">${%Created By}</th>
+            <th class="${rowclasses}" style="width: auto;"></th>
+            <th class="${rowclasses}" style="width: auto;"></th>
+          </tr>
+        </thead>
         <j:forEach var="a" items="${it.agents}">
           <j:set var="c" value="${a.computer}"/>
           <j:set var="mwcount" value="${mwcount + a.maintenanceWindows.size()}"/>
           <j:forEach var="m" items="${a.maintenanceWindows}">
-            <tr style="background: ${m.isMaintenanceScheduled() ? 'orange': 'white'}">
-              <td style="border: 1px solid #bbb;" align="left"><a href="${rootURL}/${c.url}" class="model-link inside" style="text-decoration: none"><l:icon class="icon-computer icon-sm"/> ${c.displayName}</a></td>
-              <td style="border: 1px solid #bbb;" align="left">${m.startTime}</td>
-              <td style="border: 1px solid #bbb;" align="left">${m.endTime}</td>
-              <td style="border: 1px solid #bbb;" align="left">${m.reason}</td>
-              <td style="border: 1px solid #bbb;" align="center"><input type="checkbox" readonly="true" checked="${m.keepUpWhenActive ? 'true' : null}"/></td>
-              <td style="border: 1px solid #bbb;" align="right">${m.maxWaitMinutes}</td>
-              <td style="border: 1px solid #bbb;" align="center">${m.takeOnline}</td>
-              <td style="border: 1px solid #bbb;" align="left">${m.userid}</td>
+            <tr class="${m.isMaintenanceScheduled() ? 'active': 'inactive'}">
+              <td class="${rowclasses}"><nobr><a href="${rootURL}/${c.url}" class="model-link inside" style="text-decoration: none"><l:icon class="icon-computer icon-sm"/> ${c.displayName}</a></nobr></td>
+              <td class="${rowclasses}"><nobr>${m.startTime}</nobr></td>
+              <td class="${rowclasses}"><nobr>${m.endTime}</nobr></td>
+              <td class="${rowclasses}">${m.reason}</td>
+              <td class="${rowclasses}" style="text-align:center"><input type="checkbox" disabled="disabled" checked="${m.keepUpWhenActive ? 'true' : null}"/></td>
+              <td class="${rowclasses}" style="text-align:right">${m.maxWaitMinutes}</td>
+              <td class="${rowclasses}" style="text-align:center"><input type="checkbox" disabled="disabled" checked="${m.takeOnline ? 'true' : null}"/></td>
+              <td class="${rowclasses}">${m.userid}</td>
               <p:hasAnyPermission it="${c}" permissions="${a.CONFIGURE_AND_DISCONNECT}">
                 <j:set var="mid" value="${h.escape(m.id)}"/>
-                <td style="background-color:white ; border: 1px solid transparent; width: auto; padding: unset">
+                <td class="${rowclasses}">
                   <input type="hidden" name="${mid}" value="${c.name}"/>
                   <input id="${mid}-cb" style="vertical-align: middle" type="checkbox" name="${mid}"/>
                 </td>
-                <td style="background-color:white ; border: 1px solid transparent; width: auto; padding: unset">
+                <td class="${rowclasses}">
                   <a id="${mid}" class="stop-button-link" data-computer-name="${c.displayName}"
                       href="${rootURL}/${c.url}maintenanceWindows/deleteMaintenance?id=${h.urlEncode(m.id)}"
                       onclick='var computerName = this.getAttribute("data-computer-name");

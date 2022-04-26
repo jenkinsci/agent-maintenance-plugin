@@ -9,6 +9,19 @@
 <link type="text/css" rel="stylesheet" href="${rootURL}/plugin/agent-maintenance/css/agent-maintenance.css" />
 <script src="${rootURL}/plugin/agent-maintenance/js/agent-maintenance.js"></script>
 
+      <j:set var="jenkinsversion" value="${app.version}"/>
+      <j:new var="newversion" className="hudson.util.VersionNumber">
+        <j:arg value="2.321" type="java.lang.String"/>
+      </j:new>
+      <j:if test="${jenkinsversion.isOlderThan(newversion)}">
+        <j:set var="tableclasses" value="bigtable bigtable--compact pane maintenance-table-old"/>
+        <j:set var="rowclasses" value="maintenance-row-old"/>
+      </j:if>
+      <j:if test="${jenkinsversion.isNewerThanOrEqualTo(newversion)}">
+        <j:set var="tableclasses" value="jenkins-table jenkins-table--small maintenance-table-new"/>
+        <j:set var="rowclasses" value="maintenance-row-new"/>
+      </j:if>
+
 <div class="modal" id="maintenance-add-form">
 
     <div class="modal-content">
@@ -28,37 +41,39 @@
 </div>
         <br/>
         <f:form action="deleteMultiple" method="post" name="delete">
-          <table class="bigtable sortable" style="border: 1px; border-collapse: collapse;" id="maintenance-table">
-            <tr>
-              <th initialSortDir="down" style="border: 1px solid #bbb;" align="left">
-                ${%Start Time}
-              </th>
-              <th style="border: 1px solid #bbb;" align="left">${%End Time}</th>
-              <th style="border: 1px solid #bbb;" align="left">${%Reason}</th>
-              <th style="border: 1px solid #bbb;" align="left">${%Keep Online}</th>
-              <th style="border: 1px solid #bbb;" align="left">${%Max Wait}</th>
-              <th style="border: 1px solid #bbb;" align="left">${%Auto Connect}</th>
-              <th style="border: 1px solid #bbb;" align="left">${%Created By}</th>
-              <p:hasAnyPermission permissions="${it.permissions}">
-                <th style="background-color:transparent;border: 1px solid transparent; padding: unset" align="left"></th>
-                <th style="background-color:transparent;border: 1px solid transparent; padding: unset" align="left"></th>
-              </p:hasAnyPermission>
-            </tr>
+          <table class="${tableclasses} sortable" style="width: auto" id="maintenance-table">
+            <thead>
+              <tr>
+                <th initialSortDir="down" class="${rowclasses}">
+                  ${%Start Time}
+                </th>
+                <th class="${rowclasses}">${%End Time}</th>
+                <th class="${rowclasses}">${%Reason}</th>
+                <th class="${rowclasses}">${%Keep Online}</th>
+                <th class="${rowclasses}">${%Max Wait}</th>
+                <th class="${rowclasses}">${%Auto Connect}</th>
+                <th class="${rowclasses}">${%Created By}</th>
+                <p:hasAnyPermission permissions="${it.CONFIGURE_AND_DISCONNECT}">
+                  <th class="${rowclasses}"></th>
+                  <th class="${rowclasses}"></th>
+                </p:hasAnyPermission>
+              </tr>
+            </thead>
             <j:forEach var="m" items="${it.maintenanceWindows}">
               <tr style="background: ${m.isMaintenanceScheduled() ? 'orange': 'white'}">
-                <td style="border: 1px solid #bbb;" align="left">${m.startTime}</td>
-                <td style="border: 1px solid #bbb;" align="left">${m.endTime}</td>
-                <td style="border: 1px solid #bbb;" align="left">${m.reason}</td>
-                <td style="border: 1px solid #bbb;" align="center"><input type="checkbox" readonly="true" checked="${m.keepUpWhenActive ? 'true' : null}"/></td>
-                <td style="border: 1px solid #bbb;" align="right">${m.maxWaitMinutes}</td>
-                <td style="border: 1px solid #bbb;" align="center">${m.takeOnline}</td>
-                <td style="border: 1px solid #bbb;" align="left">${m.userid}</td>
+                <td class="${rowclasses}">${m.startTime}</td>
+                <td class="${rowclasses}">${m.endTime}</td>
+                <td class="${rowclasses}">${m.reason}</td>
+                <td class="${rowclasses}" style="text-align: center"><input type="checkbox" disabled="disabled" checked="${m.keepUpWhenActive ? 'true' : null}"/></td>
+                <td class="${rowclasses}" style="text-align: right">${m.maxWaitMinutes}</td>
+                <td class="${rowclasses}" style="text-align:center"><input type="checkbox" disabled="disabled" checked="${m.takeOnline ? 'true' : null}"/></td>
+                <td class="${rowclasses}">${m.userid}</td>
                 <p:hasAnyPermission permissions="${it.CONFIGURE_AND_DISCONNECT}">
                   <j:set var="mid" value="${h.escape(m.id)}"/>
-                  <td style="background-color:white ; border: 1px solid transparent; width: auto; padding: unset;">
+                  <td class="${rowclasses}">
                     <input id="${mid}-cb" style="vertical-align: middle" type="checkbox" name="${mid}"/>
                   </td>
-                  <td style="background-color:white ; border: 1px solid transparent;">
+                  <td class="${rowclasses}">
                     <a id="${mid}" class="stop-button-link"
                        href="deleteMaintenance?id=${h.urlEncode(m.id)}"
                        onclick='if(confirm("${%Delete maintenance window}"))
