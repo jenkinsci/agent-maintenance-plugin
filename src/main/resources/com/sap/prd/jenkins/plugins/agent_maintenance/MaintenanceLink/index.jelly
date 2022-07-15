@@ -5,22 +5,8 @@
     <st:include page="sidepanel.jelly" it="${app}"/>
     <l:main-panel>
       <h1>${%Planned Maintenances}</h1>
-<link type="text/css" rel="stylesheet" href="${rootURL}/plugin/agent-maintenance/css/agent-maintenance.css" />
-<script src="${rootURL}/plugin/agent-maintenance/js/agent-maintenance.js"></script>
-
-      <j:set var="jenkinsversion" value="${app.version}"/>
-      <j:new var="newversion" className="hudson.util.VersionNumber">
-        <j:arg value="2.321" type="java.lang.String"/>
-      </j:new>
-      <j:if test="${jenkinsversion.isOlderThan(newversion)}">
-        <j:set var="tableclasses" value="bigtable bigtable--compact pane maintenance-table-old"/>
-        <j:set var="rowclasses" value="maintenance-row-old"/>
-      </j:if>
-      <j:if test="${jenkinsversion.isNewerThanOrEqualTo(newversion)}">
-        <j:set var="tableclasses" value="jenkins-table jenkins-table--small maintenance-table-new"/>
-        <j:set var="rowclasses" value="maintenance-row-new"/>
-      </j:if>
-
+      <link type="text/css" rel="stylesheet" href="${rootURL}/plugin/agent-maintenance/css/agent-maintenance.css" />
+      <script src="${rootURL}/plugin/agent-maintenance/js/agent-maintenance.js"></script>
 
 <div class="modal" id="maintenance-add-form">
 
@@ -49,73 +35,74 @@
 
       <br/>
       <f:form action="delete" method="post" name="delete">
-      <j:set var="mwcount" value="0"/>
-      <table class="${tableclasses} sortable" style="width: auto" id="maintenance-table">
-        <thead>
-          <tr>
-            <th class="${rowclasses}">${%Agent}</th>
-            <th class="${rowclasses}">${%Start Time}</th>
-            <th class="${rowclasses}">${%End Time}</th>
-            <th class="${rowclasses}">${%Reason}</th>
-            <th class="${rowclasses}">${%Keep Online}</th>
-            <th class="${rowclasses}">${%Max Wait}</th>
-            <th class="${rowclasses}">${%Auto Connect}</th>
-            <th class="${rowclasses}">${%Created By}</th>
-            <th class="${rowclasses}" style="width: auto;"></th>
-            <th class="${rowclasses}" style="width: auto;"></th>
-          </tr>
-        </thead>
-        <j:forEach var="a" items="${it.agents}">
-          <j:set var="c" value="${a.computer}"/>
-          <j:set var="mwcount" value="${mwcount + a.maintenanceWindows.size()}"/>
-          <j:forEach var="m" items="${a.maintenanceWindows}">
-            <tr class="${m.isMaintenanceScheduled() ? 'active': 'inactive'}">
-              <td class="${rowclasses}"><nobr><a href="${rootURL}/${c.url}" class="model-link inside" style="text-decoration: none"><l:icon class="icon-computer icon-sm"/> ${c.displayName}</a></nobr></td>
-              <td class="${rowclasses}"><nobr>${m.startTime}</nobr></td>
-              <td class="${rowclasses}"><nobr>${m.endTime}</nobr></td>
-              <td class="${rowclasses}">${m.reason}</td>
-              <td class="${rowclasses}" style="text-align:center"><input type="checkbox" disabled="disabled" checked="${m.keepUpWhenActive ? 'true' : null}"/></td>
-              <td class="${rowclasses}" style="text-align:right">${m.maxWaitMinutes}</td>
-              <td class="${rowclasses}" style="text-align:center"><input type="checkbox" disabled="disabled" checked="${m.takeOnline ? 'true' : null}"/></td>
-              <td class="${rowclasses}">${m.userid}</td>
-              <p:hasAnyPermission it="${c}" permissions="${a.CONFIGURE_AND_DISCONNECT}">
-                <j:set var="mid" value="${h.escape(m.id)}"/>
-                <td class="${rowclasses}">
-                  <input type="hidden" name="${mid}" value="${c.name}"/>
-                  <input id="${mid}-cb" style="vertical-align: middle" type="checkbox" name="${mid}"/>
-                </td>
-                <td class="${rowclasses}">
-                  <a id="${mid}" class="stop-button-link" data-computer-name="${c.displayName}"
-                      href="${rootURL}/${c.url}maintenanceWindows/deleteMaintenance?id=${h.urlEncode(m.id)}"
-                      onclick='var computerName = this.getAttribute("data-computer-name");
-                        if(confirm("${%deleteMaintenanceOf} " + computerName)) {
-                          new Ajax.Request(&quot;${rootURL}/${c.url}maintenanceWindows/deleteMaintenance?id=${h.urlEncode(m.id)}&quot;,
-                            {
-                              asynchronous: false,
-                            }
-                          );
-                          location.reload();
-                        }; return false'
-                  >
-                    <l:icon class="icon-stop icon-sm" tooltip="Delete this maintenance windows for ${h.escape(c.displayName)}"/>
-                  </a>
-                </td>
-              </p:hasAnyPermission>
+        <j:set var="mwcount" value="0"/>
+        <table class="jenkins-table jenkins-table--small maintenance-table sortable" id="maintenance-table">
+          <thead>
+            <tr>
+              <th class="maintenance-row">${%Agent}</th>
+              <th class="maintenance-row">${%Start Time}</th>
+              <th class="maintenance-row">${%End Time}</th>
+              <th class="maintenance-row">${%Reason}</th>
+              <th class="maintenance-row">${%Keep Online}</th>
+              <th class="maintenance-row">${%Max Wait}</th>
+              <th class="maintenance-row">${%Auto Connect}</th>
+              <th class="maintenance-row">${%Created By}</th>
+              <th class="maintenance-row" style="width: auto;"></th>
+              <th class="maintenance-row" style="width: auto;"></th>
             </tr>
+          </thead>
+          <j:forEach var="a" items="${it.agents}">
+            <j:set var="c" value="${a.computer}"/>
+            <j:set var="mwcount" value="${mwcount + a.maintenanceWindows.size()}"/>
+            <j:forEach var="m" items="${a.maintenanceWindows}">
+              <tr class="${m.isMaintenanceScheduled() ? 'active': 'inactive'}">
+                <td class="maintenance-row"><nobr><a href="${rootURL}/${c.url}" class="model-link inside" style="text-decoration: none"><l:icon class="icon-computer icon-sm"/> ${c.displayName}</a></nobr></td>
+                <td class="maintenance-row"><nobr>${m.startTime}</nobr></td>
+                <td class="maintenance-row"><nobr>${m.endTime}</nobr></td>
+                <td class="maintenance-row">${m.reason}</td>
+                <td class="maintenance-row" style="text-align:center"><input type="checkbox" disabled="disabled" checked="${m.keepUpWhenActive ? 'true' : null}"/></td>
+                <td class="maintenance-row" style="text-align:right">${m.maxWaitMinutes}</td>
+                <td class="maintenance-row" style="text-align:center"><input type="checkbox" disabled="disabled" checked="${m.takeOnline ? 'true' : null}"/></td>
+                <td class="maintenance-row">${m.userid}</td>
+                <p:hasAnyPermission it="${c}" permissions="${a.CONFIGURE_AND_DISCONNECT}">
+                  <j:set var="mid" value="${h.escape(m.id)}"/>
+                  <td>
+                    <input type="hidden" name="${mid}" value="${c.name}"/>
+                    <input id="${mid}-cb" style="vertical-align: middle" type="checkbox" name="${mid}"/>
+                  </td>
+                  <td class="delete">
+                    <a id="${mid}" class="stop-button-link" data-computer-name="${c.displayName}"
+                        href="${rootURL}/${c.url}maintenanceWindows/deleteMaintenance?id=${h.urlEncode(m.id)}"
+                        onclick='var computerName = this.getAttribute("data-computer-name");
+                          if(confirm("${%deleteMaintenanceOf} " + computerName)) {
+                            new Ajax.Request(&quot;${rootURL}/${c.url}maintenanceWindows/deleteMaintenance?id=${h.urlEncode(m.id)}&quot;,
+                              {
+                                asynchronous: false,
+                              }
+                            );
+                            location.reload();
+                          }; return false'
+                    >
+                      <l:icon class="icon-stop icon-sm" tooltip="Delete this maintenance windows for ${h.escape(c.displayName)}"/>
+                    </a>
+                  </td>
+                </p:hasAnyPermission>
+              </tr>
+            </j:forEach>
           </j:forEach>
-        </j:forEach>
-      </table>
-      <j:if test="${it.hasError()}">
-        <br/>
-        <div class="error">
-          ${it.getError()}
-        </div>
-      </j:if>
-      <br/>
-      <input type="button" value="${%Add}" onclick="openForm()" class="submit-button primary"/>
-      <j:if test="${mwcount > 0}">
-        <input type="submit" value="${%Delete selected}" class="submit-button primary"/>
-      </j:if>
+        </table>
+        <j:if test="${it.hasError()}">
+          <br/>
+          <div class="error">
+            ${it.getError()}
+          </div>
+        </j:if>
+        <f:bottomButtonBar>
+          <input type="button" value="${%Add}" onclick="openForm()" class="submit-button primary"/>
+          <j:if test="${mwcount > 0}">
+            <input type="submit" value="${%Delete selected}" class="submit-button primary"/>
+          </j:if>
+        </f:bottomButtonBar>
       </f:form>
     </l:main-panel>
   </l:layout>

@@ -19,42 +19,38 @@
     margin: auto;
     padding: 20px;
     border: 1px solid #888;
-    border-radius: 10px;
+    border-radius: 6px;
     width: 80%;
     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
 }
 
-table.maintenance-table-new
+#maintenance-table
 {
   width: auto;
-  padding-right: 5px;
-  padding-left: 10px;
-}
-
-table.maintenance-table-old
-{
+  margin-bottom: 0px;
 }
 
 
-.maintenance-table-old > tbody > tr.active, .maintenance-table-new > tbody > tr.active  
+#maintenance-table > tbody > tr.active  
 {
   background: orange;
 }
 
-.maintenance-table-new > tbody > tr.inactive, .maintenance-table-new > tbody > tr.inactive
-{
-  
-}
 
-.maintenance-table-new > thead > tr > th.maintenance-row-new
+#maintenance-table > thead > tr > th.maintenance-row
 {
   padding-right: 5px;
   padding-left: 10px;
 }
 
-.maintenance-table-new > tbody > tr > td.maintenance-row-new
+#maintenance-table > tbody > tr > td.maintenance-row
 {
   padding-right: 5px;
   padding-left: 10px;
+}
+
+#maintenance-table > tbody > tr > td.delete
+{
+  padding-right: 8px;
 }
 
