@@ -6,21 +6,8 @@
     <l:main-panel>
       <j:if test="${it.enabled}">
         <h1>${%Planned Maintenances}</h1>
-<link type="text/css" rel="stylesheet" href="${rootURL}/plugin/agent-maintenance/css/agent-maintenance.css" />
-<script src="${rootURL}/plugin/agent-maintenance/js/agent-maintenance.js"></script>
-
-      <j:set var="jenkinsversion" value="${app.version}"/>
-      <j:new var="newversion" className="hudson.util.VersionNumber">
-        <j:arg value="2.321" type="java.lang.String"/>
-      </j:new>
-      <j:if test="${jenkinsversion.isOlderThan(newversion)}">
-        <j:set var="tableclasses" value="bigtable bigtable--compact pane maintenance-table-old"/>
-        <j:set var="rowclasses" value="maintenance-row-old"/>
-      </j:if>
-      <j:if test="${jenkinsversion.isNewerThanOrEqualTo(newversion)}">
-        <j:set var="tableclasses" value="jenkins-table jenkins-table--small maintenance-table-new"/>
-        <j:set var="rowclasses" value="maintenance-row-new"/>
-      </j:if>
+        <link type="text/css" rel="stylesheet" href="${rootURL}/plugin/agent-maintenance/css/agent-maintenance.css" />
+        <script src="${rootURL}/plugin/agent-maintenance/js/agent-maintenance.js"></script>
 
 <div class="modal" id="maintenance-add-form">
 
@@ -41,39 +28,39 @@
 </div>
         <br/>
         <f:form action="deleteMultiple" method="post" name="delete">
-          <table class="${tableclasses} sortable" style="width: auto" id="maintenance-table">
+          <table class="jenkins-table jenkins-table--small maintenance-table-new sortable" id="maintenance-table">
             <thead>
               <tr>
-                <th initialSortDir="down" class="${rowclasses}">
+                <th initialSortDir="down" class="maintenance-row">
                   ${%Start Time}
                 </th>
-                <th class="${rowclasses}">${%End Time}</th>
-                <th class="${rowclasses}">${%Reason}</th>
-                <th class="${rowclasses}">${%Keep Online}</th>
-                <th class="${rowclasses}">${%Max Wait}</th>
-                <th class="${rowclasses}">${%Auto Connect}</th>
-                <th class="${rowclasses}">${%Created By}</th>
+                <th class="maintenance-row">${%End Time}</th>
+                <th class="maintenance-row">${%Reason}</th>
+                <th class="maintenance-row">${%Keep Online}</th>
+                <th class="maintenance-row">${%Max Wait}</th>
+                <th class="maintenance-row">${%Auto Connect}</th>
+                <th class="maintenance-row">${%Created By}</th>
                 <p:hasAnyPermission permissions="${it.CONFIGURE_AND_DISCONNECT}">
-                  <th class="${rowclasses}"></th>
-                  <th class="${rowclasses}"></th>
+                  <th class="maintenance-row"></th>
+                  <th class="maintenance-row"></th>
                 </p:hasAnyPermission>
               </tr>
             </thead>
             <j:forEach var="m" items="${it.maintenanceWindows}">
-              <tr style="background: ${m.isMaintenanceScheduled() ? 'orange': 'white'}">
-                <td class="${rowclasses}">${m.startTime}</td>
-                <td class="${rowclasses}">${m.endTime}</td>
-                <td class="${rowclasses}">${m.reason}</td>
-                <td class="${rowclasses}" style="text-align: center"><input type="checkbox" disabled="disabled" checked="${m.keepUpWhenActive ? 'true' : null}"/></td>
-                <td class="${rowclasses}" style="text-align: right">${m.maxWaitMinutes}</td>
-                <td class="${rowclasses}" style="text-align:center"><input type="checkbox" disabled="disabled" checked="${m.takeOnline ? 'true' : null}"/></td>
-                <td class="${rowclasses}">${m.userid}</td>
+              <tr class="${m.isMaintenanceScheduled() ? 'active': 'inactive'}">
+                <td class="maintenance-row">${m.startTime}</td>
+                <td class="maintenance-row">${m.endTime}</td>
+                <td class="maintenance-row">${m.reason}</td>
+                <td class="maintenance-row" style="text-align: center"><input type="checkbox" disabled="disabled" checked="${m.keepUpWhenActive ? 'true' : null}"/></td>
+                <td class="maintenance-row" style="text-align: right">${m.maxWaitMinutes}</td>
+                <td class="maintenance-row" style="text-align:center"><input type="checkbox" disabled="disabled" checked="${m.takeOnline ? 'true' : null}"/></td>
+                <td class="maintenance-row">${m.userid}</td>
                 <p:hasAnyPermission permissions="${it.CONFIGURE_AND_DISCONNECT}">
                   <j:set var="mid" value="${h.escape(m.id)}"/>
-                  <td class="${rowclasses}">
+                  <td>
                     <input id="${mid}-cb" style="vertical-align: middle" type="checkbox" name="${mid}"/>
                   </td>
-                  <td class="${rowclasses}">
+                  <td class="delete">
                     <a id="${mid}" class="stop-button-link"
                        href="deleteMaintenance?id=${h.urlEncode(m.id)}"
                        onclick='if(confirm("${%Delete maintenance window}"))
@@ -90,7 +77,7 @@
             </j:forEach>
           </table>
           <p:hasAnyPermission permissions="${it.CONFIGURE_AND_DISCONNECT}">
-              <br/>
+            <f:bottomButtonBar>
               <j:if test="${it.maintenanceWindows.size() > 0}">
                 <input type="button" value="${%Edit}" onclick="location.href='config'" class="submit-button primary"/>
               </j:if>
@@ -98,6 +85,7 @@
               <j:if test="${it.maintenanceWindows.size() > 0}">
                 <input type="submit" value="${%Delete selected}" class="submit-button primary"/>
               </j:if>
+            </f:bottomButtonBar>
           </p:hasAnyPermission>
         </f:form>
         <br/>

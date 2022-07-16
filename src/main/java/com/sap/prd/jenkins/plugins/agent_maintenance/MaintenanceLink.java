@@ -3,6 +3,7 @@ package com.sap.prd.jenkins.plugins.agent_maintenance;
 import hudson.Extension;
 import hudson.model.AutoCompletionCandidates;
 import hudson.model.Computer;
+import hudson.model.Label;
 import hudson.model.ManagementLink;
 import hudson.model.Node;
 import hudson.model.labels.LabelExpression;
@@ -182,26 +183,29 @@ public class MaintenanceLink extends ManagementLink implements IconSpec {
     Jenkins j = Jenkins.get();
 
     JSONObject src = req.getSubmittedForm();
-    String label = src.optString("label");
-    Set<Node> nodes = j.getLabel(label).getNodes();
-    MaintenanceWindow mw = req.bindJSON(MaintenanceWindow.class, src);
-    LOGGER.log(Level.FINER, "Adding maintenance windows {0}", mw);
-    LOGGER.log(Level.FINER, "Adding maintenance windows for agents: {0}", nodes);
-
-    nodes.stream()
-        .filter(n -> n.toComputer() instanceof SlaveComputer && !(n.toComputer() instanceof AbstractCloudComputer)
-            && n.toComputer().getRetentionStrategy() instanceof AgentMaintenanceRetentionStrategy
-            && n.hasAnyPermission(MaintenanceAction.CONFIGURE_AND_DISCONNECT))
-        .forEach(n -> {
-          try {
-            SlaveComputer computer = (SlaveComputer) n.toComputer();
-            MaintenanceWindow maintenanceWindow = req.bindJSON(MaintenanceWindow.class, src);
-            MaintenanceHelper.getInstance().addMaintenanceWindow(computer.getName(), maintenanceWindow);
-          } catch (Exception e) {
-            LOGGER.log(Level.WARNING, "Error while adding maintenance window", e);
-            setError(e);
-          }
-        });
+    String labelString = src.optString("label");
+    Label label = j.getLabel(labelString);
+    if (label != null) {
+      Set<Node> nodes = label.getNodes();
+      MaintenanceWindow mw = req.bindJSON(MaintenanceWindow.class, src);
+      LOGGER.log(Level.FINER, "Adding maintenance windows {0}", mw);
+      LOGGER.log(Level.FINER, "Adding maintenance windows for agents: {0}", nodes);
+  
+      nodes.stream()
+          .filter(n -> n.toComputer() instanceof SlaveComputer && !(n.toComputer() instanceof AbstractCloudComputer)
+              && n.toComputer().getRetentionStrategy() instanceof AgentMaintenanceRetentionStrategy
+              && n.hasAnyPermission(MaintenanceAction.CONFIGURE_AND_DISCONNECT))
+          .forEach(n -> {
+            try {
+              SlaveComputer computer = (SlaveComputer) n.toComputer();
+              MaintenanceWindow maintenanceWindow = req.bindJSON(MaintenanceWindow.class, src);
+              MaintenanceHelper.getInstance().addMaintenanceWindow(computer.getName(), maintenanceWindow);
+            } catch (Exception e) {
+              LOGGER.log(Level.WARNING, "Error while adding maintenance window", e);
+              setError(e);
+            }
+          });
+    }
     rsp.sendRedirect(".");
   }
 

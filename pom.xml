@@ -42,7 +42,7 @@
     <revision>1</revision>
     <changelist>999999-SNAPSHOT</changelist>
     <gitHubRepo>jenkinsci/agent-maintenance-plugin</gitHubRepo>
-    <jenkins.version>2.303.3</jenkins.version>
+    <jenkins.version>2.346.1</jenkins.version>
     <powermock.version>1.6.1</powermock.version>
     <checkstyle.version>9.3</checkstyle.version>
   </properties>
@@ -51,8 +51,8 @@
     <dependencies>
         <dependency>
             <groupId>io.jenkins.tools.bom</groupId>
-            <artifactId>bom-2.303.x</artifactId>
-            <version>1342.v729ca_3818e88</version>
+            <artifactId>bom-2.346.x</artifactId>
+            <version>1478.v81d3dc4f9a_43</version>
             <type>pom</type>
             <scope>import</scope>
         </dependency>
