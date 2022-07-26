@@ -38,7 +38,7 @@ public class AgentMaintenanceRetentionStrategyTest extends BaseIntegationTest {
             "test",
             true,
             true,
-            5,
+            "5",
             "test",
             null);
     assertThat(agent.toComputer().isAcceptingTasks(), is(true));
@@ -63,7 +63,7 @@ public class AgentMaintenanceRetentionStrategyTest extends BaseIntegationTest {
             "test",
             true,
             false,
-            0,
+            "0",
             "test",
             null);
     String id = mw.getId();
@@ -95,7 +95,7 @@ public class AgentMaintenanceRetentionStrategyTest extends BaseIntegationTest {
             "test",
             true,
             false,
-            0,
+            "0",
             "test",
             null);
     assertThat(agent.toComputer().isOnline(), is(true));
@@ -124,7 +124,7 @@ public class AgentMaintenanceRetentionStrategyTest extends BaseIntegationTest {
             "test",
             false,
             false,
-            0,
+            "0",
             "test",
             null);
     maintenanceHelper.addMaintenanceWindow(agentName, mw);

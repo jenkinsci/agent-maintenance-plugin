@@ -25,7 +25,7 @@ public class MaintenanceHelperTest {
     String agentName = agent.getNodeName();
     Set<MaintenanceWindow> mwSet = helper.getMaintenanceWindows(agentName);
     assertThat(mwSet.size(), is(0));
-    MaintenanceWindow mw = new MaintenanceWindow("1970-01-01 11:00", "2099-12-31 23:59", "test", true, true, 10, "user", null);
+    MaintenanceWindow mw = new MaintenanceWindow("1970-01-01 11:00", "2099-12-31 23:59", "test", true, true, "10", "user", null);
     mwSet.add(mw);
     mwSet = helper.getMaintenanceWindows(agentName);
     assertThat(mwSet.size(), is(1));
@@ -37,7 +37,7 @@ public class MaintenanceHelperTest {
     Set<MaintenanceWindow> mwSet = helper.getMaintenanceWindows(agentName);
     assertThat(helper.getMaintenanceWindows(agentName).size(), is(0));
     assertThat(mwSet.size(), is(0));
-    MaintenanceWindow mw = new MaintenanceWindow("1970-01-01 11:00", "2099-12-31 23:59", "test", true, true, 10, "user", null);
+    MaintenanceWindow mw = new MaintenanceWindow("1970-01-01 11:00", "2099-12-31 23:59", "test", true, true, "10", "user", null);
     mwSet.add(mw);
     mwSet = helper.getMaintenanceWindows(agentName);
     assertThat(mwSet.size(), is(0));
