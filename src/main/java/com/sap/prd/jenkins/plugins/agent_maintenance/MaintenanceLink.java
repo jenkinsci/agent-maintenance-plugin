@@ -37,21 +37,10 @@ import org.kohsuke.stapler.verb.POST;
  * Link on manage Jenkins page to list all maintenance windows of all agents.
  */
 @Extension
-public class MaintenanceLink extends ManagementLink implements IconSpec {
+public class MaintenanceLink extends ManagementLink {
   private static final Logger LOGGER = Logger.getLogger(MaintenanceLink.class.getName());
 
   private transient Throwable error;
-
-  static {
-    IconSet.icons
-        .addIcon(new Icon("icon-agent-maintenances icon-sm", "plugin/agent-maintenance/images/maintenance.svg", Icon.ICON_SMALL_STYLE));
-    IconSet.icons
-        .addIcon(new Icon("icon-agent-maintenances icon-md", "plugin/agent-maintenance/images/maintenance.svg", Icon.ICON_MEDIUM_STYLE));
-    IconSet.icons
-        .addIcon(new Icon("icon-agent-maintenances icon-ld", "plugin/agent-maintenance/images/maintenance.svg", Icon.ICON_LARGE_STYLE));
-    IconSet.icons
-        .addIcon(new Icon("icon-agent-maintenances icon-xlg", "plugin/agent-maintenance/images/maintenance.svg", Icon.ICON_XLARGE_STYLE));
-  }
 
   @Override
   public String getDescription() {
@@ -64,13 +53,8 @@ public class MaintenanceLink extends ManagementLink implements IconSpec {
   }
 
   @Override
-  public String getIconClassName() {
-    return "icon-agent-maintenances";
-  }
-
-  @Override
   public String getIconFileName() {
-    return "/plugin/agent-maintenance/images/maintenance.svg";
+    return "symbol-maintenance plugin-agent-maintenance";
   }
 
   @Override

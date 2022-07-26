@@ -26,7 +26,7 @@ import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.verb.POST;
 
 /** Action to display link to maintenance window configuration. */
-public class MaintenanceAction implements Action, IconSpec {
+public class MaintenanceAction implements Action {
 
   private static final Logger LOGGER = Logger.getLogger(MaintenanceAction.class.getName());
 
@@ -50,19 +50,9 @@ public class MaintenanceAction implements Action, IconSpec {
   }
 
   @Override
-  public String getIconClassName() {
-    if (isVisible()) {
-      return "icon-setting";
-    } else {
-      return null;
-    }
-  }
-
-  @Override
   public String getIconFileName() {
-
     if (isVisible()) {
-      return "setting.svg";
+      return "symbol-build";
     } else {
       return null;
     }

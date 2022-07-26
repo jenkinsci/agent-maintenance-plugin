@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="512px" height="512px" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" version="1.1">
+    <title>Computer Maintenance</title>
+    <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" stroke-linejoin="round">
+        <g transform="translate(32.000000, 64.000000)" stroke="currentColor" stroke-width="32">
+            <rect id="Rectangle" x="0" y="0" width="448" height="320" rx="32"/>
+            <polygon id="Path" stroke-linecap="round" fill-rule="nonzero" points="272 384 264 320 184 320 176 384"/>
+            <line x1="336" y1="384" x2="112" y2="384" id="Path" stroke-linecap="round"/>
+        </g>
+    </g>
+    <g stroke="currentColor">
+        <path d="m328.01796,184.32497a18.7574,18.83392 0 0 1 -26.4415,0l-15.52598,-15.58932a18.75155,18.82805 0 0 1 0,-26.55524l35.14236,-35.30333a0.58434,0.58673 0 0 0 -0.1753,-0.96223c-22.68418,-9.76313 -52.09414,-4.78769 -70.76972,13.82914c-17.86919,17.80715 -18.88595,44.59121 -12.34131,67.96639a18.65806,18.73417 0 0 1 -5.29414,18.82218l-97.35147,89.27043a28.14778,28.26261 0 1 0 39.73529,39.8974l89.90694,-97.98331a18.65806,18.73417 0 0 1 18.46522,-5.35681c23.1049,6.21343 49.40032,5.04585 67.03578,-12.43273c18.98529,-18.77525 23.08153,-51.96049 13.87814,-70.95283a0.58434,0.58673 0 0 0 -0.93495,-0.15255l-35.32935,35.50282z" fill="none" stroke-linecap="round" stroke-miterlimit="10" stroke-width="12"/>
+        <circle stroke="currentColor" fill="currentColor" id="circle" r="12" cy="317" cx="154"/>
+    </g>
+</svg>
