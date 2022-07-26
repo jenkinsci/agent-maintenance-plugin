@@ -25,7 +25,7 @@ public abstract class BasePermissionChecks extends PermissionSetup {
 
     MaintenanceWindow maintenanceWindow =
         new MaintenanceWindow(
-            "1970-01-01 11:00", "2099-12-31 23:59", "test", true, true, 10, CONFIGURE, null);
+            "1970-01-01 11:00", "2099-12-31 23:59", "test", true, true, "10", CONFIGURE, null);
     MaintenanceHelper.getInstance().addMaintenanceWindow(agent.getNodeName(), maintenanceWindow);
     return maintenanceWindow;
   }

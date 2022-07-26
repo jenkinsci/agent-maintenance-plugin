@@ -35,7 +35,7 @@ public class IntegrationTest extends BaseIntegationTest {
             "test",
             true,
             true,
-            6,
+            "6",
             "test",
             null);
     String id = mw.getId();
@@ -63,7 +63,7 @@ public class IntegrationTest extends BaseIntegationTest {
             "test",
             true,
             true,
-            2,
+            "2",
             "test",
             null);
     String id = mw.getId();
@@ -93,7 +93,7 @@ public class IntegrationTest extends BaseIntegationTest {
             "test",
             true,
             false,
-            2,
+            "2",
             "test",
             null);
     String id = mw.getId();

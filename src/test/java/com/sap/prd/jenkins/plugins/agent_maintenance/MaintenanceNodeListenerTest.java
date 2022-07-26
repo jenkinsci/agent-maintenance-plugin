@@ -58,7 +58,7 @@ public class MaintenanceNodeListenerTest {
             "test",
             true,
             true,
-            5,
+            "5",
             "test",
             null);
     maintenanceHelper.addMaintenanceWindow(agent.getNodeName(), mw);
@@ -79,7 +79,7 @@ public class MaintenanceNodeListenerTest {
             "test",
             true,
             true,
-            5,
+            "5",
             "test",
             null);
     maintenanceHelper.addMaintenanceWindow(agent.getNodeName(), mw);

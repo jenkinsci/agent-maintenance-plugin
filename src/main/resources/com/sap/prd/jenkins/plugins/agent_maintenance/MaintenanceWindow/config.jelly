@@ -17,7 +17,7 @@
         <f:checkbox default="true" checked="${mw.keepUpWhenActive}"/>
     </f:entry>
     <f:entry field="maxWaitMinutes" title="${%maxWaitMinutes}" help="/plugin/agent-maintenance/help/help-maxWaitMinutes.html">
-        <f:number default="-1" value="${mw.maxWaitMinutes}"/>
+        <f:textbox default="-1" value="${mw.maxWaitMinutes}"/>
     </f:entry>
     <f:entry field="takeOnline" title="${%takeOnline}" help="/plugin/agent-maintenance/help/help-takeOnline.html">
         <f:checkbox default="true" checked="${mw.takeOnline}"/>

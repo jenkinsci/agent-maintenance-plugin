@@ -11,6 +11,9 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import jenkins.model.Jenkins;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
@@ -43,19 +46,38 @@ public class MaintenanceWindow extends AbstractDescribableImpl<MaintenanceWindow
    * @param reason           Reason
    * @param takeOnline       Take online at end of maintenance
    * @param keepUpWhenActive Keep up while builds are running
-   * @param maxWaitMinutes   Max waiting time before canceling running builds
+   * @param maxWaitMinutes   Max waiting time before canceling running builds.
+   * @param userid           Userid that created the maintenance window
+   * @param id               ID of the maintenance, use <code>null</code> to
+   *                         generate a new id
+   */
+  @Deprecated
+  public MaintenanceWindow(String startTime, String endTime, String reason, boolean takeOnline, boolean keepUpWhenActive,
+      int maxWaitMinutes, String userid, String id) {
+    this(startTime, endTime, reason, takeOnline, keepUpWhenActive, Integer.toString(maxWaitMinutes), userid, id);
+  }
+
+  /**
+   * Create a new maintenance window.
+   *
+   * @param startTime        Start time
+   * @param endTime          End time
+   * @param reason           Reason
+   * @param takeOnline       Take online at end of maintenance
+   * @param keepUpWhenActive Keep up while builds are running
+   * @param maxWaitMinutes   Max waiting time before canceling running builds. Can be a number or a string with a timespan, e.g. "1d 2h 15m"
    * @param userid           Userid that created the maintenance window
    * @param id               ID of the maintenance, use <code>null</code> to
    *                         generate a new id
    */
   @DataBoundConstructor
   public MaintenanceWindow(String startTime, String endTime, String reason, boolean takeOnline, boolean keepUpWhenActive,
-      int maxWaitMinutes, String userid, String id) {
+      String maxWaitMinutes, String userid, String id) {
     startDateTime = LocalDateTime.parse(startTime, DATE_INPUT_FORMATTER);
     endDateTime = LocalDateTime.parse(endTime, DATE_INPUT_FORMATTER);
     this.reason = reason;
     this.takeOnline = takeOnline;
-    this.maxWaitMinutes = maxWaitMinutes;
+    this.maxWaitMinutes = parseWaitingTime(maxWaitMinutes);
     this.keepUpWhenActive = keepUpWhenActive;
     if (Util.fixEmptyAndTrim(userid) == null) {
       Authentication auth = Jenkins.getAuthentication2();
@@ -69,6 +91,43 @@ public class MaintenanceWindow extends AbstractDescribableImpl<MaintenanceWindow
       id = UUID.randomUUID().toString();
     }
     this.id = id;
+  }
+
+  private int parseWaitingTime(String input) {
+    Pattern dayRegex = Pattern.compile("(\\d+)d");
+    Pattern hourRegex = Pattern.compile("(\\d+)h");
+    Pattern minRegex = Pattern.compile("(\\d+)m");
+
+    Matcher dayMatch = dayRegex.matcher(input);
+    Matcher hourMatch = hourRegex.matcher(input);
+    Matcher minMatch = minRegex.matcher(input);
+
+    boolean hourMatched = hourMatch.find();
+    boolean minMatched = minMatch.find();
+    boolean dayMatched = dayMatch.find();
+    int waitMinutes;
+
+    if (hourMatched || minMatched || dayMatched) {
+      int hour = 0;
+      int min = 0;
+      int day = 0;
+
+      if (dayMatched) {
+        day = Integer.parseInt(dayMatch.group(1));
+      }
+
+      if (hourMatched) {
+        hour = Integer.parseInt(hourMatch.group(1));
+      }
+
+      if (minMatched) {
+        min = Integer.parseInt(minMatch.group(1));
+      }
+
+      return day * 60 * 24 + hour * 60 + min;
+    }
+    waitMinutes = Integer.parseInt(input);
+    return waitMinutes;
   }
 
   public String getId() {
