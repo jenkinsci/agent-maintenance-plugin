@@ -56,7 +56,7 @@
             <j:set var="mwcount" value="${mwcount + a.maintenanceWindows.size()}"/>
             <j:forEach var="m" items="${a.maintenanceWindows}">
               <tr class="${m.isMaintenanceScheduled() ? 'active': 'inactive'}">
-                <td class="maintenance-row"><nobr><a href="${rootURL}/${c.url}" class="model-link inside" style="text-decoration: none"><l:icon class="icon-computer icon-sm"/> ${c.displayName}</a></nobr></td>
+                <td class="maintenance-row"><nobr><a href="${rootURL}/${c.url}" class="model-link inside" style="text-decoration: none"><l:icon src="${c.iconClassName}" class="icon-sm"/> ${c.displayName}</a></nobr></td>
                 <td class="maintenance-row"><nobr>${m.startTime}</nobr></td>
                 <td class="maintenance-row"><nobr>${m.endTime}</nobr></td>
                 <td class="maintenance-row">${m.reason}</td>
