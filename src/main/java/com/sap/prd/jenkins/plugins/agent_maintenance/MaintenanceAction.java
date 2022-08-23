@@ -52,7 +52,7 @@ public class MaintenanceAction implements Action {
   @Override
   public String getIconFileName() {
     if (isVisible()) {
-      return "symbol-build";
+      return "symbol-build-outline plugin-ionicons-api";
     } else {
       return null;
     }

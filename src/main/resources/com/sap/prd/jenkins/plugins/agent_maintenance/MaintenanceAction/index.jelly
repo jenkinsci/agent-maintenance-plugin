@@ -69,7 +69,7 @@
                              asynchronous: false,
                            }
                          ); location.reload(); return false;'>
-                      <l:icon src="symbol-close" class="icon-sm alert-danger" tooltip="Delete this maintenance window"/>
+                      <l:icon src="symbol-close-outline plugin-ionicons-api" class="icon-sm alert-danger" tooltip="Delete this maintenance window"/>
                     </a>
                   </td>
                 </p:hasAnyPermission>
