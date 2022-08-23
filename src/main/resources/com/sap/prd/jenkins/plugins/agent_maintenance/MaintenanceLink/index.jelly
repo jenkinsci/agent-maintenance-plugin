@@ -83,7 +83,7 @@
                             location.reload();
                           }; return false'
                     >
-                      <l:icon src="symbol-close" class="icon-sm alert-danger" tooltip="Delete this maintenance windows for ${h.escape(c.displayName)}"/>
+                      <l:icon src="symbol-close-outline plugin-ionicons-api" class="icon-sm alert-danger" tooltip="Delete this maintenance windows for ${h.escape(c.displayName)}"/>
                     </a>
                   </td>
                 </p:hasAnyPermission>
