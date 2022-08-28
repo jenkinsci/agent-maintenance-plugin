@@ -60,9 +60,9 @@
                 <td class="maintenance-row"><nobr>${m.startTime}</nobr></td>
                 <td class="maintenance-row"><nobr>${m.endTime}</nobr></td>
                 <td class="maintenance-row">${m.reason}</td>
-                <td class="maintenance-row" style="text-align:center"><input type="checkbox" disabled="disabled" checked="${m.keepUpWhenActive ? 'true' : null}"/></td>
+                <td class="maintenance-row" style="text-align:center"><input type="checkbox" disabled="true" checked="${m.keepUpWhenActive ? 'true' : null}"/></td>
                 <td class="maintenance-row" style="text-align:right">${m.maxWaitMinutes}</td>
-                <td class="maintenance-row" style="text-align:center"><input type="checkbox" disabled="disabled" checked="${m.takeOnline ? 'true' : null}"/></td>
+                <td class="maintenance-row" style="text-align:center"><input type="checkbox" disabled="true" checked="${m.takeOnline ? 'true' : null}"/></td>
                 <td class="maintenance-row">${m.userid}</td>
                 <p:hasAnyPermission it="${c}" permissions="${a.CONFIGURE_AND_DISCONNECT}">
                   <j:set var="mid" value="${h.escape(m.id)}"/>
@@ -91,6 +91,13 @@
             </j:forEach>
           </j:forEach>
         </table>
+        <div>
+          Select:
+          <a href="javascript:selectMaintenanceWindows(true, null)">All</a>,
+          <a href="javascript:selectMaintenanceWindows(true, 'active')">Active</a>,
+          <a href="javascript:selectMaintenanceWindows(true, 'inactive')">Inactive</a>,
+          <a href="javascript:selectMaintenanceWindows(false, null)">None</a>
+        </div>
         <j:if test="${it.hasError()}">
           <br/>
           <div class="error">
