@@ -77,6 +77,13 @@
             </j:forEach>
           </table>
           <p:hasAnyPermission permissions="${it.CONFIGURE_AND_DISCONNECT}">
+            <div>
+              Select:
+              <a href="javascript:selectMaintenanceWindows(true, null)">All</a>,
+              <a href="javascript:selectMaintenanceWindows(true, 'active')">Active</a>,
+              <a href="javascript:selectMaintenanceWindows(true, 'inactive')">Inactive</a>,
+              <a href="javascript:selectMaintenanceWindows(false, null)">None</a>
+            </div>
             <f:bottomButtonBar>
               <j:if test="${it.maintenanceWindows.size() > 0}">
                 <input type="button" value="${%Edit}" onclick="location.href='config'" class="submit-button primary"/>
