@@ -1,0 +1,13 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<sorted-set>
+    <com.sap.prd.jenkins.plugins.agent__maintenance.MaintenanceWindow plugin="agent-maintenance@1.76.v6396206d534f">
+        <reason>test</reason>
+        <takeOnline>true</takeOnline>
+        <keepUpWhenActive>true</keepUpWhenActive>
+        <maxWaitMinutes>-1</maxWaitMinutes>
+        <userid>ich</userid>
+        <id>69911276-9e33-4e10-b91b-10533feb0008</id>
+        <startDateTime>2020-03-08T13:17:00</startDateTime>
+        <endDateTime>2099-03-09T13:17:00</endDateTime>
+    </com.sap.prd.jenkins.plugins.agent__maintenance.MaintenanceWindow>
+</sorted-set>

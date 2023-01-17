@@ -51,19 +51,23 @@ public abstract class PermissionSetup {
     matrixAuth.add(Jenkins.SYSTEM_READ, disconnect);
 
     // system manage
-    matrixAuth.add(Jenkins.READ, MANAGE);
-    matrixAuth.add(Jenkins.MANAGE, MANAGE);
+    PermissionEntry manage = new PermissionEntry(AuthorizationType.USER, MANAGE);
+    matrixAuth.add(Jenkins.READ, manage);
+    matrixAuth.add(Jenkins.MANAGE, manage);
     
     // Administrator
-    matrixAuth.add(Jenkins.ADMINISTER, ADMIN);
+    PermissionEntry admin = new PermissionEntry(AuthorizationType.USER, ADMIN);
+    matrixAuth.add(Jenkins.ADMINISTER, admin);
 
     // system read
-    matrixAuth.add(Jenkins.READ, READER);
-    matrixAuth.add(Jenkins.SYSTEM_READ, READER);
-    matrixAuth.add(Computer.EXTENDED_READ, READER);
+    PermissionEntry reader = new PermissionEntry(AuthorizationType.USER, READER);
+    matrixAuth.add(Jenkins.READ, reader);
+    matrixAuth.add(Jenkins.SYSTEM_READ, reader);
+    matrixAuth.add(Computer.EXTENDED_READ, reader);
 
     // normal user
-    matrixAuth.add(Jenkins.READ, USER);
+    PermissionEntry user = new PermissionEntry(AuthorizationType.USER, USER);
+    matrixAuth.add(Jenkins.READ, user);
 
     rule.jenkins.setAuthorizationStrategy(matrixAuth);
     Jenkins.MANAGE.setEnabled(true);

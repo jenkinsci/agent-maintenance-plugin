@@ -24,32 +24,30 @@
     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
 }
 
-#maintenance-table
+.maintenance-table
 {
   width: auto;
   margin-bottom: 0px;
 }
-
 
 #maintenance-table > tbody > tr.active, #maintenance-table > tbody > tr.active > td
 {
   background: orange;
 }
 
-
-#maintenance-table > thead > tr > th.maintenance-row
+.maintenance-table > thead > tr > th.maintenance-row
 {
   padding-right: 5px;
   padding-left: 10px;
 }
 
-#maintenance-table > tbody > tr > td.maintenance-row
+.maintenance-table > tbody > tr > td.maintenance-row
 {
   padding-right: 5px;
   padding-left: 10px;
 }
 
-#maintenance-table > tbody > tr > td.delete
+.maintenance-table > tbody > tr > td.delete
 {
   padding-right: 8px;
 }

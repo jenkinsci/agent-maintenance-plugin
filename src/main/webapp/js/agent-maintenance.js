@@ -1,13 +1,13 @@
 var startTimePicker;
 var endTimePicker;
 
-function openForm() {
-    document.getElementById("maintenance-add-form").style.display = "block";
+function openForm(formName) {
+    document.getElementById(formName).style.display = "block";
     document.addEventListener("keydown", cancelAdd);
 }
 
-function closeForm() {
-    document.getElementById("maintenance-add-form").style.display = "none";
+function closeForm(formName) {
+    document.getElementById(formName).style.display = "none";
     document.removeEventListener("keydown", cancelAdd);
 }
 
@@ -29,3 +29,4 @@ var selectMaintenanceWindows = function(toggle, className) {
         }
     }
 };
+

@@ -1,0 +1,30 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+    <f:entry title="${%Schedule}" help="/descriptor/hudson.triggers.TimerTrigger/help/spec">
+      <f:textarea field="startTimeSpec" value="${mw.startTimeSpec}"/>
+    </f:entry>
+    <f:entry field="duration" title="${%Duration}" help="/plugin/agent-maintenance/help/help-duration.html">
+        <f:textbox value="${mw.duration}"/>
+    </f:entry>
+    <f:entry field="reason" title="${%Reason}" help="/plugin/agent-maintenance/help/help-reason.html">
+        <f:textbox value="${mw.reason}"/>
+    </f:entry>
+    <f:entry field="keepUpWhenActive" title="${%keepUpWhenActive}" help="/plugin/agent-maintenance/help/help-keepUpWhenActive.html">
+        <f:checkbox default="true" checked="${mw.keepUpWhenActive}"/>
+    </f:entry>
+    <f:entry field="maxWaitMinutes" title="${%maxWaitMinutes}" help="/plugin/agent-maintenance/help/help-maxWaitMinutes.html">
+        <f:textbox default="-1" value="${mw.maxWaitMinutes}"/>
+    </f:entry>
+    <f:entry field="takeOnline" title="${%takeOnline}" help="/plugin/agent-maintenance/help/help-takeOnline.html">
+        <f:checkbox default="true" checked="${mw.takeOnline}"/>
+    </f:entry>
+    <f:invisibleEntry>
+        <f:textbox field="userid" value="${mw.userid}"/>
+    </f:invisibleEntry>
+    <f:invisibleEntry>
+        <f:textbox field="id" value="${mw.id}"/>
+    </f:invisibleEntry>
+    <f:invisibleEntry>
+        <f:textbox field="nextCheck" value="${mw.nextCheck}"/>
+    </f:invisibleEntry>
+</j:jelly>

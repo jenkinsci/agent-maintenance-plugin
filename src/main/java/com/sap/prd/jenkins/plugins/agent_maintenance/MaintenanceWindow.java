@@ -71,12 +71,31 @@ public class MaintenanceWindow extends AbstractDescribableImpl<MaintenanceWindow
    */
   @DataBoundConstructor
   public MaintenanceWindow(String startTime, String endTime, String reason, boolean takeOnline, boolean keepUpWhenActive,
+                           String maxWaitMinutes, String userid, String id) {
+    this(LocalDateTime.parse(startTime, DATE_INPUT_FORMATTER), LocalDateTime.parse(endTime, DATE_INPUT_FORMATTER),
+        reason, takeOnline, keepUpWhenActive, maxWaitMinutes, userid, id);
+  }
+
+  /**
+   * Create a new maintenance window.
+   *
+   * @param startTime        Start time
+   * @param endTime          End time
+   * @param reason           Reason
+   * @param takeOnline       Take online at end of maintenance
+   * @param keepUpWhenActive Keep up while builds are running
+   * @param maxWaitMinutes   Max waiting time before canceling running builds. Can be a number or a string with a timespan, e.g. "1d 2h 15m"
+   * @param userid           Userid that created the maintenance window
+   * @param id               ID of the maintenance, use <code>null</code> to
+   *                         generate a new id
+   */
+  public MaintenanceWindow(LocalDateTime startTime, LocalDateTime endTime, String reason, boolean takeOnline, boolean keepUpWhenActive,
       String maxWaitMinutes, String userid, String id) {
-    startDateTime = LocalDateTime.parse(startTime, DATE_INPUT_FORMATTER);
-    endDateTime = LocalDateTime.parse(endTime, DATE_INPUT_FORMATTER);
+    this.startDateTime = startTime;
+    this.endDateTime = endTime;
     this.reason = reason;
     this.takeOnline = takeOnline;
-    this.maxWaitMinutes = parseWaitingTime(maxWaitMinutes);
+    this.maxWaitMinutes = MaintenanceHelper.parseDurationString(maxWaitMinutes);
     this.keepUpWhenActive = keepUpWhenActive;
     if (Util.fixEmptyAndTrim(userid) == null) {
       Authentication auth = Jenkins.getAuthentication2();
@@ -92,42 +111,6 @@ public class MaintenanceWindow extends AbstractDescribableImpl<MaintenanceWindow
     this.id = id;
   }
 
-  private int parseWaitingTime(String input) {
-    Pattern dayRegex = Pattern.compile("(\\d+)d");
-    Pattern hourRegex = Pattern.compile("(\\d+)h");
-    Pattern minRegex = Pattern.compile("(\\d+)m");
-
-    Matcher dayMatch = dayRegex.matcher(input);
-    Matcher hourMatch = hourRegex.matcher(input);
-    Matcher minMatch = minRegex.matcher(input);
-
-    boolean hourMatched = hourMatch.find();
-    boolean minMatched = minMatch.find();
-    boolean dayMatched = dayMatch.find();
-    int waitMinutes;
-
-    if (hourMatched || minMatched || dayMatched) {
-      int hour = 0;
-      int min = 0;
-      int day = 0;
-
-      if (dayMatched) {
-        day = Integer.parseInt(dayMatch.group(1));
-      }
-
-      if (hourMatched) {
-        hour = Integer.parseInt(hourMatch.group(1));
-      }
-
-      if (minMatched) {
-        min = Integer.parseInt(minMatch.group(1));
-      }
-
-      return day * 60 * 24 + hour * 60 + min;
-    }
-    waitMinutes = Integer.parseInt(input);
-    return waitMinutes;
-  }
 
   public String getId() {
     return id;
@@ -304,6 +287,33 @@ public class MaintenanceWindow extends AbstractDescribableImpl<MaintenanceWindow
 
   @Override
   public int compareTo(MaintenanceWindow other) {
-    return startDateTime.compareTo(endDateTime);
+    if (other == null) {
+      throw new NullPointerException();
+    }
+    int compare = startDateTime.compareTo(other.startDateTime);
+    if (compare != 0) {
+      return compare;
+    }
+    compare = endDateTime.compareTo(other.endDateTime);
+    if (compare != 0) {
+      return compare;
+    }
+    compare = reason.compareTo(other.reason);
+    if (compare != 0) {
+      return compare;
+    }
+    compare = Integer.compare(maxWaitMinutes, other.maxWaitMinutes);
+    if (compare != 0) {
+      return compare;
+    }
+    compare = Boolean.compare(keepUpWhenActive, other.keepUpWhenActive);
+    if (compare != 0) {
+      return compare;
+    }
+    compare = Boolean.compare(takeOnline, other.takeOnline);
+    if (compare != 0) {
+      return compare;
+    }
+    return 0;
   }
 }

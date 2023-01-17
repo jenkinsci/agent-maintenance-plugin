@@ -26,9 +26,8 @@
         </f:form>
     </div>
 </div>
-        <br/>
         <f:form action="deleteMultiple" method="post" name="delete">
-          <table class="jenkins-table jenkins-table--small maintenance-table-new sortable" id="maintenance-table">
+          <table class="jenkins-table jenkins-table--small maintenance-table sortable" id="maintenance-table">
             <thead>
               <tr>
                 <th initialSortDir="down" class="maintenance-row">
@@ -88,11 +87,89 @@
               <a href="javascript:selectMaintenanceWindows(false, null)">None</a>
             </div>
             <f:bottomButtonBar>
-              <j:if test="${it.maintenanceWindows.size() > 0}">
+              <j:if test="${it.MaintenanceWindows.size() > 0}">
                 <input type="button" value="${%Edit}" onclick="location.href='config'" class="submit-button primary"/>
               </j:if>
-              <input type="button" value="${%Add}" onclick="openForm()" class="submit-button primary"/>
-              <j:if test="${it.maintenanceWindows.size() > 0}">
+              <input type="button" value="${%Add}" onclick="openForm('maintenance-add-form')" class="submit-button primary"/>
+              <j:if test="${it.MaintenanceWindows.size() > 0}">
+                <input type="submit" value="${%Delete selected}" class="submit-button primary"/>
+              </j:if>
+            </f:bottomButtonBar>
+          </p:hasAnyPermission>
+        </f:form>
+        <br/>
+        <br/>
+        <h1>${%Recurring Maintenances}</h1>
+        <div class="modal" id="recurring-maintenance-add-form">
+          <div class="modal-content">
+            <f:form action="addRecurring" method="post" name="config" tableClass="form-container">
+              <h3>${%Add Recurring Maintenance Window}</h3>
+              <st:include class="${it.getRecurringMaintenanceWindowClass()}" page="config.jelly"/>
+              <f:block>
+                <f:submit value="${%Add}"/>
+                <input type="button"
+                       id="cancel-button"
+                       value="${%Cancel}"
+                       onclick="closeForm('recurring-maintenance-add-form')"
+                       class="submit-button primary"/>
+              </f:block>
+            </f:form>
+          </div>
+        </div>
+        <f:form action="deleteMultipleRecurring" method="post" name="delete">
+          <table class="jenkins-table jenkins-table--small maintenance-table sortable" id="recurring-maintenance-table">
+            <thead>
+              <tr>
+                <th class="maintenance-row">${%Schedule}</th>
+                <th class="maintenance-row">${%Duration}</th>
+                <th class="maintenance-row">${%Reason}</th>
+                <th class="maintenance-row">${%Keep Online}</th>
+                <th class="maintenance-row">${%Max Wait}</th>
+                <th class="maintenance-row">${%Auto Connect}</th>
+                <th class="maintenance-row">${%Created By}</th>
+                <p:hasAnyPermission permissions="${it.CONFIGURE_AND_DISCONNECT}">
+                  <th class="maintenance-row"></th>
+                  <th class="maintenance-row"></th>
+                </p:hasAnyPermission>
+              </tr>
+            </thead>
+            <j:forEach var="m" items="${it.recurringMaintenanceWindows}">
+              <tr>
+                <td class="maintenance-row">${m.startTimeSpec}</td>
+                <td class="maintenance-row">${m.duration}</td>
+                <td class="maintenance-row">${m.reason}</td>
+                <td class="maintenance-row" style="text-align: center"><input type="checkbox" disabled="disabled" checked="${m.keepUpWhenActive ? 'true' : null}"/></td>
+                <td class="maintenance-row" style="text-align: right">${m.maxWaitMinutes}</td>
+                <td class="maintenance-row" style="text-align:center"><input type="checkbox" disabled="disabled" checked="${m.takeOnline ? 'true' : null}"/></td>
+                <td class="maintenance-row">${m.userid}</td>
+                <p:hasAnyPermission permissions="${it.CONFIGURE_AND_DISCONNECT}">
+                  <j:set var="mid" value="${h.escape(m.id)}"/>
+                  <td>
+                    <input id="${mid}-cb" style="vertical-align: middle" type="checkbox" name="${mid}"/>
+                  </td>
+                  <td class="delete">
+                    <a id="${mid}" class="stop-button-link"
+                       href="deleteRecurringMaintenance?id=${h.urlEncode(m.id)}"
+                       onclick='if(confirm("${%Delete recurring maintenance window}"))
+                         new Ajax.Request("deleteRecurringMaintenance?id=${h.urlEncode(m.id)}",
+                           {
+                             asynchronous: false,
+                           }
+                         ); location.reload(); return false;'>
+                      <l:icon src="symbol-close-outline plugin-ionicons-api" class="icon-sm alert-danger" tooltip="Delete this recurring maintenance window"/>
+                    </a>
+                  </td>
+                </p:hasAnyPermission>
+              </tr>
+            </j:forEach>
+          </table>
+          <p:hasAnyPermission permissions="${it.CONFIGURE_AND_DISCONNECT}">
+            <f:bottomButtonBar>
+              <j:if test="${it.recurringMaintenanceWindows.size() > 0}">
+                <input type="button" value="${%Edit}" onclick="location.href='config'" class="submit-button primary"/>
+              </j:if>
+              <input type="button" value="${%Add}" onclick="openForm('recurring-maintenance-add-form')" class="submit-button primary"/>
+              <j:if test="${it.recurringMaintenanceWindows.size() > 0}">
                 <input type="submit" value="${%Delete selected}" class="submit-button primary"/>
               </j:if>
             </f:bottomButtonBar>
@@ -110,6 +187,7 @@
                            ); location.reload(); }; return false;' class="primary"/>
           </f:entry>
         </l:hasPermission>
+
       </j:if>
       <j:if test="${!it.enabled}">
         <l:hasPermission permission="${it.computer.CONFIGURE}">

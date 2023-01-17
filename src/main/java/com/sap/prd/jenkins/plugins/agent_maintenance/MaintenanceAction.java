@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -84,6 +85,10 @@ public class MaintenanceAction implements Action {
     return MaintenanceWindow.class;
   }
 
+  public Class<RecurringMaintenanceWindow> getRecurringMaintenanceWindowClass() {
+    return RecurringMaintenanceWindow.class;
+  }
+
   public boolean isEnabled() {
     return computer.getRetentionStrategy() instanceof AgentMaintenanceRetentionStrategy;
   }
@@ -133,7 +138,20 @@ public class MaintenanceAction implements Action {
   }
 
   /**
-   * UI method to add a smaintenance window.
+   * Returns a list of recurring maintenance windows.
+   *
+   * @return A list of recurring maintenance windows
+   */
+  public Set<RecurringMaintenanceWindow> getRecurringMaintenanceWindows() {
+    try {
+      return Collections.unmodifiableSet(MaintenanceHelper.getInstance().getRecurringMaintenanceWindows(computer.getName()));
+    } catch (IOException e) {
+      return Collections.emptySortedSet();
+    }
+  }
+
+  /**
+   * UI method to add a maintenance window.
    *
    * @param req Stapler Request
    * @param rsp Stapler Response
@@ -151,6 +169,24 @@ public class MaintenanceAction implements Action {
   }
 
   /**
+   * UI method to add a recurring maintenance window.
+   *
+   * @param req Stapler Request
+   * @param rsp Stapler Response
+   * @throws IOException      when writing fails
+   * @throws ServletException if an error occurs reading the form
+   */
+  @POST
+  public void doAddRecurring(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    computer.checkAnyPermission(CONFIGURE_AND_DISCONNECT);
+
+    JSONObject src = req.getSubmittedForm();
+    RecurringMaintenanceWindow rmw = req.bindJSON(RecurringMaintenanceWindow.class, src);
+    MaintenanceHelper.getInstance().addRecurringMaintenanceWindow(computer.getName(), rmw);
+    rsp.sendRedirect(".");
+  }
+
+  /**
    * UI method to delete multiple maintenance windows.
    *
    * @param req Stapler Request
@@ -163,11 +199,38 @@ public class MaintenanceAction implements Action {
     computer.checkAnyPermission(CONFIGURE_AND_DISCONNECT);
     JSONObject src = req.getSubmittedForm();
     src.forEach((key, value) -> {
-      if (!key.equals("Jenkins-Crumb")) {
+      if (!key.equals("Jenkins-Crumb") && key.length() > 0) {
         try {
           boolean delete = (Boolean) value;
           if (delete) {
             MaintenanceHelper.getInstance().deleteMaintenanceWindow(computer.getName(), key);
+          }
+        } catch (Throwable e) {
+          LOGGER.log(Level.WARNING, "Error while deleting maintenance window", e);
+        }
+      }
+    });
+    rsp.sendRedirect(".");
+  }
+
+  /**
+   * UI method to delete multiple recurring maintenance windows.
+   *
+   * @param req Stapler Request
+   * @param rsp Stapler Response
+   * @throws IOException      when writing fails
+   * @throws ServletException if an error occurs reading the form
+   */
+  @POST
+  public void doDeleteMultipleRecurring(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    computer.checkAnyPermission(CONFIGURE_AND_DISCONNECT);
+    JSONObject src = req.getSubmittedForm();
+    src.forEach((key, value) -> {
+      if (!key.equals("Jenkins-Crumb") && key.length() > 0) {
+        try {
+          boolean delete = (Boolean) value;
+          if (delete) {
+            MaintenanceHelper.getInstance().deleteRecurringMaintenanceWindow(computer.getName(), key);
           }
         } catch (Throwable e) {
           LOGGER.log(Level.WARNING, "Error while deleting maintenance window", e);
@@ -196,6 +259,24 @@ public class MaintenanceAction implements Action {
   }
 
   /**
+   * UI method to delete a recurring maintenance window.
+   *
+   * @param req Stapler Request
+   * @param rsp Stapler Response
+   * @throws IOException when writing fails
+   */
+  @POST
+  public void doDeleteRecurringMaintenance(StaplerRequest req, StaplerResponse rsp, @QueryParameter String id) throws IOException {
+    computer.checkAnyPermission(CONFIGURE_AND_DISCONNECT);
+
+    if (Util.fixEmptyAndTrim(id) == null) {
+      return;
+    }
+    MaintenanceHelper.getInstance().deleteRecurringMaintenanceWindow(computer.getName(), id);
+    rsp.sendRedirect(".");
+  }
+
+  /**
    * UI method to submit the configuration.
    *
    * @param req Stapler Request
@@ -210,12 +291,18 @@ public class MaintenanceAction implements Action {
     JSONObject src = req.getSubmittedForm();
 
     List<MaintenanceWindow> newTargets = req.bindJSONToList(MaintenanceWindow.class, src.get("maintenanceWindows"));
+    List<RecurringMaintenanceWindow> newRecurringTargets = req.bindJSONToList(RecurringMaintenanceWindow.class,
+        src.get("recurringMaintenanceWindows"));
 
-    SortedSet<MaintenanceWindow> mwlist = MaintenanceHelper.getInstance().getMaintenanceWindows(computer.getName());
-    synchronized (mwlist) {
-      mwlist.clear();
-      mwlist.addAll(newTargets);
-      MaintenanceHelper.getInstance().saveMaintenanceWindows(computer.getName(), mwlist);
+    MaintenanceDefinitions md = MaintenanceHelper.getInstance().getMaintenanceDefinitions(computer.getName());
+    synchronized (md) {
+      SortedSet<MaintenanceWindow> scheduled = md.getScheduled();
+      Set<RecurringMaintenanceWindow> recurring = md.getRecurring();
+      scheduled.clear();
+      scheduled.addAll(newTargets);
+      recurring.clear();
+      recurring.addAll(newRecurringTargets);
+      MaintenanceHelper.getInstance().saveMaintenanceWindows(computer.getName(), md);
     }
     rsp.sendRedirect(".");
   }
