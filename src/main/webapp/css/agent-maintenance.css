@@ -31,7 +31,7 @@
 }
 
 
-#maintenance-table > tbody > tr.active  
+#maintenance-table > tbody > tr.active, #maintenance-table > tbody > tr.active > td
 {
   background: orange;
 }
