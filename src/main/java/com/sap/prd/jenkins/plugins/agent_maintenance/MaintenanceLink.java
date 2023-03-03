@@ -20,6 +20,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletException;
+import jenkins.management.Badge;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -105,6 +106,38 @@ public class MaintenanceLink extends ManagementLink {
 
   public boolean hasError() {
     return error != null;
+  }
+
+  @Override
+  public Badge getBadge() {
+    int active = 0;
+    int total = 0;
+    List<MaintenanceAction> mwList = getAgents();
+    for (MaintenanceAction ma : mwList) {
+      total++;
+      if (ma.hasActiveMaintenanceWindows()) {
+        active++;
+      }
+    }
+    if (total == 0) {
+      return null;
+    }
+    String text = active + "/" + total;
+    String tooltip = active + getVerb(active) + " an active maintenance window.\n"
+        + total + getVerb(total) + " defined maintenance windows.";
+    Badge.Severity severity = Badge.Severity.INFO;
+    if (active > 0) {
+      severity = Badge.Severity.WARNING;
+    }
+
+    return new Badge(text, tooltip, severity);
+  }
+
+  private String getVerb(int count) {
+    if (count == 1) {
+      return " agent has";
+    }
+    return " agents have";
   }
 
   /**
