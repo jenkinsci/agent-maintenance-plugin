@@ -13,16 +13,16 @@
 
     <div class="modal-content">
         <f:form action="add" method="post" name="config" tableClass="form-container">
-		    <h3>${%Add Maintenance Window}</h3>
-		    <st:include class="${it.getMaintenanceWindowClass()}" page="config.jelly"/>
-		    <f:block>
-    	    	<f:submit value="${%Add}"/>
+            <h3>${%Add Maintenance Window}</h3>
+            <st:include class="${it.getMaintenanceWindowClass()}" page="config.jelly"/>
+            <div class="jenkins-buttons-row jenkins-buttons-row--equal-width">
+    	    	<input type="submit" value="${%Add}" class="submit-button primary"/>
 			    <input type="button"
-			           id="cancel-button"
-			           value="${%Cancel}"
-			           onclick="closeForm()"
-			           class="submit-button primary"/>
-		    </f:block>
+                        id="cancel-button"
+                        value="${%Cancel}"
+                        onclick="closeForm()"
+                        class="submit-button primary"/>
+            </div>
         </f:form>
     </div>
 </div>
@@ -63,12 +63,15 @@
                   <td class="delete">
                     <a id="${mid}" class="stop-button-link"
                        href="deleteMaintenance?id=${h.urlEncode(m.id)}"
-                       onclick='if(confirm("${%Delete maintenance window}"))
-                         new Ajax.Request("deleteMaintenance?id=${h.urlEncode(m.id)}",
-                           {
-                             asynchronous: false,
-                           }
-                         ); location.reload(); return false;'>
+                       onclick='if(confirm("${%Delete maintenance window}")) {
+                           new Ajax.Request("deleteMaintenance?id=${h.urlEncode(m.id)}",
+                             {
+                               asynchronous: false,
+                             }
+                           );
+                           location.reload();
+                          }
+                         return false;'>
                       <l:icon src="symbol-close-outline plugin-ionicons-api" class="icon-sm alert-danger" tooltip="Delete this maintenance window"/>
                     </a>
                   </td>
@@ -99,24 +102,24 @@
         <br/>
         <l:hasPermission permission="${it.computer.CONFIGURE}">
           <f:entry title="${%Disable Agent Maintenance Availability}" help="/plugin/agent-maintenance/help/help-disable.html">
-            <input type="button" value="${%Disable}" onclick='if(confirm("${%Disable Agent Maintenance Availability}"))
+            <input type="button" value="${%Disable}" onclick='if(confirm("${%Disable Agent Maintenance Availability}")) {
                            new Ajax.Request("disable",
                              {
                                asynchronous: false,
                              }
-                           ); location.reload(); return false;' class="primary"/>
+                           ); location.reload(); }; return false;' class="primary"/>
           </f:entry>
         </l:hasPermission>
       </j:if>
       <j:if test="${!it.enabled}">
         <l:hasPermission permission="${it.computer.CONFIGURE}">
           <f:entry title="${%Enable Agent Maintenance Availability}" help="/plugin/agent-maintenance/help/help-enable.html">
-            <input type="button" value="${%Enable}" onclick='if(confirm("${%Enable Agent Maintenance Availability}"))
+            <input type="button" value="${%Enable}" onclick='if(confirm("${%Enable Agent Maintenance Availability}")) {
                            new Ajax.Request("enable",
                              {
                                asynchronous: false,
                              }
-                           ); location.reload(); return false;' class="primary"/>
+                           ); location.reload(); }; return false;' class="primary"/>
           </f:entry>
         </l:hasPermission>
         <j:if test="${!h.hasPermission(it, it.computer.CONFIGURE)}">

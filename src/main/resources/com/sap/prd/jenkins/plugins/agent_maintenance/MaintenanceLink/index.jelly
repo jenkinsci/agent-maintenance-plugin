@@ -21,14 +21,14 @@
               />
             </f:entry>
             <st:include class="${it.getMaintenanceWindowClass()}" page="config.jelly"/>
-            <f:block>
-                <f:submit value="${%Add}"/>
+            <div class="jenkins-buttons-row jenkins-buttons-row--equal-width">
+                <input type="submit" value="${%Add}" class="submit-button primary"/>
                 <input type="button"
-                       id="cancel-button"
-                       value="${%Cancel}"
-                       onclick="closeForm()"
-                       class="submit-button primary"/>
-            </f:block>
+                        id="cancel-button"
+                        value="${%Cancel}"
+                        onclick="closeForm()"
+                        class="submit-button primary"/>
+            </div>
         </f:form>
     </div>
 </div>
