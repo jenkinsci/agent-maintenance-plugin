@@ -5,7 +5,6 @@ Agent Maintenance Plugin for Jenkins
 [![Jenkins Plugin](https://img.shields.io/jenkins/plugin/v/agent-maintenance)](https://plugins.jenkins.io/agent-maintenance)
 [![GitHub release](https://img.shields.io/github/release/jenkinsci/agent-maintenance-plugin.svg?label=release)](https://github.com/jenkinsci/agent-maintenance-plugin/releases/latest)
 [![Jenkins Plugin Installs](https://img.shields.io/jenkins/plugin/i/agent-maintenance.svg?color=blue)](https://plugins.jenkins.io/agent-maintenance)
-[![Language grade: Java](https://img.shields.io/lgtm/grade/java/g/jenkinsci/agent-maintenance-plugin.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/jenkinsci/agent-maintenance-plugin/context:java)
 [![REUSE status](https://api.reuse.software/badge/github.com/jenkinsci/agent-maintenance-plugin)](https://api.reuse.software/info/github.com/jenkinsci/agent-maintenance-plugin)
 
 
