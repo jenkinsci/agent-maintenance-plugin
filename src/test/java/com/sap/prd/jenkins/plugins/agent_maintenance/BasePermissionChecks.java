@@ -21,11 +21,11 @@ public abstract class BasePermissionChecks extends PermissionSetup {
   protected static MaintenanceWindow maintenanceWindowToDelete;
   protected static String agentMaintenanceUrl;
 
-  protected static MaintenanceWindow createMaintenanceWindow(Slave agent) throws IOException {
+  protected static MaintenanceWindow createMaintenanceWindow(Slave agent, String reason) throws IOException {
 
     MaintenanceWindow maintenanceWindow =
         new MaintenanceWindow(
-            "1970-01-01 11:00", "2099-12-31 23:59", "test", true, true, "10", CONFIGURE, null);
+            "1970-01-01 11:00", "2099-12-31 23:59", reason, true, true, "10", CONFIGURE, null);
     MaintenanceHelper.getInstance().addMaintenanceWindow(agent.getNodeName(), maintenanceWindow);
     return maintenanceWindow;
   }
@@ -42,24 +42,24 @@ public abstract class BasePermissionChecks extends PermissionSetup {
     agent.setRetentionStrategy(new AgentMaintenanceRetentionStrategy(new Demand(1, 2)));
     agentRestricted.setRetentionStrategy(new AgentMaintenanceRetentionStrategy(new Always()));
 
-    maintenanceWindow = createMaintenanceWindow(agent);
+    maintenanceWindow = createMaintenanceWindow(agent, "test");
 
     maintenanceId = maintenanceWindow.getId();
     agentMaintenanceUrl = agent.toComputer().getUrl() + "maintenanceWindows";
 
-    maintenanceWindowRestricted = createMaintenanceWindow(agentRestricted);
+    maintenanceWindowRestricted = createMaintenanceWindow(agentRestricted, "test Restricted");
     maintenanceIdRestricted = maintenanceWindowRestricted.getId();
 
-    maintenanceWindowToDelete = createMaintenanceWindow(agent);
+    maintenanceWindowToDelete = createMaintenanceWindow(agent, "test to delete");
     maintenanceIdToDelete = maintenanceWindowToDelete.getId();
 
     AuthorizationMatrixNodeProperty nodeProp = new AuthorizationMatrixNodeProperty();
     AuthorizationMatrixNodeProperty nodePropRestricted = new AuthorizationMatrixNodeProperty();
 
     // System read and computer configure on agent, but not on agentRestricted
-    nodeProp.add(Computer.CONFIGURE, CONFIGURE);
-    nodeProp.add(Computer.DISCONNECT, DISCONNECT);
-    nodePropRestricted.add(Computer.EXTENDED_READ, CONFIGURE);
+    nodeProp.add(Computer.CONFIGURE, configure);
+    nodeProp.add(Computer.DISCONNECT, disconnect);
+    nodePropRestricted.add(Computer.EXTENDED_READ, configure);
 
     agent.getNodeProperties().add(nodeProp);
     agentRestricted.getNodeProperties().add(nodePropRestricted);

@@ -39,6 +39,7 @@ public abstract class BaseIntegationTest {
     LocalDateTime timeout = LocalDateTime.now().plusMinutes(4);
     while (agent.getChannel() != null) {
       TimeUnit.SECONDS.sleep(10);
+      triggerCheckCycle(agent);
       LocalDateTime now = LocalDateTime.now();
       if (now.isAfter(timeout)) {
         String active = "unknown"; 
@@ -47,6 +48,13 @@ public abstract class BaseIntegationTest {
         }
         throw new Exception("Agent did not disconnect within 4 minutes. Active: " + active);
       }
+    }
+  }
+
+  protected void triggerCheckCycle(Slave agent) {
+    SlaveComputer computer = (SlaveComputer) agent.toComputer();
+    if (computer != null) {
+      computer.getRetentionStrategy().check(computer);
     }
   }
 }
