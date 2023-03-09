@@ -17,12 +17,12 @@ import org.jvnet.hudson.test.recipes.WithTimeout;
 /** Integration tests for the maintenance strategy. */
 public class AgentMaintenanceRetentionStrategyTest extends BaseIntegationTest {
 
-  private void waitForMaintenanceEnd(MaintenanceWindow mw) throws InterruptedException {
+  private void waitForMaintenanceEnd(MaintenanceWindow mw, Slave agent) throws InterruptedException {
     while (mw.isMaintenanceScheduled()) {
       TimeUnit.SECONDS.sleep(10);
     }
     // Wait another 120 seconds to give Jenkins the chance to run another check cycle
-    TimeUnit.SECONDS.sleep(120);
+    triggerCheckCycle(agent);
   }
 
   @Test
@@ -30,7 +30,7 @@ public class AgentMaintenanceRetentionStrategyTest extends BaseIntegationTest {
   public void activeMaintenanceWindow() throws Exception {
     Slave agent = getAgent("activeMaintenanceWindow");
     LocalDateTime start = LocalDateTime.now().minusMinutes(1);
-    LocalDateTime end = start.plusMinutes(5);
+    LocalDateTime end = start.plusMinutes(2);
     MaintenanceWindow mw =
         new MaintenanceWindow(
             start.format(DATE_FORMATTER),
@@ -46,7 +46,7 @@ public class AgentMaintenanceRetentionStrategyTest extends BaseIntegationTest {
     maintenanceHelper.addMaintenanceWindow(agent.getNodeName(), mw);
     assertThat(agent.toComputer().isAcceptingTasks(), is(false));
     assertThat(agent.toComputer().isManualLaunchAllowed(), is(false));
-    waitForMaintenanceEnd(mw);
+    waitForMaintenanceEnd(mw, agent);
     assertThat(maintenanceHelper.getMaintenanceWindows(agent.getNodeName()).size(), is(0));
   }
 
@@ -54,7 +54,7 @@ public class AgentMaintenanceRetentionStrategyTest extends BaseIntegationTest {
   @WithTimeout(600)
   public void agentGetsDisconnected() throws Exception {
     Slave agent = getAgent("agentGetsDisconnected");
-    LocalDateTime start = LocalDateTime.now().minusMinutes(2);
+    LocalDateTime start = LocalDateTime.now().minusMinutes(1);
     LocalDateTime end = start.plusMinutes(15);
     MaintenanceWindow mw =
         new MaintenanceWindow(
@@ -103,6 +103,7 @@ public class AgentMaintenanceRetentionStrategyTest extends BaseIntegationTest {
     waitForDisconnect(agent, mw);
     // Instead of waiting for the maintenance window to be over just delete it
     maintenanceHelper.deleteMaintenanceWindow(agentName, mw.getId());
+    triggerCheckCycle(agent);
     while (!agent.toComputer().isOnline()) {
       TimeUnit.SECONDS.sleep(10);
     }
@@ -131,7 +132,8 @@ public class AgentMaintenanceRetentionStrategyTest extends BaseIntegationTest {
     waitForDisconnect(agent, mw);
     // Instead of waiting for the maintenance window to be over just delete it
     maintenanceHelper.deleteMaintenanceWindow(agentName, mw.getId());
-    TimeUnit.MINUTES.sleep(3);
+    triggerCheckCycle(agent);
+    TimeUnit.MINUTES.sleep(1);
     assertThat(agent.getChannel(), is(nullValue()));
     OfflineCause oc = agent.toComputer().getOfflineCause();
     assertThat(oc, instanceOf(MaintenanceOfflineCause.class));

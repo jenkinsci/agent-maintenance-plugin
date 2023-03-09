@@ -4,6 +4,8 @@ import hudson.model.Computer;
 import hudson.security.HudsonPrivateSecurityRealm;
 import hudson.security.ProjectMatrixAuthorizationStrategy;
 import jenkins.model.Jenkins;
+import org.jenkinsci.plugins.matrixauth.AuthorizationType;
+import org.jenkinsci.plugins.matrixauth.PermissionEntry;
 import org.junit.Before;
 import org.junit.Rule;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -19,6 +21,9 @@ public abstract class PermissionSetup {
   protected static final String USER = "user";
   protected static final String MANAGE = "manage";
   protected static final String ADMIN = "admin";
+
+  protected static final PermissionEntry configure = new PermissionEntry(AuthorizationType.USER, CONFIGURE);
+  protected static final PermissionEntry disconnect = new PermissionEntry(AuthorizationType.USER, DISCONNECT);
 
   /**
    * Setup tests.
@@ -38,12 +43,12 @@ public abstract class PermissionSetup {
     ProjectMatrixAuthorizationStrategy matrixAuth = new ProjectMatrixAuthorizationStrategy();
 
     // System read and computer configure on agent, but not on agentRestricted
-    matrixAuth.add(Jenkins.READ, CONFIGURE);
-    matrixAuth.add(Jenkins.SYSTEM_READ, CONFIGURE);
+    matrixAuth.add(Jenkins.READ, configure);
+    matrixAuth.add(Jenkins.SYSTEM_READ, configure);
 
     // System read and computer configure on agent, but not on agentRestricted
-    matrixAuth.add(Jenkins.READ, DISCONNECT);
-    matrixAuth.add(Jenkins.SYSTEM_READ, DISCONNECT);
+    matrixAuth.add(Jenkins.READ, disconnect);
+    matrixAuth.add(Jenkins.SYSTEM_READ, disconnect);
 
     // system manage
     matrixAuth.add(Jenkins.READ, MANAGE);
