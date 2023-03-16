@@ -75,9 +75,11 @@
                         href="${rootURL}/${c.url}maintenanceWindows/deleteMaintenance?id=${h.urlEncode(m.id)}"
                         onclick='var computerName = this.getAttribute("data-computer-name");
                           if(confirm("${%deleteMaintenanceOf} " + computerName)) {
-                            new Ajax.Request(&quot;${rootURL}/${c.url}maintenanceWindows/deleteMaintenance?id=${h.urlEncode(m.id)}&quot;,
-                              {
-                                asynchronous: false,
+                            fetch("${rootURL}/${c.url}maintenanceWindows/deleteMaintenance?id=${h.urlEncode(m.id)}", {
+                                method: "POST",
+                                headers: {
+                                  [document.head.dataset.crumbHeader]: document.head.dataset.crumbValue,
+                                }
                               }
                             );
                             location.reload();

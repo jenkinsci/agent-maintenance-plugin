@@ -64,10 +64,12 @@
                     <a id="${mid}" class="stop-button-link"
                        href="deleteMaintenance?id=${h.urlEncode(m.id)}"
                        onclick='if(confirm("${%Delete maintenance window}")) {
-                           new Ajax.Request("deleteMaintenance?id=${h.urlEncode(m.id)}",
-                             {
-                               asynchronous: false,
-                             }
+                            fetch("deleteMaintenance?id=${h.urlEncode(m.id)}", {
+                                method: "POST",
+                                headers: {
+                                  [document.head.dataset.crumbHeader]: document.head.dataset.crumbValue,
+                                }
+                            }
                            );
                            location.reload();
                           }
@@ -103,11 +105,14 @@
         <l:hasPermission permission="${it.computer.CONFIGURE}">
           <f:entry title="${%Disable Agent Maintenance Availability}" help="/plugin/agent-maintenance/help/help-disable.html">
             <input type="button" value="${%Disable}" onclick='if(confirm("${%Disable Agent Maintenance Availability}")) {
-                           new Ajax.Request("disable",
-                             {
-                               asynchronous: false,
-                             }
-                           ); location.reload(); }; return false;' class="primary"/>
+                fetch("disable",  {
+                    method: "POST",
+                    headers: {
+                      [document.head.dataset.crumbHeader]: document.head.dataset.crumbValue,
+                    }
+                  }
+                );
+                location.reload(); }; return false;' class="primary"/>
           </f:entry>
         </l:hasPermission>
       </j:if>
@@ -115,11 +120,14 @@
         <l:hasPermission permission="${it.computer.CONFIGURE}">
           <f:entry title="${%Enable Agent Maintenance Availability}" help="/plugin/agent-maintenance/help/help-enable.html">
             <input type="button" value="${%Enable}" onclick='if(confirm("${%Enable Agent Maintenance Availability}")) {
-                           new Ajax.Request("enable",
-                             {
-                               asynchronous: false,
-                             }
-                           ); location.reload(); }; return false;' class="primary"/>
+                fetch("enable", {
+                    method: "POST",
+                    headers: {
+                      [document.head.dataset.crumbHeader]: document.head.dataset.crumbValue,
+                    }
+                  }
+                );
+                location.reload(); }; return false;' class="primary"/>
           </f:entry>
         </l:hasPermission>
         <j:if test="${!h.hasPermission(it, it.computer.CONFIGURE)}">
