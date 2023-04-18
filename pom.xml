@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>plugin</artifactId>
-    <version>4.46</version>
+    <version>4.59</version>
     <relativePath/>
   </parent>
 
@@ -42,9 +42,9 @@
     <revision>2</revision>
     <changelist>999999-SNAPSHOT</changelist>
     <gitHubRepo>jenkinsci/agent-maintenance-plugin</gitHubRepo>
-    <jenkins.version>2.346.1</jenkins.version>
+    <jenkins.version>2.387.2</jenkins.version>
     <powermock.version>1.6.1</powermock.version>
-    <checkstyle.version>9.3</checkstyle.version>
+    <checkstyle.version>10.9.3</checkstyle.version>
     <hpi.compatibleSinceVersion>2.0</hpi.compatibleSinceVersion>
   </properties>
 
@@ -52,8 +52,8 @@
     <dependencies>
         <dependency>
             <groupId>io.jenkins.tools.bom</groupId>
-            <artifactId>bom-2.346.x</artifactId>
-            <version>1763.v092b_8980a_f5e</version>
+            <artifactId>bom-2.387.x</artifactId>
+            <version>2000.v4677a_6e0ffea</version>
             <type>pom</type>
             <scope>import</scope>
         </dependency>
@@ -78,13 +78,13 @@
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>mock-slave</artifactId>
-      <version>109.vac7845f10470</version>
+      <version>125.vcfb_5c627d399</version>
       <scope>test</scope>
     </dependency>
       <dependency>
           <groupId>org.jenkins-ci.plugins</groupId>
           <artifactId>mock-security-realm</artifactId>
-          <version>1.6</version>
+          <version>54.v07143c60a_992</version>
           <scope>test</scope>
       </dependency>
     <dependency>
