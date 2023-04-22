@@ -1,102 +1,88 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
          xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:p="/lib/permissions">
-  <l:layout title="Planned Maintenance" norefresh="true">
-     <st:include it="${it.computer}" page="sidepanel.jelly"/>
+  <l:layout title="${%Planned Maintenances}" norefresh="true">
+    <st:include it="${it.computer}" page="sidepanel.jelly"/>
+    <st:adjunct includes="com.sap.prd.jenkins.plugins.agent_maintenance.agent-maintenance"/>
     <l:main-panel>
       <j:if test="${it.enabled}">
         <h1>${%Planned Maintenances}</h1>
-        <link type="text/css" rel="stylesheet" href="${rootURL}/plugin/agent-maintenance/css/agent-maintenance.css" />
-        <script src="${rootURL}/plugin/agent-maintenance/js/agent-maintenance.js"></script>
 
-<div class="modal" id="maintenance-add-form">
-
-    <div class="modal-content">
+<div class="am__modal" id="maintenance-add-form">
+    <div class="am__modal-content">
         <f:form action="add" method="post" name="config" tableClass="form-container">
             <h3>${%Add Maintenance Window}</h3>
             <st:include class="${it.getMaintenanceWindowClass()}" page="config.jelly"/>
             <div class="jenkins-buttons-row jenkins-buttons-row--equal-width">
-    	    	<input type="submit" value="${%Add}" class="submit-button primary"/>
-			    <input type="button"
-                        id="cancel-button"
-                        value="${%Cancel}"
-                        onclick="closeForm()"
-                        class="submit-button primary"/>
+                <button type="submit" class="jenkins-button jenkins-button--primary">${%Add}</button>
+			    <button id="cancel-button" type="button"
+                        class="jenkins-button jenkins-button--primary">${%Cancel}</button>
             </div>
         </f:form>
     </div>
 </div>
         <br/>
         <f:form action="deleteMultiple" method="post" name="delete">
-          <table class="jenkins-table jenkins-table--small maintenance-table-new sortable" id="maintenance-table">
+          <table class="jenkins-table jenkins-table--small sortable am__table" id="maintenance-table">
             <thead>
               <tr>
-                <th initialSortDir="down" class="maintenance-row">
+                <th initialSortDir="down">
                   ${%Start Time}
                 </th>
-                <th class="maintenance-row">${%End Time}</th>
-                <th class="maintenance-row">${%Reason}</th>
-                <th class="maintenance-row">${%Keep Online}</th>
-                <th class="maintenance-row">${%Max Wait}</th>
-                <th class="maintenance-row">${%Auto Connect}</th>
-                <th class="maintenance-row">${%Created By}</th>
+                <th>${%End Time}</th>
+                <th>${%Reason}</th>
+                <th>${%Keep Online}</th>
+                <th>${%Max Wait}</th>
+                <th>${%Auto Connect}</th>
+                <th>${%Created By}</th>
                 <p:hasAnyPermission permissions="${it.CONFIGURE_AND_DISCONNECT}">
-                  <th class="maintenance-row"></th>
-                  <th class="maintenance-row"></th>
+                  <th/>
+                  <th/>
                 </p:hasAnyPermission>
               </tr>
             </thead>
+            <tbody>
             <j:forEach var="m" items="${it.maintenanceWindows}">
               <tr class="${m.isMaintenanceScheduled() ? 'active': 'inactive'}">
-                <td class="maintenance-row">${m.startTime}</td>
-                <td class="maintenance-row">${m.endTime}</td>
-                <td class="maintenance-row">${m.reason}</td>
-                <td class="maintenance-row" style="text-align: center"><input type="checkbox" disabled="disabled" checked="${m.keepUpWhenActive ? 'true' : null}"/></td>
-                <td class="maintenance-row" style="text-align: right">${m.maxWaitMinutes}</td>
-                <td class="maintenance-row" style="text-align:center"><input type="checkbox" disabled="disabled" checked="${m.takeOnline ? 'true' : null}"/></td>
-                <td class="maintenance-row">${m.userid}</td>
+                <td>${m.startTime}</td>
+                <td>${m.endTime}</td>
+                <td>${m.reason}</td>
+                <td class="center" ><f:checkbox class="am__checkbox--disabled" checked="${m.keepUpWhenActive ? 'true' : null}"/></td>
+                <td class="right">${m.maxWaitMinutes}</td>
+                <td class="center"><f:checkbox class="am__checkbox--disabled" checked="${m.takeOnline ? 'true' : null}"/></td>
+                <td>${m.userid}</td>
                 <p:hasAnyPermission permissions="${it.CONFIGURE_AND_DISCONNECT}">
                   <j:set var="mid" value="${h.escape(m.id)}"/>
                   <td>
-                    <input id="${mid}-cb" style="vertical-align: middle" type="checkbox" name="${mid}"/>
+                    <f:checkbox id="${mid}-cb" class="am__checkbox" name="${mid}"/>
                   </td>
                   <td class="delete">
-                    <a id="${mid}" class="stop-button-link"
-                       href="deleteMaintenance?id=${h.urlEncode(m.id)}"
-                       onclick='if(confirm("${%Delete maintenance window}")) {
-                            fetch("deleteMaintenance?id=${h.urlEncode(m.id)}", {
-                                method: "POST",
-                                headers: {
-                                  [document.head.dataset.crumbHeader]: document.head.dataset.crumbValue,
-                                }
-                            }
-                           );
-                           location.reload();
-                          }
-                         return false;'>
-                      <l:icon src="symbol-close-outline plugin-ionicons-api" class="icon-sm alert-danger" tooltip="Delete this maintenance window"/>
-                    </a>
+                    <div id="${mid}" class="am__action-delete"
+                       data-message="${%Delete maintenance window}"
+                       data-id="${h.urlEncode(m.id)}"
+                       >
+                      <l:icon src="symbol-close-outline plugin-ionicons-api" class="icon-sm alert-danger am__table-icon" tooltip="Delete this maintenance window"/>
+                    </div>
                   </td>
                 </p:hasAnyPermission>
               </tr>
             </j:forEach>
+            </tbody>
           </table>
           <p:hasAnyPermission permissions="${it.CONFIGURE_AND_DISCONNECT}">
             <div>
               Select:
-              <a href="javascript:selectMaintenanceWindows(true, null)">All</a>,
-              <a href="javascript:selectMaintenanceWindows(true, 'active')">Active</a>,
-              <a href="javascript:selectMaintenanceWindows(true, 'inactive')">Inactive</a>,
-              <a href="javascript:selectMaintenanceWindows(false, null)">None</a>
+              <span id="select-all" class="am__select">${%All}</span>,
+              <span id="select-active" class="am__select">${%Active}</span>,
+              <span id="select-inactive" class="am__select">${%Inactive}</span>,
+              <span id="select-none" class="am__select">${%None}</span>
             </div>
             <f:bottomButtonBar>
-              <j:if test="${it.maintenanceWindows.size() > 0}">
-                <input type="button" value="${%Edit}" onclick="location.href='config'" class="submit-button primary"/>
-              </j:if>
-              <input type="button" value="${%Add}" onclick="openForm()" class="submit-button primary"/>
-              <j:if test="${it.maintenanceWindows.size() > 0}">
-                <input type="submit" value="${%Delete selected}" class="submit-button primary"/>
-              </j:if>
+              <button id="edit-button" type="button" class="jenkins-button jenkins-button--primary">${%Edit}</button>
+              <button id="add-button" type="button"
+                      class="jenkins-button jenkins-button--primary">${%Add}</button>
+              <button id="delete-selected-button" type="submit"
+                      class="jenkins-button jenkins-button--primary">${%Delete selected}</button>
             </f:bottomButtonBar>
           </p:hasAnyPermission>
         </f:form>
@@ -104,30 +90,17 @@
         <br/>
         <l:hasPermission permission="${it.computer.CONFIGURE}">
           <f:entry title="${%Disable Agent Maintenance Availability}" help="/plugin/agent-maintenance/help/help-disable.html">
-            <input type="button" value="${%Disable}" onclick='if(confirm("${%Disable Agent Maintenance Availability}")) {
-                fetch("disable",  {
-                    method: "POST",
-                    headers: {
-                      [document.head.dataset.crumbHeader]: document.head.dataset.crumbValue,
-                    }
-                  }
-                );
-                location.reload(); }; return false;' class="primary"/>
+              <button class="jenkins-button jenkins-button--primary am__disable"
+                      data-message="${%Disable Agent Maintenance Availability}"
+                      data-message-success="${%Maintenance window successfully deleted}">${%Disable}</button>
           </f:entry>
         </l:hasPermission>
       </j:if>
       <j:if test="${!it.enabled}">
         <l:hasPermission permission="${it.computer.CONFIGURE}">
           <f:entry title="${%Enable Agent Maintenance Availability}" help="/plugin/agent-maintenance/help/help-enable.html">
-            <input type="button" value="${%Enable}" onclick='if(confirm("${%Enable Agent Maintenance Availability}")) {
-                fetch("enable", {
-                    method: "POST",
-                    headers: {
-                      [document.head.dataset.crumbHeader]: document.head.dataset.crumbValue,
-                    }
-                  }
-                );
-                location.reload(); }; return false;' class="primary"/>
+              <button class="jenkins-button jenkins-button--primary am__enable"
+              data-message="${%Enable Agent Maintenance Availability}">${%Enable}</button>
           </f:entry>
         </l:hasPermission>
         <j:if test="${!h.hasPermission(it, it.computer.CONFIGURE)}">
