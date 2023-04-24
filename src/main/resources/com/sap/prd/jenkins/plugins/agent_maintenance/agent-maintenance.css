@@ -1,19 +1,21 @@
 /* The popup form - hidden by default */
-.modal {
+.am__modal {
     display: none; /* Hidden by default */
     position: fixed; /* Stay in place */
-    padding-top: 70px; /* Location of the box */
-    left: 0;
-    top: 0;
+    flex-direction: column;
+    justify-content: center;
+    left: 50%;
+    top: 50%;
     width: 100%; /* Full width */
     height: 100%; /* Full height */
+    transform: translate(-50%, -50%);
     overflow: auto; /* Enable scroll if needed */
     background-color: rgb(0, 0, 0); /* Fallback color */
     background-color: rgba(0, 0, 0, 0.6); /* Black w/ opacity */
     z-index: 999;
 }
 
-.modal-content {
+.am__modal-content {
     position: relative;
     background-color: var(--background);
     margin: auto;
@@ -24,33 +26,55 @@
     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
 }
 
-#maintenance-table
+.am__table
 {
   width: auto;
   margin-bottom: 0px;
 }
 
-
-#maintenance-table > tbody > tr.active, #maintenance-table > tbody > tr.active > td
+.am__action-delete,
+.am__link-delete
 {
-  background: orange;
+  cursor: pointer;
+}
+
+.am__table > tbody > tr.active > td
+{
+  background: var(--medium-grey);
 }
 
 
-#maintenance-table > thead > tr > th.maintenance-row
+.am__table > thead > tr > th
 {
   padding-right: 5px;
   padding-left: 10px;
 }
 
-#maintenance-table > tbody > tr > td.maintenance-row
+.am__table > tbody > tr > td
 {
   padding-right: 5px;
   padding-left: 10px;
 }
 
-#maintenance-table > tbody > tr > td.delete
+.am__checkbox
 {
-  padding-right: 8px;
+    vertical-align: middle;
 }
 
+.right {
+  text-align: right;
+}
+
+.am__select {
+  color: var(--link-dark-color);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.am__table-icon {
+  margin-bottom: 2px;
+}
+
+.jenkins-checkbox {
+  vertical-align: middle;
+}
