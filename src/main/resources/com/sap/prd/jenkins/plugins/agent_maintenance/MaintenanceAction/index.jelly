@@ -3,8 +3,9 @@
          xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:p="/lib/permissions">
   <l:layout title="${%Planned Maintenances}" norefresh="true">
     <st:include it="${it.computer}" page="sidepanel.jelly"/>
-    <st:adjunct includes="com.sap.prd.jenkins.plugins.agent_maintenance.agent-maintenance"/>
     <l:main-panel>
+        <st:bind var="maintenanceJavaScriptBind" value="${it}"/>
+        <st:adjunct includes="com.sap.prd.jenkins.plugins.agent_maintenance.agent-maintenance"/>
       <j:if test="${it.enabled}">
         <h1>${%Planned Maintenances}</h1>
 
@@ -21,7 +22,7 @@
         </f:form>
     </div>
 </div>
-        <br/>
+
         <f:form action="deleteMultiple" method="post" name="delete">
           <table class="jenkins-table jenkins-table--small sortable am__table" id="maintenance-table">
             <thead>
@@ -43,7 +44,8 @@
             </thead>
             <tbody>
             <j:forEach var="m" items="${it.maintenanceWindows}">
-              <tr class="${m.isMaintenanceScheduled() ? 'active': 'inactive'}">
+              <j:set var="mid" value="${h.escape(m.id)}"/>
+              <tr id="${mid}" class="${m.isMaintenanceScheduled() ? 'active': 'inactive'}">
                 <td>${m.startTime}</td>
                 <td>${m.endTime}</td>
                 <td>${m.reason}</td>
@@ -52,16 +54,16 @@
                 <td class="center"><f:checkbox class="am__checkbox--disabled" checked="${m.takeOnline ? 'true' : null}"/></td>
                 <td>${m.userid}</td>
                 <p:hasAnyPermission permissions="${it.CONFIGURE_AND_DISCONNECT}">
-                  <j:set var="mid" value="${h.escape(m.id)}"/>
                   <td>
-                    <f:checkbox id="${mid}-cb" class="am__checkbox" name="${mid}"/>
+                    <f:checkbox class="am__checkbox" name="${mid}"/>
                   </td>
                   <td class="delete">
-                    <div id="${mid}" class="am__action-delete"
+                    <div class="am__action-delete"
                        data-message="${%Delete maintenance window}"
-                       data-id="${h.urlEncode(m.id)}"
+                       data-message-success="${%Maintenance window was successfully deleted}"
                        >
-                      <l:icon src="symbol-close-outline plugin-ionicons-api" class="icon-sm alert-danger am__table-icon" tooltip="Delete this maintenance window"/>
+                      <l:icon src="symbol-close-outline plugin-ionicons-api" class="icon-sm alert-danger am__table-icon"
+                              tooltip="Delete this maintenance window"/>
                     </div>
                   </td>
                 </p:hasAnyPermission>
@@ -70,19 +72,21 @@
             </tbody>
           </table>
           <p:hasAnyPermission permissions="${it.CONFIGURE_AND_DISCONNECT}">
-            <div>
-              Select:
-              <span id="select-all" class="am__select">${%All}</span>,
-              <span id="select-active" class="am__select">${%Active}</span>,
-              <span id="select-inactive" class="am__select">${%Inactive}</span>,
-              <span id="select-none" class="am__select">${%None}</span>
-            </div>
             <f:bottomButtonBar>
+              <div class="am__div--select">
+                Select:
+                <span id="select-all" class="am__select">${%All}</span>,
+                <span id="select-active" class="am__select">${%Active}</span>,
+                <span id="select-inactive" class="am__select">${%Inactive}</span>,
+                <span id="select-none" class="am__select">${%None}</span>
+              </div>
+              <div class="am__div--break"/>
               <button id="edit-button" type="button" class="jenkins-button jenkins-button--primary">${%Edit}</button>
               <button id="add-button" type="button"
                       class="jenkins-button jenkins-button--primary">${%Add}</button>
-              <button id="delete-selected-button" type="submit"
-                      class="jenkins-button jenkins-button--primary">${%Delete selected}</button>
+              <button id="delete-selected-button-action" type="button"
+                      class="jenkins-button jenkins-button--primary"
+                      data-message-success="${%All selected maintenance windows were deleted successfully}">${%Delete selected}</button>
             </f:bottomButtonBar>
           </p:hasAnyPermission>
         </f:form>
@@ -91,8 +95,7 @@
         <l:hasPermission permission="${it.computer.CONFIGURE}">
           <f:entry title="${%Disable Agent Maintenance Availability}" help="/plugin/agent-maintenance/help/help-disable.html">
               <button class="jenkins-button jenkins-button--primary am__disable"
-                      data-message="${%Disable Agent Maintenance Availability}"
-                      data-message-success="${%Maintenance window successfully deleted}">${%Disable}</button>
+                      data-message="${%Disable Agent Maintenance Availability}">${%Disable}</button>
           </f:entry>
         </l:hasPermission>
       </j:if>

@@ -1,10 +1,12 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
-         xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:p="/lib/permissions">
+         xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:p="/lib/permissions"
+         >
   <l:layout title="${%Planned Maintenances}" norefresh="true" permissions="${app.MANAGE_AND_SYSTEM_READ}">
     <st:include page="sidepanel.jelly" it="${app}"/>
-    <st:adjunct includes="com.sap.prd.jenkins.plugins.agent_maintenance.agent-maintenance"/>
     <l:main-panel>
+      <st:bind var="maintenanceJavaScriptBind" value="${it}"/>
+      <st:adjunct includes="com.sap.prd.jenkins.plugins.agent_maintenance.agent-maintenance"/>
       <h1>${%Planned Maintenances}</h1>
 
 <div class="am__modal" id="maintenance-add-form">
@@ -29,7 +31,6 @@
     </div>
 </div>
 
-      <br/>
       <f:form action="delete" method="post" name="delete">
         <j:set var="mwcount" value="0"/>
         <table class="jenkins-table jenkins-table--small sortable am__table" id="maintenance-table">
@@ -53,9 +54,10 @@
             <j:set var="c" value="${a.computer}"/>
             <j:set var="mwcount" value="${mwcount + a.maintenanceWindows.size()}"/>
             <j:forEach var="m" items="${a.maintenanceWindows}">
-              <tr class="${m.isMaintenanceScheduled() ? 'active': 'inactive'}">
+              <j:set var="mid" value="${h.escape(m.id)}"/>
+              <tr id="${mid}" class="${m.isMaintenanceScheduled() ? 'active': 'inactive'}" data-computer-name="${c.name}">
                 <td><l:icon src="${c.iconClassName}" class="icon-sm am__table-icon"/></td>
-                <td><nobr><a href="${rootURL}/${c.url}" class="jenkins-table__link model-link inside"> ${c.displayName}</a></nobr></td>
+                <td><nobr><a href="${rootURL}/${c.url}" class="jenkins-table__link model-link inside">${c.displayName}</a></nobr></td>
                 <td><nobr>${m.startTime}</nobr></td>
                 <td><nobr>${m.endTime}</nobr></td>
                 <td>${m.reason}</td>
@@ -64,18 +66,15 @@
                 <td class="center"><f:checkbox class="am__checkbox--disabled" checked="${m.takeOnline ? 'true' : null}"/></td>
                 <td>${m.userid}</td>
                 <p:hasAnyPermission it="${c}" permissions="${a.CONFIGURE_AND_DISCONNECT}">
-                  <j:set var="mid" value="${h.escape(m.id)}"/>
                   <td>
-                    <input type="hidden" name="${mid}" value="${c.name}"/>
-                    <f:checkbox id="${mid}-cb" class="am__checkbox" name="${mid}"/>
+                    <f:checkbox class="am__checkbox" name="${mid}"/>
                   </td>
                   <td class="delete">
-                    <div id="${mid}" class="am__link-delete" data-computer-name="${c.displayName}"
+                    <div class="am__link-delete"
                          data-message="${%deleteMaintenanceOf} ${c.displayName}"
-                         data-message-success="${%Maintenance window successfully deleted}"
-                         data-id="${h.urlEncode(m.id)}"
-                         data-url="${rootURL}/${c.url}">
-                      <l:icon src="symbol-close-outline plugin-ionicons-api" class="icon-sm alert-danger am__table-icon" tooltip="Delete this maintenance windows for ${h.escape(c.displayName)}"/>
+                         data-message-success="${%Maintenance window was successfully deleted}">
+                      <l:icon src="symbol-close-outline plugin-ionicons-api" class="icon-sm alert-danger am__table-icon"
+                              tooltip="Delete this maintenance windows for ${h.escape(c.displayName)}"/>
                     </div>
                   </td>
                 </p:hasAnyPermission>
@@ -88,13 +87,6 @@
           </j:forEach>
           </tbody>
         </table>
-        <div>
-          Select:
-          <span id="select-all" class="am__select">${%All}</span>,
-          <span id="select-active" class="am__select">${%Active}</span>,
-          <span id="select-inactive" class="am__select">${%Inactive}</span>,
-          <span id="select-none" class="am__select">${%None}</span>
-        </div>
         <j:if test="${it.hasError()}">
           <br/>
           <div class="error">
@@ -102,8 +94,17 @@
           </div>
         </j:if>
         <f:bottomButtonBar>
+          <div class="am__div--select">
+            Select:
+            <span id="select-all" class="am__select">${%All}</span>,
+            <span id="select-active" class="am__select">${%Active}</span>,
+            <span id="select-inactive" class="am__select">${%Inactive}</span>,
+            <span id="select-none" class="am__select">${%None}</span>
+          </div>
+          <div class="am__div--break"/>
           <button id="add-button" type="button" class="jenkins-button jenkins-button--primary">${%Add}</button>
-          <button id="delete-selected-button" type="submit" class="jenkins-button jenkins-button--primary">${%Delete selected}</button>
+          <button id="delete-selected-button-link" type="button" class="jenkins-button jenkins-button--primary"
+                  data-message-success="${%All selected maintenance windows were deleted successfully}">${%Delete selected}</button>
         </f:bottomButtonBar>
       </f:form>
     </l:main-panel>
