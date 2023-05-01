@@ -40,6 +40,28 @@ public class MaintenanceHelper {
   }
 
   /**
+   * Return whether there are active maintenance windows for a computer.
+   *
+   * @param computerName The computer to check
+   * @return true when the given computer has an active maintenance window
+   * @throws IOException when reading the xml failed
+   */
+  public boolean hasActiveMaintenanceWindows(String computerName) throws IOException {
+    if (!cache.containsKey(computerName)) {
+      return false;
+    }
+    SortedSet<MaintenanceWindow> maintenanceList;
+    try {
+      maintenanceList = getMaintenanceWindows(computerName);
+    } catch (IOException e) {
+      LOGGER.log(Level.WARNING, "Failed to read maintenance window list for {0}", computerName);
+      return false;
+    }
+
+    return maintenanceList.stream().anyMatch(mw -> mw.isMaintenanceScheduled());
+  }
+
+  /**
    * Adds a maintenance window to a computer.
    *
    * @param computerName Name of the computer for which to add the maintenance
