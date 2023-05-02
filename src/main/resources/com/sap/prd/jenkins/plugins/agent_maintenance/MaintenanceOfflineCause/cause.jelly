@@ -5,9 +5,14 @@
       <i:formatDate value="${it.time}" type="both" dateStyle="medium" timeStyle="medium"/>
     </div>
     <div class="message">
-      ${%Start Time} : ${it.startTime}<br/>
-      ${%End Time} : ${it.endTime}<br/>
-      ${%Reason} : ${it.reason}
+      <j:if test="${it.startTime != 'not found'}">
+        ${%Start Time} : ${it.startTime}<br/>
+        ${%End Time} : ${it.endTime}<br/>
+        ${%Reason} : ${it.reason}
+      </j:if>
+      <j:if test="${it.startTime == 'not found'}">
+        ${%maintenanceover}
+      </j:if>
     </div>
   </div>
 </j:jelly>

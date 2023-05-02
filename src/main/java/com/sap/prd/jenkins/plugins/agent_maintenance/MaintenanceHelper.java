@@ -14,6 +14,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
@@ -124,6 +125,25 @@ public class MaintenanceHelper {
       }
     }
     return list;
+  }
+
+  /**
+   * Returns the maintenance window with the given id that is connected to the given computer.
+   *
+   * @param computerName name of the computer
+   * @param id id of the maintenance
+   * @return The maintenance window or null if not found
+   */
+  @CheckForNull
+  public MaintenanceWindow getMaintenanceWindow(String computerName, String id) {
+    SortedSet<MaintenanceWindow> mwSet = null;
+    try {
+      mwSet = getMaintenanceWindows(computerName);
+    } catch (IOException e) {
+      return null;
+    }
+    Optional<MaintenanceWindow> mw = mwSet.stream().filter(w -> w.getId().equals(id)).findFirst();
+    return mw.orElse(null);
   }
 
   /**
