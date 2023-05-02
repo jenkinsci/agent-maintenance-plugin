@@ -5,46 +5,37 @@ import hudson.slaves.OfflineCause;
 /** Offline cause because of a maintenance. */
 public class MaintenanceOfflineCause extends OfflineCause {
 
-  private final String maintenanceId;
+  private MaintenanceWindow maintenanceWindow;
   private final String computerName;
 
-  public MaintenanceOfflineCause(String maintenanceId, String computerName) {
-    this.maintenanceId = maintenanceId;
+  public MaintenanceOfflineCause(MaintenanceWindow maintenanceWindow, String computerName) {
+    this.maintenanceWindow = maintenanceWindow;
     this.computerName = computerName;
   }
 
-  private MaintenanceWindow getMaintenanceWindow() {
-    return MaintenanceHelper.getInstance().getMaintenanceWindow(computerName, maintenanceId);
-  }
-  public String getStartTime() {
-    MaintenanceWindow maintenanceWindow = getMaintenanceWindow();
-    if (maintenanceWindow == null) {
-      return "not found";
+  private void updateMaintenanceWindow() {
+    MaintenanceWindow newMaintenanceWindow = MaintenanceHelper.getInstance().getMaintenanceWindow(computerName, maintenanceWindow.getId());
+    if (newMaintenanceWindow != null) {
+      maintenanceWindow = newMaintenanceWindow;
     }
+  }
+
+  public String getStartTime() {
+    updateMaintenanceWindow();
     return maintenanceWindow.getStartTime();
   }
 
   public String getEndTime() {
-    MaintenanceWindow maintenanceWindow = getMaintenanceWindow();
-    if (maintenanceWindow == null) {
-      return "not found";
-    }
+    updateMaintenanceWindow();
     return maintenanceWindow.getEndTime();
   }
 
   public String getReason() {
-    MaintenanceWindow maintenanceWindow = getMaintenanceWindow();
-    if (maintenanceWindow == null) {
-      return "not found";
-    }
+    updateMaintenanceWindow();
     return maintenanceWindow.getReason();
   }
 
   public boolean isTakeOnline() {
-    MaintenanceWindow maintenanceWindow = getMaintenanceWindow();
-    if (maintenanceWindow == null) {
-      return true;
-    }
     return maintenanceWindow.isTakeOnline();
   }
 

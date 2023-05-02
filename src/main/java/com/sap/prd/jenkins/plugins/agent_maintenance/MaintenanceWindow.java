@@ -206,7 +206,7 @@ public class MaintenanceWindow extends AbstractDescribableImpl<MaintenanceWindow
   }
 
   public OfflineCause getOfflineCause(String computerName) {
-    return new MaintenanceOfflineCause(this.id, computerName);
+    return new MaintenanceOfflineCause(this, computerName);
   }
 
   /** Descriptor for UI only. */
