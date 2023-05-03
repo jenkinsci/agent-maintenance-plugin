@@ -141,7 +141,7 @@ public class MaintenanceWindow extends AbstractDescribableImpl<MaintenanceWindow
     return keepUpWhenActive;
   }
 
-  public boolean isAborted() {
+  public boolean buildsHaveBeenAborted() {
     return aborted;
   }
 
@@ -205,8 +205,8 @@ public class MaintenanceWindow extends AbstractDescribableImpl<MaintenanceWindow
     return now.isAfter(endDateTime);
   }
 
-  public OfflineCause getOfflineCause() {
-    return new MaintenanceOfflineCause(this);
+  public OfflineCause getOfflineCause(String computerName) {
+    return new MaintenanceOfflineCause(this, computerName);
   }
 
   /** Descriptor for UI only. */
