@@ -92,6 +92,12 @@ public class MaintenanceAction implements Action {
     return computer.getRetentionStrategy() instanceof AgentMaintenanceRetentionStrategy;
   }
 
+  /**
+   * The default start time shown in the UI when adding a new maintenance windows.
+   * Current time.
+   *
+   * @return end time
+   */
   public static String getDefaultStartTime() {
     LocalDateTime now = LocalDateTime.now();
     return DATE_FORMATTER.format(now);
@@ -110,14 +116,26 @@ public class MaintenanceAction implements Action {
   }
 
   /**
-   * The default start time shown in the UI when adding a new maintenance windows.
-   * Current time.
+   * Return whether there are maintenance windows defined.
    *
-   * @return end time
+   * @return true when there are maintenance windows defined.
    */
   public boolean hasMaintenanceWindows() {
     try {
       return MaintenanceHelper.getInstance().hasMaintenanceWindows(computer.getName());
+    } catch (IOException e) {
+      return false;
+    }
+  }
+
+  /**
+   * Return whether there are active maintenance windows.
+   *
+   * @return true when there are active maintenance windows defined.
+   */
+  public boolean hasActiveMaintenanceWindows() {
+    try {
+      return MaintenanceHelper.getInstance().hasActiveMaintenanceWindows(computer.getName());
     } catch (IOException e) {
       return false;
     }

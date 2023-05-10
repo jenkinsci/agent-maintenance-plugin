@@ -5,21 +5,33 @@ import hudson.slaves.OfflineCause;
 /** Offline cause because of a maintenance. */
 public class MaintenanceOfflineCause extends OfflineCause {
 
-  private final MaintenanceWindow maintenanceWindow;
+  private MaintenanceWindow maintenanceWindow;
+  private final String computerName;
 
-  public MaintenanceOfflineCause(MaintenanceWindow maintenanceWindow) {
+  public MaintenanceOfflineCause(MaintenanceWindow maintenanceWindow, String computerName) {
     this.maintenanceWindow = maintenanceWindow;
+    this.computerName = computerName;
+  }
+
+  private void updateMaintenanceWindow() {
+    MaintenanceWindow newMaintenanceWindow = MaintenanceHelper.getInstance().getMaintenanceWindow(computerName, maintenanceWindow.getId());
+    if (newMaintenanceWindow != null) {
+      maintenanceWindow = newMaintenanceWindow;
+    }
   }
 
   public String getStartTime() {
+    updateMaintenanceWindow();
     return maintenanceWindow.getStartTime();
   }
 
   public String getEndTime() {
+    updateMaintenanceWindow();
     return maintenanceWindow.getEndTime();
   }
 
   public String getReason() {
+    updateMaintenanceWindow();
     return maintenanceWindow.getReason();
   }
 

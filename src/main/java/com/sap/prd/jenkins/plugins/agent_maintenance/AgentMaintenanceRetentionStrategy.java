@@ -77,16 +77,16 @@ public class AgentMaintenanceRetentionStrategy extends RetentionStrategy<SlaveCo
                 public void run() {
                   LOGGER.log(Level.INFO, "Disconnecting agent {0} as it was idle when maintenance window started.",
                       new Object[] { c.getName() });
-                  c.disconnect(maintenance.getOfflineCause());
+                  c.disconnect(maintenance.getOfflineCause(c.getName()));
                 }
               });
             }
           } else {
-            if (maintenance.isAborted()) {
+            if (maintenance.buildsHaveBeenAborted()) {
               LOGGER.log(Level.INFO,
                   "Disconnecting agent {0} as it has finished its scheduled uptime and max waiting time for builds to finish is over",
                   new Object[] { c.getName() });
-              c.disconnect(maintenance.getOfflineCause());
+              c.disconnect(maintenance.getOfflineCause(c.getName()));
             } else {
               LOGGER.log(Level.INFO, "Aborting running builds on agent {0} as it has finished its scheduled uptime "
                   + "and max waiting time for builds to finish is over", new Object[] { c.getName() });
@@ -99,12 +99,12 @@ public class AgentMaintenanceRetentionStrategy extends RetentionStrategy<SlaveCo
             }
           }
         } else {
-          if (maintenance.isAborted()) {
+          if (maintenance.buildsHaveBeenAborted()) {
             // no need to get the queue lock as the user
             // has selected the break builds
             // option!
             LOGGER.log(Level.INFO, "Disconnecting agent {0} as it has finished its scheduled uptime", new Object[] { c.getName() });
-            c.disconnect(maintenance.getOfflineCause());
+            c.disconnect(maintenance.getOfflineCause(c.getName()));
           } else {
             LOGGER.log(Level.INFO, "Aborting running builds on agent {0} as it has finished its scheduled uptime",
                 new Object[] { c.getName() });
