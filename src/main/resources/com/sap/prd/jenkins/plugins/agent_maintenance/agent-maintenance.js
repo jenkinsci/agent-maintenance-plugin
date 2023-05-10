@@ -20,7 +20,7 @@ function cancelAdd(event) {
 function refresh() {
   let table = document.getElementById("maintenance-table");
   let tBody = table.tBodies[0];
-  let maintenanceList = maintenanceJavaScriptBind.getMaintenanceStatus(function(response) {
+  maintenanceJavaScriptBind.getMaintenanceStatus(function(response) {
     let result = response.responseObject();
     for (let rowid in tBody.children) {
       let row = tBody.children[rowid];
@@ -42,6 +42,11 @@ function refresh() {
     }
   });
 }
+
+
+window.addEventListener("DOMContentLoaded", (event) => {
+  window.setInterval(refresh, 20000);;
+});
 
 var selectMaintenanceWindows = function(toggle, className) {
     let table = document.getElementById("maintenance-table");
@@ -152,7 +157,6 @@ Behaviour.specify("#delete-selected-button-action", 'agent-maintenance', 0, func
   let table = document.getElementById("maintenance-table");
   let tbody = table.tBodies[0];
   let messageSuccess = e.getAttribute("data-message-success");
-  window.setInterval(refresh, 20000);
   e.onclick = function() {
     let checkedRows = tbody.querySelectorAll("input.am__checkbox:checked");
     let checkedList = [];
@@ -193,7 +197,6 @@ Behaviour.specify("#delete-selected-button-link", 'agent-maintenance', 0, functi
   let table = document.getElementById("maintenance-table");
   let tbody = table.tBodies[0];
   let messageSuccess = e.getAttribute("data-message-success");
-  window.setInterval(refresh, 20000);
   e.onclick = function() {
     let checkedRows = tbody.querySelectorAll("input.am__checkbox:checked");
     let checkedList = {};
