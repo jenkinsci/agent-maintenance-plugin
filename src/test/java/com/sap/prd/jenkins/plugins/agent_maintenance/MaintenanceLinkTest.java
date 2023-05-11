@@ -58,10 +58,8 @@ public class MaintenanceLinkTest extends BasePermissionChecks {
     WebClient w = rule.createWebClient();
     w.login(READER);
     HtmlPage managePage = w.goTo("agent-maintenances/");
-    assertThat(managePage.getElementById(maintenanceId), is(nullValue()));
-    assertThat(managePage.getElementById(maintenanceId + "-cb"), is(nullValue()));
-    assertThat(managePage.getElementById(maintenanceIdRestricted), is(nullValue()));
-    assertThat(managePage.getElementById(maintenanceIdRestricted + "-cb"), is(nullValue()));
+    assertThat(managePage.querySelector("#" + maintenanceId + " .am__link-delete"), is(nullValue()));
+    assertThat(managePage.querySelector("#" + maintenanceIdRestricted + " .am__link-delete"), is(nullValue()));
   }
 
   @Test
@@ -69,26 +67,12 @@ public class MaintenanceLinkTest extends BasePermissionChecks {
     WebClient w = rule.createWebClient();
     w.login(MANAGE);
     HtmlPage managePage = w.goTo("agent-maintenances/");
-    assertThat(managePage.getElementById(maintenanceId), is(nullValue()));
-    assertThat(managePage.getElementById(maintenanceId + "-cb"), is(nullValue()));
-    assertThat(managePage.getElementById(maintenanceIdRestricted), is(nullValue()));
-    assertThat(managePage.getElementById(maintenanceIdRestricted + "-cb"), is(nullValue()));
+    assertThat(managePage.querySelector("#" + maintenanceId + " .am__link-delete"), is(nullValue()));
+    assertThat(managePage.querySelector("#" + maintenanceIdRestricted + " .am__link-delete"), is(nullValue()));
   }
 
   @Test
   public void deleteMaintenanceWindow() throws Exception {
-    JSONObject data = new JSONObject();
-    JSONArray toDelete = new JSONArray();
-    toDelete.add(agent.getNodeName());
-    toDelete.add(true);
-    data.put(maintenanceIdToDelete, toDelete);
-
-    JSONArray toKeep = new JSONArray();
-    toKeep.add(agent.getNodeName());
-    toKeep.add(true);
-    data.put(maintenanceIdRestricted, toKeep);
-
-    when(req.getSubmittedForm()).thenReturn(data);
     MaintenanceLink instance = null;
     List<ManagementLink> list = Jenkins.get().getManagementLinks();
     for (ManagementLink link : list) {
@@ -106,7 +90,7 @@ public class MaintenanceLinkTest extends BasePermissionChecks {
     assertThat(managePage.getElementById(maintenanceIdToDelete), is(notNullValue()));
 
     try (ACLContext ignored = ACL.as(User.getById(CONFIGURE, false))) {
-      instance.doDelete(req, rsp);
+      instance.deleteMaintenance(maintenanceIdToDelete, agent.getNodeName());
     }
 
     managePage = w.goTo("agent-maintenances/");
@@ -119,10 +103,8 @@ public class MaintenanceLinkTest extends BasePermissionChecks {
     WebClient w = rule.createWebClient();
     w.login(CONFIGURE);
     HtmlPage managePage = w.goTo("agent-maintenances/");
-    assertThat(managePage.getElementById(maintenanceId), is(notNullValue()));
-    assertThat(managePage.getElementById(maintenanceId + "-cb"), is(notNullValue()));
-    assertThat(managePage.getElementById(maintenanceIdRestricted), is(nullValue()));
-    assertThat(managePage.getElementById(maintenanceIdRestricted + "-cb"), is(nullValue()));
+    assertThat(managePage.querySelector("#" + maintenanceId + " .am__link-delete"), is(notNullValue()));
+    assertThat(managePage.querySelector("#" + maintenanceIdRestricted + " .am__link-delete"), is(nullValue()));
   }
 
   @Test
@@ -130,9 +112,7 @@ public class MaintenanceLinkTest extends BasePermissionChecks {
     WebClient w = rule.createWebClient();
     w.login(DISCONNECT);
     HtmlPage managePage = w.goTo("agent-maintenances/");
-    assertThat(managePage.getElementById(maintenanceId), is(notNullValue()));
-    assertThat(managePage.getElementById(maintenanceId + "-cb"), is(notNullValue()));
-    assertThat(managePage.getElementById(maintenanceIdRestricted), is(nullValue()));
-    assertThat(managePage.getElementById(maintenanceIdRestricted + "-cb"), is(nullValue()));
+    assertThat(managePage.querySelector("#" + maintenanceId + " .am__link-delete"), is(notNullValue()));
+    assertThat(managePage.querySelector("#" + maintenanceIdRestricted + " .am__link-delete"), is(nullValue()));
   }
 }

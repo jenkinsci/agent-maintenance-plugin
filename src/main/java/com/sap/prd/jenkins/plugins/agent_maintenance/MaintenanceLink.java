@@ -15,23 +15,23 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletException;
 import jenkins.management.Badge;
 import jenkins.model.Jenkins;
-import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-import org.jenkins.ui.icon.Icon;
-import org.jenkins.ui.icon.IconSet;
-import org.jenkins.ui.icon.IconSpec;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.bind.JavaScriptMethod;
 import org.kohsuke.stapler.verb.POST;
 
 /**
@@ -141,32 +141,72 @@ public class MaintenanceLink extends ManagementLink {
   }
 
   /**
-   * Delete a maintenance window.
+   * Delete given maintenance window.
    *
-   * @param req StaplerRequest
-   * @param rsp StaplerResponse
-   * @throws IOException      when saving xml failed
-   * @throws ServletException when reading the form failed
+   * @param id The id of the maintenance to delete
+   * @param computerName The name of the computer to which the maintenance belongs
    */
-  @POST
-  public void doDelete(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-    JSONObject src = req.getSubmittedForm();
-    src.forEach((key, value) -> {
-      if (value instanceof JSONArray) {
+  @JavaScriptMethod
+  public boolean deleteMaintenance(String id, String computerName) throws IOException, ServletException {
+    if (hasPermission(computerName)) {
+      try {
+        MaintenanceHelper.getInstance().deleteMaintenanceWindow(computerName, id);
+        return true;
+      } catch (Throwable e) {
+        LOGGER.log(Level.WARNING, "Error while deleting maintenance window", e);
+        return false;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Delete selected maintenance windows.
+   *
+   * @param json An json with maintenance ids to delete and corresponding computer names
+   */
+  @JavaScriptMethod
+  public String[] deleteMultiple(JSONObject json) throws IOException, ServletException {
+    Map<String, String> mwList = (Map<String, String>) JSONObject.toBean(json, Map.class);
+    List<String> deletedList = new ArrayList<>();
+    for (Entry<String, String> entry : mwList.entrySet()) {
+      String computerName = entry.getValue();
+      if (hasPermission(computerName)) {
+        String id = entry.getKey();
         try {
-          JSONArray data = (JSONArray) value;
-          String computerName = data.getString(0);
-          boolean delete = data.getBoolean(1);
-          if (delete && hasPermission(computerName)) {
-            MaintenanceHelper.getInstance().deleteMaintenanceWindow(computerName, key);
-          }
+          MaintenanceHelper.getInstance().deleteMaintenanceWindow(computerName, id);
+          deletedList.add(id);
         } catch (Throwable e) {
           LOGGER.log(Level.WARNING, "Error while deleting maintenance window", e);
-          setError(e);
         }
       }
-    });
-    rsp.sendRedirect(".");
+    }
+    return deletedList.toArray(new String[0]);
+  }
+
+  /**
+   * UI method to fetch status about maintenance windows.
+   *
+   * @return A Map containing for each maintenance window whether it is active or not.
+   */
+  @JavaScriptMethod
+  public Map<String, Boolean> getMaintenanceStatus() {
+    Map<String, Boolean> statusList = new HashMap<>();
+    for (MaintenanceAction action : getAgents()) {
+      Computer computer = action.getComputer();
+      if (computer.hasAnyPermission(Computer.DISCONNECT, Computer.CONFIGURE, Computer.EXTENDED_READ)) {
+        try {
+          for (MaintenanceWindow mw : MaintenanceHelper.getInstance().getMaintenanceWindows(computer.getName())) {
+            if (!mw.isMaintenanceOver()) {
+              statusList.put(mw.getId(), mw.isMaintenanceScheduled());
+            }
+          }
+        } catch (IOException ioe) {
+          LOGGER.log(Level.WARNING, "Failed to read maintenance windows", ioe);
+        }
+      }
+    }
+    return statusList;
   }
 
   private boolean hasPermission(String computerName) {

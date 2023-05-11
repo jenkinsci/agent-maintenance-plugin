@@ -6,7 +6,7 @@
     <l:main-panel>
       <h1>${%Edit Planned Maintenances}</h1>
       <br/>
-      <f:form action="configSubmit" method="post" name="config">
+      <f:form action="configSubmit" method="post" name="config" class="jenkins-form">
         <f:entry title="${%Maintenance Windows}" help="/plugin/agent-maintenance/help/help-maintenanceList.html">
           <f:helpArea />
           <f:repeatable name="maintenanceWindows" var="mw" items="${it.maintenanceWindows}" minimum="0">
@@ -25,6 +25,7 @@
 
         <f:bottomButtonBar>
           <f:submit value="${%Save}"/>
+          <f:apply/>
         </f:bottomButtonBar>
       </f:form>
     </l:main-panel>

@@ -54,7 +54,7 @@ public class MaintenanceActionTest extends BasePermissionChecks {
     WebClient w = rule.createWebClient();
     w.login(READER);
     HtmlPage managePage = w.goTo(agentMaintenanceUrl);
-    assertThat(managePage.getElementById(maintenanceId), is(nullValue()));
+    assertThat(managePage.querySelector("#" + maintenanceId + " .am__action-delete"), is(nullValue()));
   }
 
   @Test
@@ -62,7 +62,7 @@ public class MaintenanceActionTest extends BasePermissionChecks {
     WebClient w = rule.createWebClient();
     w.login(CONFIGURE);
     HtmlPage managePage = w.goTo(agentMaintenanceUrl);
-    assertThat(managePage.getElementById(maintenanceId), is(notNullValue()));
+    assertThat(managePage.querySelector("#" + maintenanceId + " .am__action-delete"), is(notNullValue()));
   }
 
   @Test
@@ -70,17 +70,17 @@ public class MaintenanceActionTest extends BasePermissionChecks {
     WebClient w = rule.createWebClient();
     w.login(DISCONNECT);
     HtmlPage managePage = w.goTo(agentMaintenanceUrl);
-    assertThat(managePage.getElementById(maintenanceId), is(notNullValue()));
+    assertThat(managePage.querySelector("#" + maintenanceId + " .am__action-delete"), is(notNullValue()));
   }
 
   @Test
   public void extendedReadPermissionCantPost() throws Exception {
     MaintenanceAction action = new MaintenanceAction((SlaveComputer) agent.toComputer());
     try (ACLContext ignored = ACL.as(User.getById(READER, false))) {
-      assertThrows(AccessDeniedException.class, () -> action.doConfigSubmit(req, rsp));
-      assertThrows(AccessDeniedException.class, () -> action.doAdd(req, rsp));
-      assertThrows(AccessDeniedException.class, () -> action.doDeleteMaintenance(req, rsp, maintenanceId));
-      assertThrows(AccessDeniedException.class, () -> action.doDeleteMultiple(req, rsp));
+      assertThrows(AccessDeniedException.class, () -> action.doConfigSubmit(req));
+      assertThrows(AccessDeniedException.class, () -> action.doAdd(req));
+      assertThat(action.deleteMaintenance(maintenanceId), is(false));
+      assertThrows(AccessDeniedException.class, () -> action.deleteMultiple(new String[0]));
     }
   }
 

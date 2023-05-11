@@ -75,7 +75,7 @@ public class AgentMaintenanceRetentionStrategy extends RetentionStrategy<SlaveCo
               Queue.withLock(new Runnable() {
                 @Override
                 public void run() {
-                  LOGGER.log(Level.INFO, "Disconnecting agent {0} as it was idle when " + "maintenance window started.",
+                  LOGGER.log(Level.INFO, "Disconnecting agent {0} as it was idle when maintenance window started.",
                       new Object[] { c.getName() });
                   c.disconnect(maintenance.getOfflineCause(c.getName()));
                 }
@@ -84,7 +84,7 @@ public class AgentMaintenanceRetentionStrategy extends RetentionStrategy<SlaveCo
           } else {
             if (maintenance.buildsHaveBeenAborted()) {
               LOGGER.log(Level.INFO,
-                  "Disconnecting agent {0} as it has finished its scheduled uptime and max " + "waiting time for builds to finish is over",
+                  "Disconnecting agent {0} as it has finished its scheduled uptime and max waiting time for builds to finish is over",
                   new Object[] { c.getName() });
               c.disconnect(maintenance.getOfflineCause(c.getName()));
             } else {
