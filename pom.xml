@@ -44,7 +44,7 @@
     <gitHubRepo>jenkinsci/agent-maintenance-plugin</gitHubRepo>
     <jenkins.version>2.387.2</jenkins.version>
     <powermock.version>1.6.1</powermock.version>
-    <checkstyle.version>10.10.0</checkstyle.version>
+    <checkstyle.version>10.11.0</checkstyle.version>
   </properties>
 
   <dependencyManagement>
