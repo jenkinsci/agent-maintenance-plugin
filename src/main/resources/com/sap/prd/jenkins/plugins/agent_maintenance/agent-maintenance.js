@@ -1,6 +1,3 @@
-var startTimePicker;
-var endTimePicker;
-
 function openForm() {
     document.getElementById("maintenance-add-form").style.display = "flex";
     document.addEventListener("keydown", cancelAdd);
@@ -22,8 +19,8 @@ function refresh() {
   let tBody = table.tBodies[0];
   maintenanceJavaScriptBind.getMaintenanceStatus(function(response) {
     let result = response.responseObject();
-    for (let rowid in tBody.children) {
-      let row = tBody.children[rowid];
+    for (let rowid = 0; rowid < tBody.rows.length; rowid++) {
+      let row = tBody.rows[rowid];
       if (row.id in result) {
         if (result[row.id]) {
           if (row.classList.contains("inactive")) {
