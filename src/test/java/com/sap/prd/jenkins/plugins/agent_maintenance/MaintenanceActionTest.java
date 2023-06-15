@@ -7,12 +7,12 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThrows;
 
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.model.User;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
 import hudson.slaves.RetentionStrategy.Demand;
 import hudson.slaves.SlaveComputer;
+import org.htmlunit.html.HtmlPage;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

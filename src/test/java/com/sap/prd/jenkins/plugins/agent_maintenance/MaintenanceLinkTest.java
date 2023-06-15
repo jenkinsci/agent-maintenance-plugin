@@ -6,7 +6,6 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.Mockito.when;
 
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.model.ManagementLink;
 import hudson.model.User;
 import hudson.security.ACL;
@@ -15,6 +14,7 @@ import java.util.List;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import org.htmlunit.html.HtmlPage;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
