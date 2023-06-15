@@ -17,7 +17,7 @@
             <div class="jenkins-buttons-row jenkins-buttons-row--equal-width">
                 <button type="submit" class="jenkins-button jenkins-button--primary">${%Add}</button>
 			    <button id="cancel-button" type="button"
-                        class="jenkins-button jenkins-button--primary">${%Cancel}</button>
+                        class="jenkins-button">${%Cancel}</button>
             </div>
         </f:form>
     </div>
