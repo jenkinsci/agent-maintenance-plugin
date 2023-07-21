@@ -1,16 +1,16 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
-         xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:p="/lib/permissions">
-  <l:layout title="Planned Maintenance" norefresh="true" permissions="${app.MANAGE_AND_SYSTEM_READ}">
+         xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:p="/lib/permissions"
+         >
+  <l:layout title="${%Planned Maintenances}" norefresh="true" permissions="${app.MANAGE_AND_SYSTEM_READ}">
     <st:include page="sidepanel.jelly" it="${app}"/>
     <l:main-panel>
+      <st:bind var="maintenanceJavaScriptBind" value="${it}"/>
+      <st:adjunct includes="com.sap.prd.jenkins.plugins.agent_maintenance.agent-maintenance"/>
       <h1>${%Planned Maintenances}</h1>
-      <link type="text/css" rel="stylesheet" href="${rootURL}/plugin/agent-maintenance/css/agent-maintenance.css" />
-      <script src="${rootURL}/plugin/agent-maintenance/js/agent-maintenance.js"></script>
 
-<div class="modal" id="maintenance-add-form">
-
-    <div class="modal-content">
+<div class="am__modal" id="maintenance-add-form">
+    <div class="am__modal-content">
         <f:form action="add" method="post" name="config" tableClass="form-container">
             <h3>${%Add Maintenance Window for multiple agents}</h3>
             <f:entry field="label" title="${%Label}" help="/plugin/agent-maintenance/help/help-label.html">
@@ -22,84 +22,71 @@
             </f:entry>
             <st:include class="${it.getMaintenanceWindowClass()}" page="config.jelly"/>
             <div class="jenkins-buttons-row jenkins-buttons-row--equal-width">
-                <input type="submit" value="${%Add}" class="submit-button primary"/>
-                <input type="button"
-                        id="cancel-button"
-                        value="${%Cancel}"
-                        onclick="closeForm()"
-                        class="submit-button primary"/>
+              <button type="submit" class="jenkins-button jenkins-button--primary">${%Add}</button>
+              <button type="button"
+                      id="cancel-button"
+                      class="jenkins-button">${%Cancel}</button>
             </div>
         </f:form>
     </div>
 </div>
 
-      <br/>
       <f:form action="delete" method="post" name="delete">
         <j:set var="mwcount" value="0"/>
-        <table class="jenkins-table jenkins-table--small maintenance-table sortable" id="maintenance-table">
+        <table class="jenkins-table jenkins-table--small sortable am__table" id="maintenance-table">
           <thead>
-            <tr>
-              <th class="maintenance-row">${%Agent}</th>
-              <th class="maintenance-row">${%Start Time}</th>
-              <th class="maintenance-row">${%End Time}</th>
-              <th class="maintenance-row">${%Reason}</th>
-              <th class="maintenance-row">${%Keep Online}</th>
-              <th class="maintenance-row">${%Max Wait}</th>
-              <th class="maintenance-row">${%Auto Connect}</th>
-              <th class="maintenance-row">${%Created By}</th>
-              <th class="maintenance-row" style="width: auto;"></th>
-              <th class="maintenance-row" style="width: auto;"></th>
+            <tr style="width: auto">
+              <th/>
+              <th>${%Agent}</th>
+              <th>${%Start Time}</th>
+              <th>${%End Time}</th>
+              <th>${%Reason}</th>
+              <th>${%Keep Online}</th>
+              <th>${%Max Wait}</th>
+              <th>${%Auto Connect}</th>
+              <th>${%Created By}</th>
+              <th style="width: auto"/>
+              <th style="width: auto"/>
             </tr>
           </thead>
+          <tbody>
           <j:forEach var="a" items="${it.agents}">
             <j:set var="c" value="${a.computer}"/>
             <j:set var="mwcount" value="${mwcount + a.maintenanceWindows.size()}"/>
             <j:forEach var="m" items="${a.maintenanceWindows}">
-              <tr class="${m.isMaintenanceScheduled() ? 'active': 'inactive'}">
-                <td class="maintenance-row"><nobr><a href="${rootURL}/${c.url}" class="model-link inside" style="text-decoration: none"><l:icon src="${c.iconClassName}" class="icon-sm"/> ${c.displayName}</a></nobr></td>
-                <td class="maintenance-row"><nobr>${m.startTime}</nobr></td>
-                <td class="maintenance-row"><nobr>${m.endTime}</nobr></td>
-                <td class="maintenance-row">${m.reason}</td>
-                <td class="maintenance-row" style="text-align:center"><input type="checkbox" disabled="true" checked="${m.keepUpWhenActive ? 'true' : null}"/></td>
-                <td class="maintenance-row" style="text-align:right">${m.maxWaitMinutes}</td>
-                <td class="maintenance-row" style="text-align:center"><input type="checkbox" disabled="true" checked="${m.takeOnline ? 'true' : null}"/></td>
-                <td class="maintenance-row">${m.userid}</td>
+              <j:set var="mid" value="${h.escape(m.id)}"/>
+              <tr id="${mid}" class="${m.isMaintenanceScheduled() ? 'active': 'inactive'}" data-computer-name="${c.name}">
+                <td><l:icon src="${c.iconClassName}" class="icon-sm am__table-icon"/></td>
+                <td><nobr><a href="${rootURL}/${c.url}" class="jenkins-table__link model-link inside">${c.displayName}</a></nobr></td>
+                <td><nobr>${m.startTime}</nobr></td>
+                <td><nobr>${m.endTime}</nobr></td>
+                <td>${m.reason}</td>
+                <td class="center" ><f:checkbox class="am__checkbox--disabled" checked="${m.keepUpWhenActive ? 'true' : null}"/></td>
+                <td class="right" >${m.maxWaitMinutes}</td>
+                <td class="center"><f:checkbox class="am__checkbox--disabled" checked="${m.takeOnline ? 'true' : null}"/></td>
+                <td>${m.userid}</td>
                 <p:hasAnyPermission it="${c}" permissions="${a.CONFIGURE_AND_DISCONNECT}">
-                  <j:set var="mid" value="${h.escape(m.id)}"/>
                   <td>
-                    <input type="hidden" name="${mid}" value="${c.name}"/>
-                    <input id="${mid}-cb" style="vertical-align: middle" type="checkbox" name="${mid}"/>
+                    <f:checkbox class="am__checkbox" name="${mid}"/>
                   </td>
                   <td class="delete">
-                    <a id="${mid}" class="stop-button-link" data-computer-name="${c.displayName}"
-                        href="${rootURL}/${c.url}maintenanceWindows/deleteMaintenance?id=${h.urlEncode(m.id)}"
-                        onclick='var computerName = this.getAttribute("data-computer-name");
-                          if(confirm("${%deleteMaintenanceOf} " + computerName)) {
-                            fetch("${rootURL}/${c.url}maintenanceWindows/deleteMaintenance?id=${h.urlEncode(m.id)}", {
-                                method: "POST",
-                                headers: {
-                                  [document.head.dataset.crumbHeader]: document.head.dataset.crumbValue,
-                                }
-                              }
-                            );
-                            location.reload();
-                          }; return false'
-                    >
-                      <l:icon src="symbol-close-outline plugin-ionicons-api" class="icon-sm alert-danger" tooltip="Delete this maintenance windows for ${h.escape(c.displayName)}"/>
-                    </a>
+                    <div class="am__link-delete"
+                         data-message="${%deleteMaintenanceOf} ${c.displayName}"
+                         data-message-success="${%Maintenance window was successfully deleted}">
+                      <l:icon src="symbol-close-outline plugin-ionicons-api" class="icon-sm alert-danger am__table-icon"
+                              tooltip="Delete this maintenance windows for ${h.escape(c.displayName)}"/>
+                    </div>
                   </td>
                 </p:hasAnyPermission>
+                <p:hasNoPermission it="${c}" permissions="${a.CONFIGURE_AND_DISCONNECT}">
+                  <td/>
+                  <td/>
+                </p:hasNoPermission>
               </tr>
             </j:forEach>
           </j:forEach>
+          </tbody>
         </table>
-        <div>
-          Select:
-          <a href="javascript:selectMaintenanceWindows(true, null)">All</a>,
-          <a href="javascript:selectMaintenanceWindows(true, 'active')">Active</a>,
-          <a href="javascript:selectMaintenanceWindows(true, 'inactive')">Inactive</a>,
-          <a href="javascript:selectMaintenanceWindows(false, null)">None</a>
-        </div>
         <j:if test="${it.hasError()}">
           <br/>
           <div class="error">
@@ -107,10 +94,17 @@
           </div>
         </j:if>
         <f:bottomButtonBar>
-          <input type="button" value="${%Add}" onclick="openForm()" class="submit-button primary"/>
-          <j:if test="${mwcount > 0}">
-            <input type="submit" value="${%Delete selected}" class="submit-button primary"/>
-          </j:if>
+          <div class="am__div--select">
+            Select:
+            <span id="select-all" class="am__select">${%All}</span>,
+            <span id="select-active" class="am__select">${%Active}</span>,
+            <span id="select-inactive" class="am__select">${%Inactive}</span>,
+            <span id="select-none" class="am__select">${%None}</span>
+          </div>
+          <div class="am__div--break"/>
+          <button id="add-button" type="button" class="jenkins-button jenkins-button--primary">${%Add}</button>
+          <button id="delete-selected-button-link" type="button" class="jenkins-button jenkins-button--primary"
+                  data-message-success="${%All selected maintenance windows were deleted successfully}">${%Delete selected}</button>
         </f:bottomButtonBar>
       </f:form>
     </l:main-panel>

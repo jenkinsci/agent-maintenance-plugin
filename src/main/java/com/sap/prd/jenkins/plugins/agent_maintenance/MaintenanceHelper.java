@@ -10,12 +10,12 @@ import hudson.slaves.RetentionStrategy;
 import hudson.slaves.SlaveComputer;
 import java.io.File;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.Optional;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
@@ -41,6 +41,28 @@ public class MaintenanceHelper {
 
   public boolean hasMaintenanceWindows(String computerName) throws IOException {
     return cache.containsKey(computerName) && getMaintenanceWindows(computerName).size() > 0;
+  }
+
+  /**
+   * Return whether there are active maintenance windows for a computer.
+   *
+   * @param computerName The computer to check
+   * @return true when the given computer has an active maintenance window
+   * @throws IOException when reading the xml failed
+   */
+  public boolean hasActiveMaintenanceWindows(String computerName) throws IOException {
+    if (!cache.containsKey(computerName)) {
+      return false;
+    }
+    SortedSet<MaintenanceWindow> maintenanceList;
+    try {
+      maintenanceList = getMaintenanceWindows(computerName);
+    } catch (IOException e) {
+      LOGGER.log(Level.WARNING, "Failed to read maintenance window list for {0}", computerName);
+      return false;
+    }
+
+    return maintenanceList.stream().anyMatch(mw -> mw.isMaintenanceScheduled());
   }
 
   /**
@@ -173,6 +195,25 @@ public class MaintenanceHelper {
       }
     }
     return md;
+  }
+
+  /**
+   * Returns the maintenance window with the given id that is connected to the given computer.
+   *
+   * @param computerName name of the computer
+   * @param id id of the maintenance
+   * @return The maintenance window or null if not found
+   */
+  @CheckForNull
+  public MaintenanceWindow getMaintenanceWindow(String computerName, String id) {
+    SortedSet<MaintenanceWindow> mwSet = null;
+    try {
+      mwSet = getMaintenanceWindows(computerName);
+    } catch (IOException e) {
+      return null;
+    }
+    Optional<MaintenanceWindow> mw = mwSet.stream().filter(w -> w.getId().equals(id)).findFirst();
+    return mw.orElse(null);
   }
 
   /**

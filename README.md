@@ -9,7 +9,7 @@ Agent Maintenance Plugin for Jenkins
 
 
 This plugin allows to take agents offline for one or more dedicated time windows on specific dates (e.g. due to a hardware/network maintenance)
-while allowing to configure any of the other availability strategies (e.g *Keep online as much as possible* or *Bring this agent online according to a schedule*) for the times when no maintenance window is active.
+while allowing to configure any of the other availability strategies (e.g. *Keep online as much as possible* or *Bring this agent online according to a schedule*) for the times when no maintenance window is active.
 
 Maintenance activities are usually scheduled on weekends or outside normal business hours during the night. When you have many permanent agents this plugin helps to ensure that your builds are not unexpectedly killed because of a planned network interruption, an OS update or a reboot of the machine.
 
@@ -31,17 +31,19 @@ When creating a new agent select *Take agent offline during maintenance, otherwi
 To enable for an existing agent open the agent overview page, select *Maintenance Windows* and then click on the *Enable* button. It is possible to also enable it via the configure page but then you need to reconfigure the existing Availability settings.
 
 ## Defining maintenance windows
+To define or delete maintenance windows the user needs the `Computer.CONFIGURE` or `Computer.DISCONNECT` permission.
+Use the "x" to directly delete a single maintenance window or use the checkboxes to mark multiple windows and delete with the "Delete selected" button.
+Users with the [Computer.ExtendedRead](https://plugins.jenkins.io/extended-read-permission/) permission can see the defined maintenance windows.
 
-##### Individually for a single agent
+### Individually for a single agent
 Maintenance windows can be defined by opening the corresponding link on the agents overview page.
 Using the "Add" button you can directly define a new maintenance window.
 Via the "Edit" button one can edit existing maintenance windows (and also add and delete).
-To directly delete a maintenance windows click the "x" next to it or mark the checkboxes and use the "Delete selected" button to delete several maintenance windows.
 
-##### For many agents simultaneously
+
+### For many agents simultaneously
 Going to "Manage Jenkins->Agent Maintenance" will present you a list of all currently defined maintenance windows of all agents.
 Using the button "Add" allows to use a label expression to select a list of agents for which to apply the maintenance window.
-Use the "x" to directly delete a single maintenance window or use the checkboxes to mark multiple windows and delete with the "Delete selected" button.
 
 ##### Recurring maintenance windows
 It is also possible to define recurring maintenance windows. Using a cron syntax you can specify the start time of the downtime and a duration.

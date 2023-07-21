@@ -124,7 +124,7 @@ public class MaintenanceWindow extends AbstractDescribableImpl<MaintenanceWindow
     return keepUpWhenActive;
   }
 
-  public boolean isAborted() {
+  public boolean buildsHaveBeenAborted() {
     return aborted;
   }
 
@@ -178,6 +178,11 @@ public class MaintenanceWindow extends AbstractDescribableImpl<MaintenanceWindow
     return now.isAfter(maxWaitTime);
   }
 
+  /**
+   * Return the status of the maintenance.
+   *
+   * @return true if the maintenance is active, false otherwise.
+   */
   public boolean isMaintenanceScheduled() {
     LocalDateTime now = LocalDateTime.now();
     return now.isAfter(startDateTime) && now.isBefore(endDateTime);
@@ -185,11 +190,11 @@ public class MaintenanceWindow extends AbstractDescribableImpl<MaintenanceWindow
 
   public boolean isMaintenanceOver() {
     LocalDateTime now = LocalDateTime.now();
-    return now.isAfter(endDateTime);
+    return !now.isBefore(endDateTime);
   }
 
-  public OfflineCause getOfflineCause() {
-    return new MaintenanceOfflineCause(this);
+  public OfflineCause getOfflineCause(String computerName) {
+    return new MaintenanceOfflineCause(this, computerName);
   }
 
   /** Descriptor for UI only. */
