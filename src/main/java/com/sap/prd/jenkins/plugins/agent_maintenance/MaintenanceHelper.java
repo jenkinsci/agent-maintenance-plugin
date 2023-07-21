@@ -5,6 +5,7 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.XmlFile;
 import hudson.model.Computer;
+import hudson.model.Node;
 import hudson.model.Slave;
 import hudson.slaves.RetentionStrategy;
 import hudson.slaves.SlaveComputer;
@@ -18,6 +19,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -39,6 +41,32 @@ public class MaintenanceHelper {
   private MaintenanceHelper() {
   }
 
+  public static String getUuid(String id) {
+    UUID uuid;
+    try {
+      uuid = UUID.fromString(id);
+      return uuid.toString();
+    } catch (IllegalArgumentException iae) {
+      return UUID.randomUUID().toString();
+    }
+  }
+
+  public boolean isValidUuid(String id) {
+    try {
+      UUID.fromString(id);
+      return true;
+    } catch (IllegalArgumentException iae) {
+      return false;
+    }
+  }
+
+  public void checkComputerName(String computerName) throws IOException {
+    Jenkins jenkins = Jenkins.get();
+    Node node = jenkins.getNode(computerName);
+    if (node == null) {
+      throw new IOException("Computer not found.");
+    }
+  }
   public boolean hasMaintenanceWindows(String computerName) throws IOException {
     return cache.containsKey(computerName) && getMaintenanceWindows(computerName).size() > 0;
   }
@@ -107,11 +135,13 @@ public class MaintenanceHelper {
    * @throws IOException when writing the xml failed
    */
   public void deleteMaintenanceWindow(String computerName, String id) throws IOException {
-    LOGGER.log(Level.FINE, "Deleting maintenance window for {0}: {1}", new Object[] { computerName, id });
-    MaintenanceDefinitions md = getMaintenanceDefinitions(computerName);
-    synchronized (md) {
-      md.getScheduled().removeIf(mw -> Objects.equals(id, mw.getId()));
-      saveMaintenanceWindows(computerName, md);
+    if (isValidUuid(id)) {
+      LOGGER.log(Level.FINE, "Deleting maintenance window for {0}: {1}", new Object[]{computerName, id});
+      MaintenanceDefinitions md = getMaintenanceDefinitions(computerName);
+      synchronized (md) {
+        md.getScheduled().removeIf(mw -> Objects.equals(id, mw.getId()));
+        saveMaintenanceWindows(computerName, md);
+      }
     }
   }
 
@@ -123,11 +153,13 @@ public class MaintenanceHelper {
    * @throws IOException when writing the xml failed
    */
   public void deleteRecurringMaintenanceWindow(String computerName, String id) throws IOException {
-    LOGGER.log(Level.FINE, "Deleting maintenance window for {0}: {1}", new Object[] { computerName, id });
-    MaintenanceDefinitions md = getMaintenanceDefinitions(computerName);
-    synchronized (md) {
-      md.getRecurring().removeIf(mw -> Objects.equals(id, mw.getId()));
-      saveMaintenanceWindows(computerName, md);
+    if (isValidUuid(id)) {
+      LOGGER.log(Level.FINE, "Deleting maintenance window for {0}: {1}", new Object[]{computerName, id});
+      MaintenanceDefinitions md = getMaintenanceDefinitions(computerName);
+      synchronized (md) {
+        md.getRecurring().removeIf(mw -> Objects.equals(id, mw.getId()));
+        saveMaintenanceWindows(computerName, md);
+      }
     }
   }
 
@@ -142,7 +174,6 @@ public class MaintenanceHelper {
   @SuppressWarnings("unchecked")
   @NonNull
   public SortedSet<MaintenanceWindow> getMaintenanceWindows(String computerName) throws IOException {
-
     LOGGER.log(Level.FINEST, "Loading maintenance list for {0}", computerName);
     return getMaintenanceDefinitions(computerName).getScheduled();
   }
@@ -168,6 +199,7 @@ public class MaintenanceHelper {
    * @throws IOException when an error occurred reading the xml
    */
   public MaintenanceDefinitions getMaintenanceDefinitions(String computerName) throws IOException {
+    checkComputerName(computerName);
     LOGGER.log(Level.FINEST, "Loading maintenance list for {0}", computerName);
 
     MaintenanceDefinitions md = cache.get(computerName);
@@ -310,6 +342,7 @@ public class MaintenanceHelper {
    * @throws IOException when writing the xml failed
    */
   public void saveMaintenanceWindows(String computerName, MaintenanceDefinitions md) throws IOException {
+    checkComputerName(computerName);
     LOGGER.log(Level.FINER, "Saving maintenance window for {0}", computerName);
     XmlFile xmlMaintenanceFile = getMaintenanceWindowsFile(computerName);
     xmlMaintenanceFile.write(md);
@@ -431,9 +464,9 @@ public class MaintenanceHelper {
    * @return the parsed minutes
    */
   public static int parseDurationString(String input) {
-    Pattern dayRegex = Pattern.compile("(\\d+)d");
-    Pattern hourRegex = Pattern.compile("(\\d+)h");
-    Pattern minRegex = Pattern.compile("(\\d+)m");
+    Pattern dayRegex = Pattern.compile("(\\d{1,4})d");
+    Pattern hourRegex = Pattern.compile("(\\d{1,2})h");
+    Pattern minRegex = Pattern.compile("(\\d{1,2})m");
 
     Matcher dayMatch = dayRegex.matcher(input);
     Matcher hourMatch = hourRegex.matcher(input);
@@ -463,7 +496,11 @@ public class MaintenanceHelper {
 
       return day * 60 * 24 + hour * 60 + min;
     }
-    waitMinutes = Integer.parseInt(input);
+    try {
+      waitMinutes = Integer.parseInt(input);
+    } catch (NumberFormatException nfe) {
+      return -1;
+    }
     return waitMinutes;
   }
 

@@ -64,8 +64,8 @@ public class MaintenanceOfflineCauseTest {
             mw.getId());
 
     MaintenanceDefinitions mwdefinitions = MaintenanceHelper.getInstance().getMaintenanceDefinitions(agent.getNodeName());
-    SortedSet<MaintenanceWindow> mwList = mwdefinitions.getScheduled();
-    synchronized (mwList) {
+    synchronized (mwdefinitions) {
+      SortedSet<MaintenanceWindow> mwList = mwdefinitions.getScheduled();
       mwList.clear();
       mwList.add(updated);
       MaintenanceHelper.getInstance().saveMaintenanceWindows(agent.getNodeName(), mwdefinitions);

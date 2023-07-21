@@ -11,8 +11,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.UUID;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import jenkins.model.Jenkins;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
@@ -105,8 +103,11 @@ public class MaintenanceWindow extends AbstractDescribableImpl<MaintenanceWindow
       }
     }
     this.userid = userid;
+
     if (Util.fixEmptyAndTrim(id) == null) {
       id = UUID.randomUUID().toString();
+    } else {
+      id = MaintenanceHelper.getUuid(id);
     }
     this.id = id;
   }
