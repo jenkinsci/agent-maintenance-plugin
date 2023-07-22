@@ -60,13 +60,12 @@ public class MaintenanceHelper {
     }
   }
 
-  public void checkComputerName(String computerName) throws IOException {
+  private boolean isValidComputerName(String computerName) throws IOException {
     Jenkins jenkins = Jenkins.get();
-    Node node = jenkins.getNode(computerName);
-    if (node == null) {
-      throw new IOException("Computer not found.");
-    }
+    Computer computer = jenkins.getComputer(computerName);
+    return computer != null;
   }
+
   public boolean hasMaintenanceWindows(String computerName) throws IOException {
     return cache.containsKey(computerName) && getMaintenanceWindows(computerName).size() > 0;
   }
@@ -135,7 +134,7 @@ public class MaintenanceHelper {
    * @throws IOException when writing the xml failed
    */
   public void deleteMaintenanceWindow(String computerName, String id) throws IOException {
-    if (isValidUuid(id)) {
+    if (isValidUuid(id) && isValidComputerName(computerName)) {
       LOGGER.log(Level.FINE, "Deleting maintenance window for {0}: {1}", new Object[]{computerName, id});
       MaintenanceDefinitions md = getMaintenanceDefinitions(computerName);
       synchronized (md) {
@@ -153,7 +152,7 @@ public class MaintenanceHelper {
    * @throws IOException when writing the xml failed
    */
   public void deleteRecurringMaintenanceWindow(String computerName, String id) throws IOException {
-    if (isValidUuid(id)) {
+    if (isValidUuid(id) && isValidComputerName(computerName)) {
       LOGGER.log(Level.FINE, "Deleting maintenance window for {0}: {1}", new Object[]{computerName, id});
       MaintenanceDefinitions md = getMaintenanceDefinitions(computerName);
       synchronized (md) {
@@ -199,8 +198,9 @@ public class MaintenanceHelper {
    * @throws IOException when an error occurred reading the xml
    */
   public MaintenanceDefinitions getMaintenanceDefinitions(String computerName) throws IOException {
-    checkComputerName(computerName);
-    LOGGER.log(Level.FINEST, "Loading maintenance list for {0}", computerName);
+    if (isValidComputerName(computerName)) {
+      LOGGER.log(Level.FINEST, "Loading maintenance list for {0}", computerName);
+    }
 
     MaintenanceDefinitions md = cache.get(computerName);
 
@@ -342,8 +342,9 @@ public class MaintenanceHelper {
    * @throws IOException when writing the xml failed
    */
   public void saveMaintenanceWindows(String computerName, MaintenanceDefinitions md) throws IOException {
-    checkComputerName(computerName);
-    LOGGER.log(Level.FINER, "Saving maintenance window for {0}", computerName);
+    if (isValidComputerName()) {
+      LOGGER.log(Level.FINER, "Saving maintenance window for {0}", computerName);
+    }
     XmlFile xmlMaintenanceFile = getMaintenanceWindowsFile(computerName);
     xmlMaintenanceFile.write(md);
   }
