@@ -1,10 +1,10 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-    <f:entry title="${%Schedule}" help="/descriptor/hudson.triggers.TimerTrigger/help/spec">
-      <f:textarea field="startTimeSpec" value="${mw.startTimeSpec}"/>
+    <f:entry title="${%Schedule}" help="/descriptor/com.sap.prd.jenkins.plugins.agent_maintenance.RecurringMaintenanceWindow/help/startTimeSpec">
+      <f:textbox field="startTimeSpec" value="${mw.startTimeSpec}"/>
     </f:entry>
     <f:entry field="duration" title="${%Duration}" help="/plugin/agent-maintenance/help/help-duration.html">
-        <f:textbox value="${mw.duration}"/>
+        <f:textbox value="${mw.duration}" default="3h"/>
     </f:entry>
     <f:entry field="reason" title="${%Reason}" help="/plugin/agent-maintenance/help/help-reason.html">
         <f:textbox value="${mw.reason}"/>

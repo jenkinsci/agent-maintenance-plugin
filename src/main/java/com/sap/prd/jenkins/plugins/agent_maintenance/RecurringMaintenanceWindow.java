@@ -3,6 +3,11 @@ package com.sap.prd.jenkins.plugins.agent_maintenance;
 import static hudson.Util.fixNull;
 
 import antlr.ANTLRException;
+import com.cronutils.model.Cron;
+import com.cronutils.model.definition.CronDefinition;
+import com.cronutils.model.definition.CronDefinitionBuilder;
+import com.cronutils.model.time.ExecutionTime;
+import com.cronutils.parser.CronParser;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
@@ -14,8 +19,12 @@ import hudson.security.ACL;
 import hudson.util.FormValidation;
 import java.io.InvalidObjectException;
 import java.io.ObjectStreamException;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalUnit;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.Set;
@@ -37,6 +46,15 @@ import org.springframework.security.core.Authentication;
  */
 public class RecurringMaintenanceWindow extends AbstractDescribableImpl<RecurringMaintenanceWindow> {
 
+  private static final CronDefinition cronDefinition = CronDefinitionBuilder.defineCron()
+          .withMinutes().withValidRange(0, 59).withStrictRange().and()
+          .withHours().withValidRange(0,23).withStrictRange().and()
+          .withDayOfMonth().withValidRange(1,31).supportsL().supportsW().supportsLW().supportsQuestionMark().and()
+          .withMonth().withValidRange(1,12).withStrictRange().and()
+          .withDayOfWeek().withValidRange(0,7).withMondayDoWValue(1).withIntMapping(7,0).supportsHash()
+          .supportsL().supportsQuestionMark().withStrictRange().and().instance();
+
+  private static final CronParser parser = new CronParser(cronDefinition);
   /*
    * The interval between 2 check runs in minutes.
    */
@@ -61,7 +79,7 @@ public class RecurringMaintenanceWindow extends AbstractDescribableImpl<Recurrin
   private final String startTimeSpec;
   private final int duration;
   private long nextCheck = 0;
-  private transient CronTabList tabs;
+  private transient Cron cron;
 
   /**
    * Creates a new recurring maintenance window.
@@ -80,9 +98,9 @@ public class RecurringMaintenanceWindow extends AbstractDescribableImpl<Recurrin
   @DataBoundConstructor
   public RecurringMaintenanceWindow(String startTimeSpec, String reason, boolean takeOnline, boolean keepUpWhenActive,
                                     String maxWaitMinutes, String duration, String userid, String id, long nextCheck)
-      throws ANTLRException {
+  {
     this.startTimeSpec = startTimeSpec;
-    this.tabs = CronTabList.create(startTimeSpec);
+    this.cron = parser.parse(startTimeSpec);
     this.reason = reason;
     this.takeOnline = takeOnline;
     this.maxWaitMinutes = maxWaitMinutes;
@@ -104,13 +122,7 @@ public class RecurringMaintenanceWindow extends AbstractDescribableImpl<Recurrin
   }
 
   protected synchronized Object readResolve() throws ObjectStreamException {
-    try {
-      tabs = CronTabList.create(startTimeSpec);
-    } catch (ANTLRException e) {
-      InvalidObjectException x = new InvalidObjectException(e.getMessage());
-      x.initCause(e);
-      throw x;
-    }
+    cron = parser.parse(startTimeSpec);
     return this;
   }
 
@@ -163,51 +175,46 @@ public class RecurringMaintenanceWindow extends AbstractDescribableImpl<Recurrin
   @Restricted(NoExternalUse.class)
   public synchronized Set<MaintenanceWindow> getFutureMaintenanceWindows() {
     LOGGER.log(Level.FINER, "Checking for future maintenance Windows.");
-    Calendar now = new GregorianCalendar();
-    now.set(Calendar.SECOND, 0);
+    ZonedDateTime now = ZonedDateTime.now().truncatedTo(ChronoUnit.MINUTES);
+    ZoneId zoneId = now.getZone();
 
     Set<MaintenanceWindow> futureMaintenanceWindows = new TreeSet<>();
-    if (now.getTimeInMillis() > nextCheck) {
+    if (now.toEpochSecond() > nextCheck) {
 
-      Calendar time = new GregorianCalendar();
-      time.setTimeInMillis(nextCheck);
-      time.set(Calendar.SECOND, 0);
-      Calendar endCheckTime = (GregorianCalendar) time.clone();
-      endCheckTime.add(Calendar.MINUTE, CHECK_INTERVAL_MINUTES);
-      if (endCheckTime.before(now)) {
-        endCheckTime = now;
-        endCheckTime.add(Calendar.MINUTE, CHECK_INTERVAL_MINUTES);
+      Instant instant = Instant.ofEpochSecond(nextCheck);
+      ZonedDateTime time = ZonedDateTime.ofInstant(instant, zoneId).truncatedTo(ChronoUnit.MINUTES);
+      ZonedDateTime endCheckTime = time.plus(CHECK_INTERVAL_MINUTES, ChronoUnit.MINUTES);
+
+      if (endCheckTime.isBefore(now)) {
+        endCheckTime = now.plus(CHECK_INTERVAL_MINUTES, ChronoUnit.MINUTES);
       }
-      Calendar nextCheckTime = (GregorianCalendar) endCheckTime.clone();
+      ZonedDateTime nextCheckTime = endCheckTime;
 
-      time.add(Calendar.HOUR_OF_DAY, LEAD_TIME_DAYS * 24);
-      if (time.before(now)) {
-        time = (Calendar) now.clone();
+      time = time.plus(LEAD_TIME_DAYS * 24L, ChronoUnit.HOURS);
+      if (time.isBefore(now)) {
+        time = now;
       }
-      endCheckTime.add(Calendar.HOUR_OF_DAY, LEAD_TIME_DAYS * 24);
-      endCheckTime.add(Calendar.MINUTE, -1);
+      endCheckTime = endCheckTime.plus(LEAD_TIME_DAYS * 24L, ChronoUnit.HOURS);
+      endCheckTime = endCheckTime.minus(1, ChronoUnit.MINUTES);
 
-      LOGGER.log(Level.FINE, "Check for maintenance window starts between: {0} and {1}", new Object[] { time.getTime().toString(),
-          endCheckTime.getTime().toString()});
-      while (endCheckTime.after(time)) {
-        if (tabs.check(time)) {
-          LOGGER.log(Level.FINER, "Time matched: {0}", time.getTime().toString());
+      LOGGER.log(Level.FINE, "Check for maintenance window starts between: {0} and {1}", new Object[] { time.toString(),
+          endCheckTime.toString()});
+      while (endCheckTime.isAfter(time)) {
+        if (ExecutionTime.forCron(cron).isMatch(time)) {
+          LOGGER.log(Level.FINER, "Time matched: {0}", time.toString());
           futureMaintenanceWindows.add(getMaintenanceWindow(time));
         }
-        time.add(Calendar.MINUTE, 1);
+        time = time.plus(1, ChronoUnit.MINUTES);
       }
-      nextCheck = nextCheckTime.getTimeInMillis();
-      LOGGER.log(Level.FINER, "Setting next Check time to: {0}", nextCheckTime.getTime().toString());
+      nextCheck = nextCheckTime.toEpochSecond();
+      LOGGER.log(Level.FINER, "Setting next Check time to: {0}", nextCheckTime.toString());
     }
     return futureMaintenanceWindows;
   }
 
-  private MaintenanceWindow getMaintenanceWindow(Calendar time) {
-    TimeZone tz = time.getTimeZone();
-    ZoneId zoneId = tz.toZoneId();
-    LocalDateTime startTime = LocalDateTime.ofInstant(time.toInstant(), zoneId);
-    time.add(Calendar.MINUTE, duration);
-    LocalDateTime endTime = LocalDateTime.ofInstant(time.toInstant(), zoneId);
+  private MaintenanceWindow getMaintenanceWindow(ZonedDateTime time) {
+    LocalDateTime startTime = LocalDateTime.ofInstant(time.toInstant(), time.getZone());
+    LocalDateTime endTime = startTime.plus(duration, ChronoUnit.MINUTES);
     return new MaintenanceWindow(startTime, endTime, reason, takeOnline, keepUpWhenActive,
         maxWaitMinutes, userid, "");
   }

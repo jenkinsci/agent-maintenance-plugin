@@ -5,7 +5,6 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.XmlFile;
 import hudson.model.Computer;
-import hudson.model.Node;
 import hudson.model.Slave;
 import hudson.slaves.RetentionStrategy;
 import hudson.slaves.SlaveComputer;
@@ -89,7 +88,7 @@ public class MaintenanceHelper {
       return false;
     }
 
-    return maintenanceList.stream().anyMatch(mw -> mw.isMaintenanceScheduled());
+    return maintenanceList.stream().anyMatch(MaintenanceWindow::isMaintenanceScheduled);
   }
 
   /**
@@ -170,7 +169,6 @@ public class MaintenanceHelper {
    * @return Set of maintenance windows
    * @throws IOException when an error occurred reading the xml
    */
-  @SuppressWarnings("unchecked")
   @NonNull
   public SortedSet<MaintenanceWindow> getMaintenanceWindows(String computerName) throws IOException {
     LOGGER.log(Level.FINEST, "Loading maintenance list for {0}", computerName);
@@ -342,7 +340,7 @@ public class MaintenanceHelper {
    * @throws IOException when writing the xml failed
    */
   public void saveMaintenanceWindows(String computerName, MaintenanceDefinitions md) throws IOException {
-    if (isValidComputerName()) {
+    if (isValidComputerName(computerName)) {
       LOGGER.log(Level.FINER, "Saving maintenance window for {0}", computerName);
     }
     XmlFile xmlMaintenanceFile = getMaintenanceWindowsFile(computerName);
@@ -398,7 +396,7 @@ public class MaintenanceHelper {
    * @return true if strategy was injected, false otherwise
    */
   public boolean injectRetentionStrategy(Computer c) {
-    if (c != null && c instanceof SlaveComputer) {
+    if (c instanceof SlaveComputer) {
       SlaveComputer computer = (SlaveComputer) c;
       @SuppressWarnings("unchecked")
       RetentionStrategy<SlaveComputer> strategy = computer.getRetentionStrategy();
@@ -427,7 +425,7 @@ public class MaintenanceHelper {
    */
   @SuppressFBWarnings(value = "RV_RETURN_VALUE_IGNORED_BAD_PRACTICE")
   public boolean removeRetentionStrategy(Computer c) {
-    if (c != null && c instanceof SlaveComputer) {
+    if (c instanceof SlaveComputer) {
       SlaveComputer computer = (SlaveComputer) c;
       String computerName = computer.getName();
       @SuppressWarnings("unchecked")
