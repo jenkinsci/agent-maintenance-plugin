@@ -1,7 +1,8 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
     <f:entry title="${%Schedule}" help="/descriptor/com.sap.prd.jenkins.plugins.agent_maintenance.RecurringMaintenanceWindow/help/startTimeSpec">
-      <f:textbox field="startTimeSpec" value="${mw.startTimeSpec}"/>
+      <f:textbox field="startTimeSpec" value="${mw.startTimeSpec}"
+                 checkUrl="${rootURL}/descriptorByName/com.sap.prd.jenkins.plugins.agent_maintenance.RecurringMaintenanceWindow/checkStartTimeSpec" checkDependsOn=""/>
     </f:entry>
     <f:entry field="duration" title="${%Duration}" help="/plugin/agent-maintenance/help/help-duration.html">
         <f:textbox value="${mw.duration}" default="3h"/>

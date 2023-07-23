@@ -17,18 +17,13 @@ import hudson.model.Descriptor;
 import hudson.scheduler.CronTabList;
 import hudson.security.ACL;
 import hudson.util.FormValidation;
-import java.io.InvalidObjectException;
 import java.io.ObjectStreamException;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
-import java.time.temporal.TemporalUnit;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
 import java.util.Set;
-import java.util.TimeZone;
 import java.util.TreeSet;
 import java.util.UUID;
 import java.util.logging.Level;
@@ -48,10 +43,10 @@ public class RecurringMaintenanceWindow extends AbstractDescribableImpl<Recurrin
 
   private static final CronDefinition cronDefinition = CronDefinitionBuilder.defineCron()
           .withMinutes().withValidRange(0, 59).withStrictRange().and()
-          .withHours().withValidRange(0,23).withStrictRange().and()
-          .withDayOfMonth().withValidRange(1,31).supportsL().supportsW().supportsLW().supportsQuestionMark().and()
-          .withMonth().withValidRange(1,12).withStrictRange().and()
-          .withDayOfWeek().withValidRange(0,7).withMondayDoWValue(1).withIntMapping(7,0).supportsHash()
+          .withHours().withValidRange(0, 23).withStrictRange().and()
+          .withDayOfMonth().withValidRange(1, 31).supportsL().supportsW().supportsLW().supportsQuestionMark().and()
+          .withMonth().withValidRange(1, 12).withStrictRange().and()
+          .withDayOfWeek().withValidRange(0, 7).withMondayDoWValue(1).withIntMapping(7, 0).supportsHash()
           .supportsL().supportsQuestionMark().withStrictRange().and().instance();
 
   private static final CronParser parser = new CronParser(cronDefinition);
@@ -97,8 +92,7 @@ public class RecurringMaintenanceWindow extends AbstractDescribableImpl<Recurrin
    */
   @DataBoundConstructor
   public RecurringMaintenanceWindow(String startTimeSpec, String reason, boolean takeOnline, boolean keepUpWhenActive,
-                                    String maxWaitMinutes, String duration, String userid, String id, long nextCheck)
-  {
+                                    String maxWaitMinutes, String duration, String userid, String id, long nextCheck) {
     this.startTimeSpec = startTimeSpec;
     this.cron = parser.parse(startTimeSpec);
     this.reason = reason;
@@ -277,12 +271,16 @@ public class RecurringMaintenanceWindow extends AbstractDescribableImpl<Recurrin
     @POST
     public FormValidation doCheckStartTimeSpec(@QueryParameter String value) {
       try {
-        String msg = CronTabList.create(fixNull(value)).checkSanity();
-        if (msg != null) {
+        Cron cron = parser.parse(value);
+        ExecutionTime et = ExecutionTime.forCron(cron);
+        ZonedDateTime last = et.lastExecution(ZonedDateTime.now()).orElse(null);
+        ZonedDateTime next = et.nextExecution(ZonedDateTime.now()).orElse(null);
+        if (next != null && last != null) {
+          String msg = "Would have last run at " + last + "; would next run at " + next;
           return FormValidation.warning(msg);
         }
         return FormValidation.ok();
-      } catch (ANTLRException e) {
+      } catch (IllegalArgumentException  e) {
         return FormValidation.error(e.getMessage());
       }
     }

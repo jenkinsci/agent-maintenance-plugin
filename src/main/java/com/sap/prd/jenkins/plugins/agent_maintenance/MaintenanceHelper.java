@@ -40,6 +40,13 @@ public class MaintenanceHelper {
   private MaintenanceHelper() {
   }
 
+  /**
+   * Checks it the given string is a valid UUID.
+   * Returns the id if valid, otherwise it returns a new random UUID string.
+   *
+   * @param id The id to check
+   * @return A valid UUID string
+   */
   public static String getUuid(String id) {
     UUID uuid;
     try {
@@ -50,7 +57,13 @@ public class MaintenanceHelper {
     }
   }
 
-  public boolean isValidUuid(String id) {
+  /**
+   * Checks if the given string is a valid UUID.
+   *
+   * @param id The id to check
+   * @return true if id is a valid UUID
+   */
+  private boolean isValidUuid(String id) {
     try {
       UUID.fromString(id);
       return true;
