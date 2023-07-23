@@ -47,9 +47,10 @@ Using the button "Add" allows to use a label expression to select a list of agen
 
 ##### Recurring maintenance windows
 It is also possible to define recurring maintenance windows. Using a cron syntax you can specify the start time of the downtime and a duration.
-Recurring maintenance windows are added as planned maintenance windows 7 days before they start by default. This way you can easily cancel or modify them before
+Recurring maintenance windows are added as planned maintenance window 7 days before they start by default. This way you can easily cancel or modify them before
 they start. The lead time for adding recurring maintenance windows can be changed by setting the system property com.sap.prd.jenkins.plugins.agent_maintenance.RecurringMaintenanceWindow.LEAD_TIME_DAYS
 during start up of Jenkins. Note that changing the lead time can have unwanted side effects like duplicated maintenance windows.
+Changing a recurring maintenance will not change already scheduled maintenance windows for it. Those need to be adjusted manually.
 
 ## Best practices
 
