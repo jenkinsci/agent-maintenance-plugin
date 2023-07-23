@@ -78,6 +78,12 @@ public class MaintenanceHelper {
     return computer != null;
   }
 
+  private String getSafeComputerName(String computerName) {
+    Jenkins jenkins = Jenkins.get();
+    Computer computer = jenkins.getComputer(computerName);
+    return computer != null ? computerName : "unknown";
+  }
+
   public boolean hasMaintenanceWindows(String computerName) throws IOException {
     return cache.containsKey(computerName) && getMaintenanceWindows(computerName).size() > 0;
   }
@@ -113,7 +119,7 @@ public class MaintenanceHelper {
    * @throws IOException when writing the xml failed
    */
   public void addMaintenanceWindow(String computerName, MaintenanceWindow mw) throws IOException {
-    LOGGER.log(Level.FINE, "Adding maintenance window for {0}: {1}", new Object[] { computerName, mw.getId() });
+    LOGGER.log(Level.FINE, "Adding maintenance window for {0}: {1}", new Object[] { getSafeComputerName(computerName), mw.getId() });
     MaintenanceDefinitions md = getMaintenanceDefinitions(computerName);
     synchronized (md) {
       md.getScheduled().add(mw);
@@ -130,7 +136,7 @@ public class MaintenanceHelper {
    * @throws IOException when writing the xml failed
    */
   public void addRecurringMaintenanceWindow(String computerName, RecurringMaintenanceWindow mw) throws IOException {
-    LOGGER.log(Level.FINE, "Adding maintenance window for {0}: {1}", new Object[] { computerName, mw.getId() });
+    LOGGER.log(Level.FINE, "Adding maintenance window for {0}: {1}", new Object[] { getSafeComputerName(computerName), mw.getId() });
     MaintenanceDefinitions md = getMaintenanceDefinitions(computerName);
     synchronized (md) {
       md.getRecurring().add(mw);
@@ -147,7 +153,7 @@ public class MaintenanceHelper {
    */
   public void deleteMaintenanceWindow(String computerName, String id) throws IOException {
     if (isValidUuid(id) && isValidComputerName(computerName)) {
-      LOGGER.log(Level.FINE, "Deleting maintenance window for {0}: {1}", new Object[]{computerName, id});
+      LOGGER.log(Level.FINE, "Deleting maintenance window for {0}: {1}", new Object[]{getSafeComputerName(computerName), id});
       MaintenanceDefinitions md = getMaintenanceDefinitions(computerName);
       synchronized (md) {
         md.getScheduled().removeIf(mw -> Objects.equals(id, mw.getId()));
@@ -165,7 +171,7 @@ public class MaintenanceHelper {
    */
   public void deleteRecurringMaintenanceWindow(String computerName, String id) throws IOException {
     if (isValidUuid(id) && isValidComputerName(computerName)) {
-      LOGGER.log(Level.FINE, "Deleting maintenance window for {0}: {1}", new Object[]{computerName, id});
+      LOGGER.log(Level.FINE, "Deleting maintenance window for {0}: {1}", new Object[]{getSafeComputerName(computerName), id});
       MaintenanceDefinitions md = getMaintenanceDefinitions(computerName);
       synchronized (md) {
         md.getRecurring().removeIf(mw -> Objects.equals(id, mw.getId()));
@@ -184,7 +190,7 @@ public class MaintenanceHelper {
    */
   @NonNull
   public SortedSet<MaintenanceWindow> getMaintenanceWindows(String computerName) throws IOException {
-    LOGGER.log(Level.FINEST, "Loading maintenance list for {0}", computerName);
+    LOGGER.log(Level.FINEST, "Loading maintenance list for {0}", getSafeComputerName(computerName));
     return getMaintenanceDefinitions(computerName).getScheduled();
   }
 
@@ -197,7 +203,7 @@ public class MaintenanceHelper {
    * @throws IOException when an error occurred reading the xml
    */
   public Set<RecurringMaintenanceWindow> getRecurringMaintenanceWindows(String computerName) throws IOException {
-    LOGGER.log(Level.FINEST, "Loading recurring maintenance definitions for {0}", computerName);
+    LOGGER.log(Level.FINEST, "Loading recurring maintenance definitions for {0}", getSafeComputerName(computerName));
     return getMaintenanceDefinitions(computerName).getRecurring();
   }
 
@@ -209,28 +215,27 @@ public class MaintenanceHelper {
    * @throws IOException when an error occurred reading the xml
    */
   public MaintenanceDefinitions getMaintenanceDefinitions(String computerName) throws IOException {
-    if (isValidComputerName(computerName)) {
-      LOGGER.log(Level.FINEST, "Loading maintenance list for {0}", computerName);
-    }
+
+    LOGGER.log(Level.FINEST, "Loading maintenance list for {0}", getSafeComputerName(computerName));
 
     MaintenanceDefinitions md = cache.get(computerName);
 
     if (md == null) {
       XmlFile xmlMaintenanceFile = getMaintenanceWindowsFile(computerName);
       if (xmlMaintenanceFile.exists()) {
-        LOGGER.log(Level.FINER, "Loading maintenance list from file for {0}", computerName);
+        LOGGER.log(Level.FINER, "Loading maintenance list from file for {0}", getSafeComputerName(computerName));
         try {
           md = (MaintenanceDefinitions) xmlMaintenanceFile.read();
           cache.put(computerName, md);
           return md;
         } catch (ClassCastException cce) {
-          LOGGER.log(Level.WARNING, "Failed loading maintenance definition file for {0}. Trying to read old format", computerName);
+          LOGGER.log(Level.WARNING, "Failed loading maintenance definition file for {0}. Trying to read old format", getSafeComputerName(computerName));
         }
         SortedSet<MaintenanceWindow> scheduled = (SortedSet<MaintenanceWindow>) xmlMaintenanceFile.read();
         md = new MaintenanceDefinitions(scheduled, new HashSet<>());
         saveMaintenanceWindows(computerName, md);
       } else {
-        LOGGER.log(Level.FINER, "Creating empty maintenance list for {0}", computerName);
+        LOGGER.log(Level.FINER, "Creating empty maintenance list for {0}", getSafeComputerName(computerName));
         md = new MaintenanceDefinitions(new TreeSet<>(), new HashSet<>());
       }
       if (Jenkins.get().getComputer(computerName) != null) {
@@ -272,7 +277,7 @@ public class MaintenanceHelper {
     try {
       md = getMaintenanceDefinitions(computerName);
     } catch (IOException e) {
-      LOGGER.log(Level.WARNING, "Failed to read maintenance window list for {0}", computerName);
+      LOGGER.log(Level.WARNING, "Failed to read maintenance window list for {0}", getSafeComputerName(computerName));
       return null;
     }
     MaintenanceWindow active = null;
@@ -296,7 +301,7 @@ public class MaintenanceHelper {
           try {
             saveMaintenanceWindows(computerName, md);
           } catch (IOException e) {
-            LOGGER.log(Level.WARNING, "Failed to save maintenance definitions for agent {0}", computerName);
+            LOGGER.log(Level.WARNING, "Failed to save maintenance definitions for agent {0}", getSafeComputerName(computerName));
           }
         }
       }
@@ -311,12 +316,12 @@ public class MaintenanceHelper {
    * @param computerName name of the agent to check
    */
   public void checkRecurring(String computerName) {
-    LOGGER.log(Level.FINER, "Checking for recurring maintenance windows for {0}", computerName);
+    LOGGER.log(Level.FINER, "Checking for recurring maintenance windows for {0}", getSafeComputerName(computerName));
     MaintenanceDefinitions md;
     try {
       md = getMaintenanceDefinitions(computerName);
     } catch (IOException e) {
-      LOGGER.log(Level.WARNING, "Failed to read maintenance definitions for {0}", computerName);
+      LOGGER.log(Level.WARNING, "Failed to read maintenance definitions for {0}", getSafeComputerName(computerName));
       return;
     }
 
@@ -325,7 +330,7 @@ public class MaintenanceHelper {
       for (RecurringMaintenanceWindow rmw : md.getRecurring()) {
         Set<MaintenanceWindow> fmw = rmw.getFutureMaintenanceWindows();
         if (fmw.size() > 0) {
-          LOGGER.log(Level.FINER, "Found future maintenance windows for {0}", computerName);
+          LOGGER.log(Level.FINER, "Found future maintenance windows for {0}", getSafeComputerName(computerName));
           md.getScheduled().addAll(fmw);
           added = true;
         }
@@ -335,7 +340,7 @@ public class MaintenanceHelper {
         try {
           saveMaintenanceWindows(computerName, md);
         } catch (IOException e) {
-          LOGGER.log(Level.WARNING, "Failed to save maintenance definitions for agent {0}", computerName);
+          LOGGER.log(Level.WARNING, "Failed to save maintenance definitions for agent {0}", getSafeComputerName(computerName));
         }
       }
     }
@@ -353,9 +358,7 @@ public class MaintenanceHelper {
    * @throws IOException when writing the xml failed
    */
   public void saveMaintenanceWindows(String computerName, MaintenanceDefinitions md) throws IOException {
-    if (isValidComputerName(computerName)) {
-      LOGGER.log(Level.FINER, "Saving maintenance window for {0}", computerName);
-    }
+    LOGGER.log(Level.FINER, "Saving maintenance window for {0}", getSafeComputerName(computerName));
     XmlFile xmlMaintenanceFile = getMaintenanceWindowsFile(computerName);
     xmlMaintenanceFile.write(md);
   }
