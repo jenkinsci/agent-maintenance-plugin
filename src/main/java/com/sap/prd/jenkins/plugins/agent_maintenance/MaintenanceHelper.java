@@ -229,7 +229,8 @@ public class MaintenanceHelper {
           cache.put(computerName, md);
           return md;
         } catch (ClassCastException cce) {
-          LOGGER.log(Level.WARNING, "Failed loading maintenance definition file for {0}. Trying to read old format", getSafeComputerName(computerName));
+          LOGGER.log(Level.WARNING, "Failed loading maintenance definition file for {0}. Trying to read old format",
+                  getSafeComputerName(computerName));
         }
         SortedSet<MaintenanceWindow> scheduled = (SortedSet<MaintenanceWindow>) xmlMaintenanceFile.read();
         md = new MaintenanceDefinitions(scheduled, new HashSet<>());
