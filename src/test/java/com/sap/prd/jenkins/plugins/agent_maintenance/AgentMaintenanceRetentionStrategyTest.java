@@ -21,7 +21,6 @@ public class AgentMaintenanceRetentionStrategyTest extends BaseIntegationTest {
     while (mw.isMaintenanceScheduled()) {
       TimeUnit.SECONDS.sleep(10);
     }
-    // Wait another 120 seconds to give Jenkins the chance to run another check cycle
     triggerCheckCycle(agent);
   }
 

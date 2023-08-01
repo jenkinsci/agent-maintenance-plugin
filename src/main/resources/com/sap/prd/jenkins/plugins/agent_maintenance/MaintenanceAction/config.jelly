@@ -23,7 +23,17 @@
           </f:repeatable>
         </f:entry>
 
-        <f:bottomButtonBar>
+        <f:entry title="${%Recurring Maintenance Windows}" help="/plugin/agent-maintenance/help/help-maintenanceList.html">
+          <f:helpArea />
+          <f:repeatable name="recurringMaintenanceWindows" var="mw" items="${it.recurringMaintenanceWindows}" minimum="0">
+              <st:include class="${it.getRecurringMaintenanceWindowClass()}" page="config.jelly"/>
+              <div align="right">
+                  <f:repeatableDeleteButton />
+              </div>
+          </f:repeatable>
+        </f:entry>
+
+          <f:bottomButtonBar>
           <f:submit value="${%Save}"/>
           <f:apply/>
         </f:bottomButtonBar>

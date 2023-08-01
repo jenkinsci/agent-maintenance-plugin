@@ -42,4 +42,13 @@ public class MaintenanceHelperTest {
     mwSet = helper.getMaintenanceWindows(agentName);
     assertThat(mwSet.size(), is(0));
   }
+
+  @Test
+  public void parseDurationString() {
+    assertThat(MaintenanceHelper.parseDurationString("10"), is(10));
+    assertThat(MaintenanceHelper.parseDurationString("10m"), is(10));
+    assertThat(MaintenanceHelper.parseDurationString("1h"), is(60));
+    assertThat(MaintenanceHelper.parseDurationString("2h 10m"), is(130));
+    assertThat(MaintenanceHelper.parseDurationString("1d 1h 30m"), is(1530));
+  }
 }

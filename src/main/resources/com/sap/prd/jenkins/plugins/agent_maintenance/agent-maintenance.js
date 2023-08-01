@@ -1,10 +1,10 @@
-function openForm() {
-    document.getElementById("maintenance-add-form").style.display = "flex";
+function openForm(formName) {
+    document.getElementById(formName).style.display = "flex";
     document.addEventListener("keydown", cancelAdd);
 }
 
-function closeForm() {
-    document.getElementById("maintenance-add-form").style.display = "none";
+function closeForm(formName) {
+    document.getElementById(formName).style.display = "none";
     document.removeEventListener("keydown", cancelAdd);
 }
 
@@ -78,6 +78,31 @@ Behaviour.specify(".am__action-delete", 'agent-maintenance', 0, function(e) {
   }
 });
 
+Behaviour.specify(".am__action-delete-recurring", 'agent-maintenance', 0, function(e) {
+  e.onclick = function () {
+    let row = findAncestor(this, "TR");
+    let message = this.getAttribute("data-message");
+    let messageSuccess = this.getAttribute("data-message-success");
+    let id = row.id;
+    if (confirm(message)) {
+      maintenanceJavaScriptBind.deleteRecurringMaintenance(id, function(response) {
+        let result = response.responseObject();
+        if (result) {
+          let tbody = row.parentNode;
+          tbody.removeChild(row);
+          notificationBar.show(messageSuccess, notificationBar.SUCCESS)
+          if (tbody.children.length == 0) {
+            document.getElementById("edit-recurring").style.display = "none";
+            document.getElementById("delete-selected-recurring-action").style.display = "none";
+          }
+        } else {
+          notificationBar.show("Something went wrong. Please check the logs.", notificationBar.ERROR);
+        }
+      });
+    }
+  }
+});
+
 Behaviour.specify(".am__link-delete", 'agent-maintenance', 0, function(e) {
   e.onclick = function () {
     let message = this.getAttribute("data-message");
@@ -132,7 +157,15 @@ Behaviour.specify(".am__enable", 'agent-maintenance', 0, function(e) {
 });
 
 Behaviour.specify("#add-button", 'agent-maintenance', 0, function(e) {
-    e.onclick = openForm;
+    e.onclick = function() {
+    openForm("maintenance-add-form")
+    };
+});
+
+Behaviour.specify("#add-recurring", 'agent-maintenance', 0, function(e) {
+    e.onclick = function() {
+    openForm("recurring-maintenance-add-form")
+    };
 });
 
 Behaviour.specify("#edit-button", 'agent-maintenance', 0, function(e) {
@@ -146,8 +179,27 @@ Behaviour.specify("#edit-button", 'agent-maintenance', 0, function(e) {
     }
 });
 
+Behaviour.specify("#edit-recurring", 'agent-maintenance', 0, function(e) {
+    e.onclick = function() {
+      location.href='config';
+    }
+    let table = document.getElementById("recurring-maintenance-table");
+    let tbody = table.tBodies[0];
+    if (tbody.children.length == 0) {
+      e.style.display = 'none';
+    }
+});
+
 Behaviour.specify("#cancel-button", 'agent-maintenance', 0, function(e) {
-    e.onclick = closeForm;
+    e.onclick = function() {
+      closeForm("maintenance-add-form");
+    }
+});
+
+Behaviour.specify("#recurring-cancel-button", 'agent-maintenance', 0, function(e) {
+    e.onclick = function() {
+      closeForm("recurring-maintenance-add-form");
+    }
 });
 
 Behaviour.specify("#delete-selected-button-action", 'agent-maintenance', 0, function(e) {
@@ -180,6 +232,46 @@ Behaviour.specify("#delete-selected-button-action", 'agent-maintenance', 0, func
         }
         if (tbody.children.length == 0) {
           document.getElementById("edit-button").style.display = "none";
+          e.style.display = 'none';
+        }
+      });
+    }
+  }
+  if (tbody.children.length == 0) {
+    e.style.display = 'none';
+  }
+});
+
+Behaviour.specify("#delete-selected-recurring-action", 'agent-maintenance', 0, function(e) {
+  let table = document.getElementById("recurring-maintenance-table");
+  let tbody = table.tBodies[0];
+  let messageSuccess = e.getAttribute("data-message-success");
+  e.onclick = function() {
+    let checkedRows = tbody.querySelectorAll("input.am__checkbox:checked");
+    let checkedList = [];
+    for (let checked of checkedRows) {
+      let row = findAncestor(checked, "TR");
+      let id = row.id;
+      checkedList.push(id);
+    }
+    if (checkedList.length > 0) {
+      maintenanceJavaScriptBind.deleteMultipleRecurring(checkedList, function(response) {
+        let result = response.responseObject();
+        let error = false;
+        if (result.length != checkedList.length) {
+          error = true;
+        }
+        for (let id of result) {
+          let row = document.getElementById(id);
+          tbody.removeChild(row);
+        }
+        if (error) {
+          notificationBar.show("Something went wrong. Please check the logs.", notificationBar.ERROR);
+        } else {
+          notificationBar.show(messageSuccess, notificationBar.SUCCESS)
+        }
+        if (tbody.children.length == 0) {
+          document.getElementById("edit-recurring").style.display = "none";
           e.style.display = 'none';
         }
       });

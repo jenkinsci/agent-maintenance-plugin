@@ -62,6 +62,7 @@ public class AgentMaintenanceRetentionStrategy extends RetentionStrategy<SlaveCo
   @GuardedBy("hudson.model.Queue.lock")
   public synchronized long check(final SlaveComputer c) {
     MaintenanceWindow maintenance = MaintenanceHelper.getInstance().getMaintenance(c.getName());
+    MaintenanceHelper.getInstance().checkRecurring(c.getName());
     LOGGER.log(Level.FINER, "Checking for Maintenance Window for agent {0}. online = {1}, idle = {2}",
         new Object[] { c.getName(), c.isOnline(), c.isIdle() });
     if (maintenance != null) {

@@ -16,6 +16,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -88,6 +89,10 @@ public class MaintenanceAction implements Action {
     return MaintenanceWindow.class;
   }
 
+  public Class<RecurringMaintenanceWindow> getRecurringMaintenanceWindowClass() {
+    return RecurringMaintenanceWindow.class;
+  }
+
   public boolean isEnabled() {
     return computer.getRetentionStrategy() instanceof AgentMaintenanceRetentionStrategy;
   }
@@ -155,7 +160,20 @@ public class MaintenanceAction implements Action {
   }
 
   /**
-   * UI method to add a smaintenance window.
+   * Returns a list of recurring maintenance windows.
+   *
+   * @return A list of recurring maintenance windows
+   */
+  public Set<RecurringMaintenanceWindow> getRecurringMaintenanceWindows() {
+    try {
+      return Collections.unmodifiableSet(MaintenanceHelper.getInstance().getRecurringMaintenanceWindows(computer.getName()));
+    } catch (IOException e) {
+      return Collections.emptySortedSet();
+    }
+  }
+
+  /**
+   * UI method to add a maintenance window.
    *
    * @param req Stapler Request
    * @return Response containing the result of the add
@@ -170,6 +188,24 @@ public class MaintenanceAction implements Action {
     MaintenanceWindow mw = req.bindJSON(MaintenanceWindow.class, src);
     MaintenanceHelper.getInstance().addMaintenanceWindow(computer.getName(), mw);
     return FormApply.success(".");
+  }
+
+  /**
+   * UI method to add a recurring maintenance window.
+   *
+   * @param req Stapler Request
+   * @param rsp Stapler Response
+   * @throws IOException      when writing fails
+   * @throws ServletException if an error occurs reading the form
+   */
+  @POST
+  public void doAddRecurring(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    computer.checkAnyPermission(CONFIGURE_AND_DISCONNECT);
+
+    JSONObject src = req.getSubmittedForm();
+    RecurringMaintenanceWindow rmw = req.bindJSON(RecurringMaintenanceWindow.class, src);
+    MaintenanceHelper.getInstance().addRecurringMaintenanceWindow(computer.getName(), rmw);
+    rsp.sendRedirect(".");
   }
 
   /**
@@ -215,6 +251,26 @@ public class MaintenanceAction implements Action {
   }
 
   /**
+   * UI method to delete multiple recurring maintenance windows.
+   *
+   * @param ids A list of recurring maintenance window ids to delete
+   */
+  @JavaScriptMethod
+  public String[] deleteMultipleRecurring(String[] ids) {
+    computer.checkAnyPermission(CONFIGURE_AND_DISCONNECT);
+    List<String> deletedList = new ArrayList<>();
+    for (String id : ids) {
+      try {
+        MaintenanceHelper.getInstance().deleteRecurringMaintenanceWindow(computer.getName(), id);
+        deletedList.add(id);
+      } catch (Throwable e) {
+        LOGGER.log(Level.WARNING, "Error while deleting maintenance window", e);
+      }
+    }
+    return deletedList.toArray(new String[0]);
+  }
+
+  /**
    * UI method to delete a maintenance window.
    *
    * @param id The id of the maintenance to delete
@@ -237,6 +293,28 @@ public class MaintenanceAction implements Action {
   }
 
   /**
+   * UI method to delete a recurring maintenance window.
+   *
+   * @param id The id of the maintenance to delete
+   */
+  @JavaScriptMethod
+  public boolean deleteRecurringMaintenance(String id) {
+    if (computer.hasAnyPermission(CONFIGURE_AND_DISCONNECT)) {
+      if (Util.fixEmptyAndTrim(id) == null) {
+        return false;
+      }
+      try {
+        MaintenanceHelper.getInstance().deleteRecurringMaintenanceWindow(computer.getName(), id);
+        return true;
+      } catch (IOException ioe) {
+        LOGGER.log(Level.WARNING, "Failed to delete recurring maintenance window.", ioe);
+        return false;
+      }
+    }
+    return false;
+  }
+
+  /**
    * UI method to submit the configuration.
    *
    * @param req Stapler Request
@@ -251,12 +329,18 @@ public class MaintenanceAction implements Action {
     JSONObject src = req.getSubmittedForm();
 
     List<MaintenanceWindow> newTargets = req.bindJSONToList(MaintenanceWindow.class, src.get("maintenanceWindows"));
+    List<RecurringMaintenanceWindow> newRecurringTargets = req.bindJSONToList(RecurringMaintenanceWindow.class,
+        src.get("recurringMaintenanceWindows"));
 
-    SortedSet<MaintenanceWindow> mwlist = MaintenanceHelper.getInstance().getMaintenanceWindows(computer.getName());
-    synchronized (mwlist) {
-      mwlist.clear();
-      mwlist.addAll(newTargets);
-      MaintenanceHelper.getInstance().saveMaintenanceWindows(computer.getName(), mwlist);
+    MaintenanceDefinitions md = MaintenanceHelper.getInstance().getMaintenanceDefinitions(computer.getName());
+    synchronized (md) {
+      SortedSet<MaintenanceWindow> scheduled = md.getScheduled();
+      Set<RecurringMaintenanceWindow> recurring = md.getRecurring();
+      scheduled.clear();
+      scheduled.addAll(newTargets);
+      recurring.clear();
+      recurring.addAll(newRecurringTargets);
+      MaintenanceHelper.getInstance().saveMaintenanceWindows(computer.getName(), md);
     }
     return FormApply.success(".");
   }

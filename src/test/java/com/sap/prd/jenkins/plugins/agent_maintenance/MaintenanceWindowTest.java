@@ -20,20 +20,6 @@ public class MaintenanceWindowTest {
   }
 
   @Test
-  public void parseWaitingTime() {
-    MaintenanceWindow m1 = new MaintenanceWindow("2022-01-01 12:00", "2022-01-02 12:00", "test", false, false, "10", "user", "id");
-    assertThat(m1.getMaxWaitMinutes(), is(10));
-    m1 = new MaintenanceWindow("2022-01-01 12:00", "2022-01-02 12:00", "test", false, false, "10m", "user", "id");
-    assertThat(m1.getMaxWaitMinutes(), is(10));
-    m1 = new MaintenanceWindow("2022-01-01 12:00", "2022-01-02 12:00", "test", false, false, "1h", "user", "id");
-    assertThat(m1.getMaxWaitMinutes(), is(60));
-    m1 = new MaintenanceWindow("2022-01-01 12:00", "2022-01-02 12:00", "test", false, false, "2h 10m", "user", "id");
-    assertThat(m1.getMaxWaitMinutes(), is(130));
-    m1 = new MaintenanceWindow("2022-01-01 12:00", "2022-01-02 12:00", "test", false, false, "1d 1h 30m", "user", "id");
-    assertThat(m1.getMaxWaitMinutes(), is(1530));
-  }
-
-  @Test
   public void testEquals() {
     MaintenanceWindow m1 = new MaintenanceWindow("2022-01-01 12:00", "2022-01-02 12:00", "test", false, false, "0", "user", "id");
     MaintenanceWindow m2 = new MaintenanceWindow("2022-01-01 12:00", "2022-01-02 12:00", "test", false, false, "0", "user", "id");

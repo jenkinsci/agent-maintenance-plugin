@@ -16,8 +16,7 @@
             <st:include class="${it.getMaintenanceWindowClass()}" page="config.jelly"/>
             <div class="jenkins-buttons-row jenkins-buttons-row--equal-width">
                 <button type="submit" class="jenkins-button jenkins-button--primary">${%Add}</button>
-			    <button id="cancel-button" type="button"
-                        class="jenkins-button">${%Cancel}</button>
+			          <button id="cancel-button" type="button" class="jenkins-button">${%Cancel}</button>
             </div>
         </f:form>
     </div>
@@ -62,7 +61,7 @@
                        data-message="${%Delete maintenance window}"
                        data-message-success="${%Maintenance window was successfully deleted}"
                        >
-                      <l:icon src="symbol-close-outline plugin-ionicons-api" class="icon-sm alert-danger am__table-icon"
+                      <l:icon src="symbol-trash-outline plugin-ionicons-api" class="icon-sm icon-red am__table-icon"
                               tooltip="Delete this maintenance window"/>
                     </div>
                   </td>
@@ -81,12 +80,84 @@
                 <span id="select-none" class="am__select">${%None}</span>
               </div>
               <div class="am__div--break"/>
-              <button id="edit-button" type="button" class="jenkins-button jenkins-button--primary">${%Edit}</button>
+              <button type="button" id="edit-button" class="jenkins-button jenkins-button--primary">${%Edit}</button>
               <button id="add-button" type="button"
                       class="jenkins-button jenkins-button--primary">${%Add}</button>
               <button id="delete-selected-button-action" type="button"
                       class="jenkins-button jenkins-button--primary"
                       data-message-success="${%All selected maintenance windows were deleted successfully}">${%Delete selected}</button>
+            </f:bottomButtonBar>
+          </p:hasAnyPermission>
+        </f:form>
+        <br/>
+        <br/>
+        <h1>${%Recurring Maintenances}</h1>
+        <div class="am__modal" id="recurring-maintenance-add-form">
+          <div class="am__modal-content">
+            <f:form action="addRecurring" method="post" name="config" tableClass="form-container">
+              <h3>${%Add Recurring Maintenance Window}</h3>
+              <st:include class="${it.getRecurringMaintenanceWindowClass()}" page="config.jelly"/>
+              <f:block>
+                <div class="jenkins-buttons-row jenkins-buttons-row--equal-width">
+                  <button type="submit" class="jenkins-button jenkins-button--primary">${%Add}</button>
+                  <button id="recurring-cancel-button" type="button" class="jenkins-button">${%Cancel}</button>
+                </div>
+              </f:block>
+            </f:form>
+          </div>
+        </div>
+        <f:form action="deleteMultipleRecurring" method="post" name="delete">
+          <table class="jenkins-table jenkins-table--small sortable am__table" id="recurring-maintenance-table">
+            <thead>
+              <tr>
+                <th>${%Schedule}</th>
+                <th>${%Duration}</th>
+                <th>${%Reason}</th>
+                <th>${%Keep Online}</th>
+                <th>${%Max Wait}</th>
+                <th>${%Auto Connect}</th>
+                <th>${%Created By}</th>
+                <p:hasAnyPermission permissions="${it.CONFIGURE_AND_DISCONNECT}">
+                  <th></th>
+                  <th></th>
+                </p:hasAnyPermission>
+              </tr>
+            </thead>
+            <tbody>
+              <j:forEach var="m" items="${it.recurringMaintenanceWindows}">
+                <j:set var="mid" value="${h.escape(m.id)}"/>
+                <tr id="${mid}">
+                  <td>${m.startTimeSpec}</td>
+                  <td>${m.duration}</td>
+                  <td>${m.reason}</td>
+                  <td class="center" ><f:checkbox class="am__checkbox--disabled" checked="${m.keepUpWhenActive ? 'true' : null}"/></td>
+                  <td class="right">${m.maxWaitMinutes}</td>
+                  <td class="center"><f:checkbox class="am__checkbox--disabled" checked="${m.takeOnline ? 'true' : null}"/></td>
+                  <td>${m.userid}</td>
+                  <p:hasAnyPermission permissions="${it.CONFIGURE_AND_DISCONNECT}">
+                    <td>
+                      <f:checkbox class="am__checkbox" name="${mid}"/>
+                    </td>
+                    <td class="delete">
+                      <div class="am__action-delete-recurring"
+                           data-message="${%Delete recurring maintenance window}"
+                           data-message-success="${%Recurring maintenance window was successfully deleted}"
+                      >
+                        <l:icon src="symbol-trash-outline plugin-ionicons-api" class="icon-sm icon-red am__table-icon"
+                                tooltip="Delete this recurring maintenance window"/>
+                      </div>
+                    </td>
+                  </p:hasAnyPermission>
+                </tr>
+              </j:forEach>
+            </tbody>
+          </table>
+          <p:hasAnyPermission permissions="${it.CONFIGURE_AND_DISCONNECT}">
+            <f:bottomButtonBar>
+              <button type="button" id="edit-recurring" class="jenkins-button jenkins-button--primary">${%Edit}</button>
+              <button type="button" id="add-recurring" class="jenkins-button jenkins-button--primary">${%Add}</button>
+              <button type="button" id="delete-selected-recurring-action" class="jenkins-button jenkins-button--primary"
+                      data-message-success="${%All selected recurring maintenance windows were deleted successfully}">${%Delete selected}</button>
             </f:bottomButtonBar>
           </p:hasAnyPermission>
         </f:form>
@@ -98,6 +169,7 @@
                       data-message="${%Disable Agent Maintenance Availability}">${%Disable}</button>
           </f:entry>
         </l:hasPermission>
+
       </j:if>
       <j:if test="${!it.enabled}">
         <l:hasPermission permission="${it.computer.CONFIGURE}">

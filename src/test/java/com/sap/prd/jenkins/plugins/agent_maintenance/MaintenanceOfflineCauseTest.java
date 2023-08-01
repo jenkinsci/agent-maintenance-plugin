@@ -63,11 +63,12 @@ public class MaintenanceOfflineCauseTest {
             "test",
             mw.getId());
 
-    SortedSet<MaintenanceWindow> mwlist = MaintenanceHelper.getInstance().getMaintenanceWindows(agent.getNodeName());
-    synchronized (mwlist) {
-      mwlist.clear();
-      mwlist.add(updated);
-      MaintenanceHelper.getInstance().saveMaintenanceWindows(agent.getNodeName(), mwlist);
+    MaintenanceDefinitions mwdefinitions = MaintenanceHelper.getInstance().getMaintenanceDefinitions(agent.getNodeName());
+    synchronized (mwdefinitions) {
+      SortedSet<MaintenanceWindow> mwList = mwdefinitions.getScheduled();
+      mwList.clear();
+      mwList.add(updated);
+      MaintenanceHelper.getInstance().saveMaintenanceWindows(agent.getNodeName(), mwdefinitions);
     }
     assertThat(moc.getReason(), is("changed"));
   }

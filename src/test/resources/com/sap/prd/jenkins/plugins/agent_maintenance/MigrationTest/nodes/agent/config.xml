@@ -1,0 +1,20 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<org.jenkinci.plugins.mock__slave.MockSlave plugin="mock-slave@109.vac7845f10470">
+    <name>agent</name>
+    <description></description>
+    <remoteFS>\mock-agents\agent</remoteFS>
+    <numExecutors>1</numExecutors>
+    <mode>NORMAL</mode>
+    <retentionStrategy class="com.sap.prd.jenkins.plugins.agent_maintenance.AgentMaintenanceRetentionStrategy" plugin="agent-maintenance@1.999999-SNAPSHOT">
+        <regularRetentionStrategy class="hudson.slaves.RetentionStrategy$Demand">
+            <inDemandDelay>5</inDemandDelay>
+            <idleDelay>1</idleDelay>
+        </regularRetentionStrategy>
+    </retentionStrategy>
+    <launcher class="org.jenkinci.plugins.mock_slave.MockSlaveLauncher">
+        <latency>0</latency>
+        <bandwidth>0</bandwidth>
+    </launcher>
+    <label></label>
+    <nodeProperties/>
+</org.jenkinci.plugins.mock__slave.MockSlave>
