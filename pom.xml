@@ -42,7 +42,7 @@
     <revision>2</revision>
     <changelist>999999-SNAPSHOT</changelist>
     <gitHubRepo>jenkinsci/agent-maintenance-plugin</gitHubRepo>
-    <jenkins.version>2.387.2</jenkins.version>
+    <jenkins.version>2.387.3</jenkins.version>
     <powermock.version>1.6.1</powermock.version>
     <checkstyle.version>10.12.1</checkstyle.version>
     <hpi.compatibleSinceVersion>2.0</hpi.compatibleSinceVersion>
