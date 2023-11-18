@@ -168,8 +168,6 @@ Behaviour.specify("#add-button", 'agent-maintenance', 0, function(e) {
   e.onclick = function() {
     openForm("maintenance-add-form")
   };
-  let table = document.getElementById("maintenance-table");
-  let tbody = table.tBodies[0];
   e.style.display = 'inline-flex';
   e.classList.remove("jenkins-hidden");
 });
