@@ -37,12 +37,17 @@ function refresh() {
         tBody.removeChild(row);
       }
     }
+    if (tBody.children.length == 0) {
+      document.getElementById("delete-selected-button-action").style.display = "none";
+      document.getElementById("edit-button").style.display = "none";
+      document.getElementById("am__div--select").style.display = "none";
+    }
   });
 }
 
 
 window.addEventListener("DOMContentLoaded", (event) => {
-  window.setInterval(refresh, 20000);;
+  window.setInterval(refresh, 20000);
 });
 
 var selectMaintenanceWindows = function(toggle, className) {
@@ -59,7 +64,7 @@ Behaviour.specify(".am__action-delete", 'agent-maintenance', 0, function(e) {
     let message = this.getAttribute("data-message");
     let messageSuccess = this.getAttribute("data-message-success");
     let id = row.id;
-    if (confirm(message)) {
+    dialog.confirm(message).then( () => {
       maintenanceJavaScriptBind.deleteMaintenance(id, function(response) {
         let result = response.responseObject();
         if (result) {
@@ -69,12 +74,13 @@ Behaviour.specify(".am__action-delete", 'agent-maintenance', 0, function(e) {
           if (tbody.children.length == 0) {
             document.getElementById("edit-button").style.display = "none";
             document.getElementById("delete-selected-button-action").style.display = "none";
+            document.getElementById("am__div--select").style.display = "none";
           }
         } else {
           notificationBar.show("Something went wrong. Please check the logs.", notificationBar.ERROR);
         }
       });
-    }
+    });
   }
 });
 
@@ -84,7 +90,7 @@ Behaviour.specify(".am__action-delete-recurring", 'agent-maintenance', 0, functi
     let message = this.getAttribute("data-message");
     let messageSuccess = this.getAttribute("data-message-success");
     let id = row.id;
-    if (confirm(message)) {
+    dialog.confirm(message).then( () => {
       maintenanceJavaScriptBind.deleteRecurringMaintenance(id, function(response) {
         let result = response.responseObject();
         if (result) {
@@ -94,12 +100,13 @@ Behaviour.specify(".am__action-delete-recurring", 'agent-maintenance', 0, functi
           if (tbody.children.length == 0) {
             document.getElementById("edit-recurring").style.display = "none";
             document.getElementById("delete-selected-recurring-action").style.display = "none";
+            document.getElementById("am__div--select").style.display = "none";
           }
         } else {
           notificationBar.show("Something went wrong. Please check the logs.", notificationBar.ERROR);
         }
       });
-    }
+    });
   }
 });
 
@@ -110,7 +117,7 @@ Behaviour.specify(".am__link-delete", 'agent-maintenance', 0, function(e) {
     let row = findAncestor(this, "TR");
     let id = row.id;
     let computerName = row.getAttribute("data-computer-name");
-    if (confirm(message)) {
+    dialog.confirm(message).then( () => {
       maintenanceJavaScriptBind.deleteMaintenance(id, computerName, function(response) {
         let result = response.responseObject();
         if (result) {
@@ -119,47 +126,50 @@ Behaviour.specify(".am__link-delete", 'agent-maintenance', 0, function(e) {
           notificationBar.show(messageSuccess, notificationBar.SUCCESS)
           if (tbody.children.length == 0) {
             document.getElementById("delete-selected-button-link").style.display = "none";
+            document.getElementById("am__div--select").style.display = "none";
           }
         } else {
           notificationBar.show("Something went wrong. Please check the logs.", notificationBar.ERROR);
         }
       });
-    }
+    });
   }
 });
 
 Behaviour.specify(".am__disable", 'agent-maintenance', 0, function(e) {
   e.onclick = function() {
     let message = this.getAttribute("data-message");
-    if (confirm(message)) {
+    dialog.confirm(message).then( () => {
       fetch("disable",  {
           method: "POST",
           headers: crumb.wrap({}),
         }
       );
       location.reload();
-    };
+    });
   }
 });
 
 Behaviour.specify(".am__enable", 'agent-maintenance', 0, function(e) {
   e.onclick = function() {
     let message = this.getAttribute("data-message");
-    if (confirm(message)) {
+    dialog.confirm(message).then( () => {
       fetch("enable",  {
           method: "POST",
           headers: crumb.wrap({}),
         }
       );
       location.reload();
-    };
+    });
   }
 });
 
 Behaviour.specify("#add-button", 'agent-maintenance', 0, function(e) {
-    e.onclick = function() {
+  e.onclick = function() {
     openForm("maintenance-add-form")
-    };
+  };
+  e.style.display = 'inline-flex';
+  e.classList.remove("jenkins-hidden");
 });
 
 Behaviour.specify("#add-recurring", 'agent-maintenance', 0, function(e) {
@@ -174,8 +184,9 @@ Behaviour.specify("#edit-button", 'agent-maintenance', 0, function(e) {
     }
     let table = document.getElementById("maintenance-table");
     let tbody = table.tBodies[0];
-    if (tbody.children.length == 0) {
-      e.style.display = 'none';
+    if (tbody.children.length != 0) {
+      e.style.display = 'inline-flex';
+      e.classList.remove("jenkins-hidden");
     }
 });
 
@@ -237,8 +248,12 @@ Behaviour.specify("#delete-selected-button-action", 'agent-maintenance', 0, func
       });
     }
   }
-  if (tbody.children.length == 0) {
-    e.style.display = 'none';
+  if (tbody.children.length != 0) {
+    e.style.display = 'inline-flex';
+    e.classList.remove("jenkins-hidden");
+    let select = document.getElementById("am__div--select");
+    select.classList.remove("jenkins-hidden");
+    select.style.display="block";
   }
 });
 
@@ -319,8 +334,12 @@ Behaviour.specify("#delete-selected-button-link", 'agent-maintenance', 0, functi
       });
     }
   }
-  if (tbody.children.length == 0) {
-    e.style.display = 'none';
+  if (tbody.children.length != 0) {
+    e.style.display = "inline-flex";
+    e.classList.remove("jenkins-hidden")
+    let select = document.getElementById("am__div--select");
+    select.classList.remove("jenkins-hidden");
+    select.style.display="block";
   }
 });
 
