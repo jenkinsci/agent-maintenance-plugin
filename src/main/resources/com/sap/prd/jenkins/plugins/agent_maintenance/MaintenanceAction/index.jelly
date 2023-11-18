@@ -4,25 +4,19 @@
   <l:layout title="${%Planned Maintenances}" norefresh="true">
     <st:include it="${it.computer}" page="sidepanel.jelly"/>
     <l:main-panel>
-        <st:bind var="maintenanceJavaScriptBind" value="${it}"/>
-        <st:adjunct includes="com.sap.prd.jenkins.plugins.agent_maintenance.agent-maintenance"/>
+      <st:bind var="maintenanceJavaScriptBind" value="${it}"/>
+      <st:adjunct includes="com.sap.prd.jenkins.plugins.agent_maintenance.agent-maintenance"/>
       <j:if test="${it.enabled}">
         <h1>${%Planned Maintenances}</h1>
 
-<div class="am__modal" id="maintenance-add-form">
-    <div class="am__modal-content">
-        <f:form action="add" method="post" name="config" tableClass="form-container">
-            <h3>${%Add Maintenance Window}</h3>
-            <st:include class="${it.getMaintenanceWindowClass()}" page="config.jelly"/>
-            <div class="jenkins-buttons-row jenkins-buttons-row--equal-width">
-                <button type="submit" class="jenkins-button jenkins-button--primary">${%Add}</button>
-			          <button id="cancel-button" type="button" class="jenkins-button">${%Cancel}</button>
-            </div>
-        </f:form>
-    </div>
+<div class="am__modal" id="maintenance-add-form" data-title="${%Add Maintenance Window}">
+  <f:form action="add" method="post" name="config" class="no-json">
+    <st:include class="${it.getMaintenanceWindowClass()}" page="config.jelly"/>
+  </f:form>
 </div>
 
         <f:form action="deleteMultiple" method="post" name="delete">
+          <j:set var="mw" value="${it.maintenanceWindows}"/>
           <table class="jenkins-table jenkins-table--small sortable am__table" id="maintenance-table">
             <thead>
               <tr>
@@ -42,37 +36,37 @@
               </tr>
             </thead>
             <tbody>
-            <j:forEach var="m" items="${it.maintenanceWindows}">
-              <j:set var="mid" value="${h.escape(m.id)}"/>
-              <tr id="${mid}" class="${m.isMaintenanceScheduled() ? 'active': 'inactive'}">
-                <td>${m.startTime}</td>
-                <td>${m.endTime}</td>
-                <td>${m.reason}</td>
-                <td class="center" ><f:checkbox class="am__checkbox--disabled" checked="${m.keepUpWhenActive ? 'true' : null}"/></td>
-                <td class="right">${m.maxWaitMinutes}</td>
-                <td class="center"><f:checkbox class="am__checkbox--disabled" checked="${m.takeOnline ? 'true' : null}"/></td>
-                <td>${m.userid}</td>
-                <p:hasAnyPermission permissions="${it.CONFIGURE_AND_DISCONNECT}">
-                  <td>
-                    <f:checkbox class="am__checkbox" name="${mid}"/>
-                  </td>
-                  <td class="delete">
-                    <div class="am__action-delete"
-                       data-message="${%Delete maintenance window}"
-                       data-message-success="${%Maintenance window was successfully deleted}"
-                       >
-                      <l:icon src="symbol-trash-outline plugin-ionicons-api" class="icon-sm icon-red am__table-icon"
-                              tooltip="Delete this maintenance window"/>
-                    </div>
-                  </td>
-                </p:hasAnyPermission>
-              </tr>
-            </j:forEach>
+              <j:forEach var="m" items="${mw}">
+                <j:set var="mid" value="${h.escape(m.id)}"/>
+                <tr id="${mid}" class="${m.isMaintenanceScheduled() ? 'active': 'inactive'}">
+                  <td>${m.startTime}</td>
+                  <td>${m.endTime}</td>
+                  <td>${m.reason}</td>
+                  <td class="center" ><f:checkbox readOnlyMode="true" checked="${m.keepUpWhenActive ? 'true' : null}"/></td>
+                  <td class="right">${m.maxWaitMinutes}</td>
+                  <td class="center"><f:checkbox readOnlyMode="true" checked="${m.takeOnline ? 'true' : null}"/></td>
+                  <td>${m.userid}</td>
+                  <p:hasAnyPermission permissions="${it.CONFIGURE_AND_DISCONNECT}">
+                    <td>
+                      <f:checkbox class="am__checkbox" name="${mid}"/>
+                    </td>
+                    <td class="delete">
+                      <div class="am__action-delete"
+                         data-message="${%Delete maintenance window}"
+                         data-message-success="${%Maintenance window was successfully deleted}"
+                         >
+                        <l:icon src="symbol-trash-outline plugin-ionicons-api" class="icon-sm icon-red am__table-icon"
+                                tooltip="Delete this maintenance window"/>
+                      </div>
+                    </td>
+                  </p:hasAnyPermission>
+                </tr>
+              </j:forEach>
             </tbody>
           </table>
           <p:hasAnyPermission permissions="${it.CONFIGURE_AND_DISCONNECT}">
             <f:bottomButtonBar>
-              <div id="am__div--select" class="jenkins-hidden">
+              <div id="am__div--select" class="${mw.size() == 0?'jenkins-hidden':''}">
                 Select:
                 <span id="select-all" class="am__select">${%All}</span>,
                 <span id="select-active" class="am__select">${%Active}</span>,
@@ -80,33 +74,25 @@
                 <span id="select-none" class="am__select">${%None}</span>
               </div>
               <div class="am__div--break"/>
-              <button type="button" id="edit-button" class="jenkins-button jenkins-button--primary jenkins-hidden">${%Edit}</button>
+              <button type="button" id="edit-button" class="jenkins-button jenkins-button--primary  ${mw.size() == 0?'jenkins-hidden':''}">${%Edit}</button>
               <button id="add-button" type="button"
-                      class="jenkins-button jenkins-button--primary jenkins-hidden">${%Add}</button>
+                      class="jenkins-button jenkins-button--primary">${%Add}</button>
               <button id="delete-selected-button-action" type="button"
-                      class="jenkins-button jenkins-button--primary jenkins-hidden"
-                      data-message-success="${%All selected maintenance windows were deleted successfully}">${%Delete selected}</button>
+                      class="jenkins-button jenkins-button--primary delete-selected-button ${mw.size() == 0?'jenkins-hidden':''}"
+                      data-message-success="${%All selected maintenance windows were deleted successfully}" disabled="true">${%Delete selected}</button>
             </f:bottomButtonBar>
           </p:hasAnyPermission>
         </f:form>
         <br/>
         <br/>
         <h1>${%Recurring Maintenances}</h1>
-        <div class="am__modal" id="recurring-maintenance-add-form">
-          <div class="am__modal-content">
-            <f:form action="addRecurring" method="post" name="config" tableClass="form-container">
-              <h3>${%Add Recurring Maintenance Window}</h3>
-              <st:include class="${it.getRecurringMaintenanceWindowClass()}" page="config.jelly"/>
-              <f:block>
-                <div class="jenkins-buttons-row jenkins-buttons-row--equal-width">
-                  <button type="submit" class="jenkins-button jenkins-button--primary">${%Add}</button>
-                  <button id="recurring-cancel-button" type="button" class="jenkins-button">${%Cancel}</button>
-                </div>
-              </f:block>
-            </f:form>
-          </div>
+        <div class="am__modal" id="recurring-maintenance-add-form" data-title="${%Add Recurring Maintenance Window}">
+          <f:form action="addRecurring" method="post" name="config" class="no-json">
+            <st:include class="${it.getRecurringMaintenanceWindowClass()}" page="config.jelly"/>
+          </f:form>
         </div>
         <f:form action="deleteMultipleRecurring" method="post" name="delete">
+          <j:set var="recurring" value="${it.recurringMaintenanceWindows}"/>
           <table class="jenkins-table jenkins-table--small sortable am__table" id="recurring-maintenance-table">
             <thead>
               <tr>
@@ -124,15 +110,15 @@
               </tr>
             </thead>
             <tbody>
-              <j:forEach var="m" items="${it.recurringMaintenanceWindows}">
+              <j:forEach var="m" items="${recurring}">
                 <j:set var="mid" value="${h.escape(m.id)}"/>
                 <tr id="${mid}">
                   <td>${m.startTimeSpec}</td>
                   <td>${m.duration}</td>
                   <td>${m.reason}</td>
-                  <td class="center" ><f:checkbox class="am__checkbox--disabled" checked="${m.keepUpWhenActive ? 'true' : null}"/></td>
+                  <td class="center" ><f:checkbox readOnlyMode="true" checked="${m.keepUpWhenActive ? 'true' : null}"/></td>
                   <td class="right">${m.maxWaitMinutes}</td>
-                  <td class="center"><f:checkbox class="am__checkbox--disabled" checked="${m.takeOnline ? 'true' : null}"/></td>
+                  <td class="center"><f:checkbox readOnlyMode="true" checked="${m.takeOnline ? 'true' : null}"/></td>
                   <td>${m.userid}</td>
                   <p:hasAnyPermission permissions="${it.CONFIGURE_AND_DISCONNECT}">
                     <td>
@@ -154,10 +140,10 @@
           </table>
           <p:hasAnyPermission permissions="${it.CONFIGURE_AND_DISCONNECT}">
             <f:bottomButtonBar>
-              <button type="button" id="edit-recurring" class="jenkins-button jenkins-button--primary">${%Edit}</button>
+              <button type="button" id="edit-recurring" class="jenkins-button jenkins-button--primary ${recurring.size() == 0?'jenkins-hidden':''}">${%Edit}</button>
               <button type="button" id="add-recurring" class="jenkins-button jenkins-button--primary">${%Add}</button>
-              <button type="button" id="delete-selected-recurring-action" class="jenkins-button jenkins-button--primary"
-                      data-message-success="${%All selected recurring maintenance windows were deleted successfully}">${%Delete selected}</button>
+              <button type="button" id="delete-selected-recurring-action" class="jenkins-button delete-selected-button jenkins-button--primary ${recurring.size() == 0?'jenkins-hidden':''}"
+                      data-message-success="${%All selected recurring maintenance windows were deleted successfully}" disabled="true">${%Delete selected}</button>
             </f:bottomButtonBar>
           </p:hasAnyPermission>
         </f:form>

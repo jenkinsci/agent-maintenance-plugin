@@ -1,17 +1,12 @@
 function openForm(formName) {
-    document.getElementById(formName).style.display = "flex";
-    document.addEventListener("keydown", cancelAdd);
-}
-
-function closeForm(formName) {
-    document.getElementById(formName).style.display = "none";
-    document.removeEventListener("keydown", cancelAdd);
-}
-
-function cancelAdd(event) {
-    if (event.key === 'Escape') {
-        closeForm();
-    }
+    const formTemplate = document.getElementById(formName);
+    const form = formTemplate.firstElementChild.cloneNode(true);
+    const title = formTemplate.dataset.title;
+    form.classList.remove("no-json");
+    dialog.form(form, {
+      title: title,
+      okText: dialog.translations.add,
+    });
 }
 
 function refresh() {
@@ -19,7 +14,7 @@ function refresh() {
   let tBody = table.tBodies[0];
   maintenanceJavaScriptBind.getMaintenanceStatus(function(response) {
     let result = response.responseObject();
-    for (let rowid = 0; rowid < tBody.rows.length; rowid++) {
+    for (let rowid = tBody.rows.length - 1; rowid >= 0; rowid--) {
       let row = tBody.rows[rowid];
       if (row.id in result) {
         if (result[row.id]) {
@@ -38,29 +33,32 @@ function refresh() {
       }
     }
     if (tBody.children.length == 0) {
-      document.getElementById("delete-selected-button-action").style.display = "none";
-      document.getElementById("edit-button").style.display = "none";
-      document.getElementById("am__div--select").style.display = "none";
+      document.querySelector(".delete-selected-button").classList.add("jenkins-hidden");
+      let editButton = document.getElementById("edit-button");
+      if (editButton != null) {
+        document.getElementById("edit-button").classList.add("jenkins-hidden");
+      }
+      document.getElementById("am__div--select").classList.add("jenkins-hidden");
     }
   });
 }
-
 
 window.addEventListener("DOMContentLoaded", (event) => {
   window.setInterval(refresh, 20000);
 });
 
-var selectMaintenanceWindows = function(toggle, className) {
+let selectMaintenanceWindows = function(toggle, className) {
     let table = document.getElementById("maintenance-table");
     let inputs = table.querySelectorAll('tr' + className + ' input.am__checkbox');
     for (let input of inputs) {
       input.checked = toggle;
     }
+    updateDeleteSelectedButton(table);
 };
 
 Behaviour.specify(".am__action-delete", 'agent-maintenance', 0, function(e) {
   e.onclick = function () {
-    let row = findAncestor(this, "TR");
+    let row = this.closest("TR");
     let message = this.getAttribute("data-message");
     let messageSuccess = this.getAttribute("data-message-success");
     let id = row.id;
@@ -72,9 +70,9 @@ Behaviour.specify(".am__action-delete", 'agent-maintenance', 0, function(e) {
           tbody.removeChild(row);
           notificationBar.show(messageSuccess, notificationBar.SUCCESS)
           if (tbody.children.length == 0) {
-            document.getElementById("edit-button").style.display = "none";
-            document.getElementById("delete-selected-button-action").style.display = "none";
-            document.getElementById("am__div--select").style.display = "none";
+            document.getElementById("edit-button").classList.add("jenkins-hidden");
+            document.getElementById("delete-selected-button-action").classList.add("jenkins-hidden");
+            document.getElementById("am__div--select").classList.add("jenkins-hidden");
           }
         } else {
           notificationBar.show("Something went wrong. Please check the logs.", notificationBar.ERROR);
@@ -86,7 +84,7 @@ Behaviour.specify(".am__action-delete", 'agent-maintenance', 0, function(e) {
 
 Behaviour.specify(".am__action-delete-recurring", 'agent-maintenance', 0, function(e) {
   e.onclick = function () {
-    let row = findAncestor(this, "TR");
+    let row = this.closest("TR");
     let message = this.getAttribute("data-message");
     let messageSuccess = this.getAttribute("data-message-success");
     let id = row.id;
@@ -98,9 +96,9 @@ Behaviour.specify(".am__action-delete-recurring", 'agent-maintenance', 0, functi
           tbody.removeChild(row);
           notificationBar.show(messageSuccess, notificationBar.SUCCESS)
           if (tbody.children.length == 0) {
-            document.getElementById("edit-recurring").style.display = "none";
-            document.getElementById("delete-selected-recurring-action").style.display = "none";
-            document.getElementById("am__div--select").style.display = "none";
+            document.getElementById("edit-recurring").classList.add("jenkins-hidden");
+            document.getElementById("delete-selected-recurring-action").classList.add("jenkins-hidden");
+            document.getElementById("am__div--select").classList.add("jenkins-hidden");
           }
         } else {
           notificationBar.show("Something went wrong. Please check the logs.", notificationBar.ERROR);
@@ -114,7 +112,7 @@ Behaviour.specify(".am__link-delete", 'agent-maintenance', 0, function(e) {
   e.onclick = function () {
     let message = this.getAttribute("data-message");
     let messageSuccess = this.getAttribute("data-message-success");
-    let row = findAncestor(this, "TR");
+    let row = this.closest("TR");
     let id = row.id;
     let computerName = row.getAttribute("data-computer-name");
     dialog.confirm(message).then( () => {
@@ -125,8 +123,8 @@ Behaviour.specify(".am__link-delete", 'agent-maintenance', 0, function(e) {
           tbody.removeChild(row);
           notificationBar.show(messageSuccess, notificationBar.SUCCESS)
           if (tbody.children.length == 0) {
-            document.getElementById("delete-selected-button-link").style.display = "none";
-            document.getElementById("am__div--select").style.display = "none";
+            document.getElementById("delete-selected-button-link").classList.add("jenkins-hidden");
+            document.getElementById("am__div--select").classList.add("jenkins-hidden");
           }
         } else {
           notificationBar.show("Something went wrong. Please check the logs.", notificationBar.ERROR);
@@ -168,8 +166,6 @@ Behaviour.specify("#add-button", 'agent-maintenance', 0, function(e) {
   e.onclick = function() {
     openForm("maintenance-add-form")
   };
-  e.style.display = 'inline-flex';
-  e.classList.remove("jenkins-hidden");
 });
 
 Behaviour.specify("#add-recurring", 'agent-maintenance', 0, function(e) {
@@ -184,10 +180,6 @@ Behaviour.specify("#edit-button", 'agent-maintenance', 0, function(e) {
     }
     let table = document.getElementById("maintenance-table");
     let tbody = table.tBodies[0];
-    if (tbody.children.length != 0) {
-      e.style.display = 'inline-flex';
-      e.classList.remove("jenkins-hidden");
-    }
 });
 
 Behaviour.specify("#edit-recurring", 'agent-maintenance', 0, function(e) {
@@ -197,7 +189,7 @@ Behaviour.specify("#edit-recurring", 'agent-maintenance', 0, function(e) {
     let table = document.getElementById("recurring-maintenance-table");
     let tbody = table.tBodies[0];
     if (tbody.children.length == 0) {
-      e.style.display = 'none';
+      e.classList.add("jenkins-hidden");
     }
 });
 
@@ -213,6 +205,29 @@ Behaviour.specify("#recurring-cancel-button", 'agent-maintenance', 0, function(e
     }
 });
 
+const anyCheckboxesSelected = (table) => {
+  return (
+    table.querySelectorAll("input.am__checkbox:checked:not(:disabled)")
+      .length > 0
+  );
+};
+
+const updateDeleteSelectedButton = (table) => {
+  const form = table.closest("form");
+  const deleteSelectedButton = form.querySelector(".delete-selected-button");
+  deleteSelectedButton.disabled = !anyCheckboxesSelected(table);
+};
+
+Behaviour.specify(".am__table", "agent-maintenance", 0, function(table) {
+  const checkboxes = table.querySelectorAll("input.am__checkbox");
+
+  checkboxes.forEach((checkbox) => {
+    checkbox.addEventListener("change", () => {
+      updateDeleteSelectedButton(table);
+    });
+  });
+});
+
 Behaviour.specify("#delete-selected-button-action", 'agent-maintenance', 0, function(e) {
   let table = document.getElementById("maintenance-table");
   let tbody = table.tBodies[0];
@@ -221,7 +236,7 @@ Behaviour.specify("#delete-selected-button-action", 'agent-maintenance', 0, func
     let checkedRows = tbody.querySelectorAll("input.am__checkbox:checked");
     let checkedList = [];
     for (let checked of checkedRows) {
-      let row = findAncestor(checked, "TR");
+      let row = checked.closest("TR");
       let id = row.id;
       checkedList.push(id);
     }
@@ -242,18 +257,11 @@ Behaviour.specify("#delete-selected-button-action", 'agent-maintenance', 0, func
           notificationBar.show(messageSuccess, notificationBar.SUCCESS)
         }
         if (tbody.children.length == 0) {
-          document.getElementById("edit-button").style.display = "none";
-          e.style.display = 'none';
+          document.getElementById("edit-button").classList.add("jenkins-hidden");
+          e.classList.add("jenkins-hidden");
         }
       });
     }
-  }
-  if (tbody.children.length != 0) {
-    e.style.display = 'inline-flex';
-    e.classList.remove("jenkins-hidden");
-    let select = document.getElementById("am__div--select");
-    select.classList.remove("jenkins-hidden");
-    select.style.display="block";
   }
 });
 
@@ -265,7 +273,7 @@ Behaviour.specify("#delete-selected-recurring-action", 'agent-maintenance', 0, f
     let checkedRows = tbody.querySelectorAll("input.am__checkbox:checked");
     let checkedList = [];
     for (let checked of checkedRows) {
-      let row = findAncestor(checked, "TR");
+      let row = checked.closest("TR");
       let id = row.id;
       checkedList.push(id);
     }
@@ -286,14 +294,14 @@ Behaviour.specify("#delete-selected-recurring-action", 'agent-maintenance', 0, f
           notificationBar.show(messageSuccess, notificationBar.SUCCESS)
         }
         if (tbody.children.length == 0) {
-          document.getElementById("edit-recurring").style.display = "none";
-          e.style.display = 'none';
+          document.getElementById("edit-recurring").classList.add("jenkins-hidden");
+          e.classList.add("jenkins-hidden");
         }
       });
     }
   }
   if (tbody.children.length == 0) {
-    e.style.display = 'none';
+    e.classList.add("jenkins-hidden");
   }
 });
 
@@ -306,7 +314,7 @@ Behaviour.specify("#delete-selected-button-link", 'agent-maintenance', 0, functi
     let checkedList = {};
     let size = 0;
     for (let checked of checkedRows) {
-      let row = findAncestor(checked, "TR");
+      let row = checked.closest("TR");
       let id = row.id;
       let computerName = row.getAttribute("data-computer-name");
       checkedList[id] = computerName;
@@ -329,17 +337,10 @@ Behaviour.specify("#delete-selected-button-link", 'agent-maintenance', 0, functi
           notificationBar.show(messageSuccess, notificationBar.SUCCESS)
         }
         if (tbody.children.length == 0) {
-          e.style.display = 'none';
+          e.classList.add("jenkins-hidden");
         }
       });
     }
-  }
-  if (tbody.children.length != 0) {
-    e.style.display = "inline-flex";
-    e.classList.remove("jenkins-hidden")
-    let select = document.getElementById("am__div--select");
-    select.classList.remove("jenkins-hidden");
-    select.style.display="block";
   }
 });
 
@@ -367,8 +368,3 @@ Behaviour.specify("#select-none", 'agent-maintenance', 0, function(e) {
     selectMaintenanceWindows(false, "");
   }
 });
-
-Behaviour.specify(".am__checkbox--disabled", 'agent-maintenance', 0, function(e) {
-  e.disabled = true;
-});
-
