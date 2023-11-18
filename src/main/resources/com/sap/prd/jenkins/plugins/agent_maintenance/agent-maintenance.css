@@ -87,7 +87,7 @@
   height: 0;
 }
 
-.am__div--select {
+#am__div--select {
   flex-grow: 1;
 }
 

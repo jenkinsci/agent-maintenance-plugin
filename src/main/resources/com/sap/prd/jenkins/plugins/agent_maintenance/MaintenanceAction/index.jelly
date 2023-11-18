@@ -72,7 +72,7 @@
           </table>
           <p:hasAnyPermission permissions="${it.CONFIGURE_AND_DISCONNECT}">
             <f:bottomButtonBar>
-              <div class="am__div--select">
+              <div id="am__div--select" class="jenkins-hidden">
                 Select:
                 <span id="select-all" class="am__select">${%All}</span>,
                 <span id="select-active" class="am__select">${%Active}</span>,
@@ -80,11 +80,11 @@
                 <span id="select-none" class="am__select">${%None}</span>
               </div>
               <div class="am__div--break"/>
-              <button type="button" id="edit-button" class="jenkins-button jenkins-button--primary">${%Edit}</button>
+              <button type="button" id="edit-button" class="jenkins-button jenkins-button--primary jenkins-hidden">${%Edit}</button>
               <button id="add-button" type="button"
-                      class="jenkins-button jenkins-button--primary">${%Add}</button>
+                      class="jenkins-button jenkins-button--primary jenkins-hidden">${%Add}</button>
               <button id="delete-selected-button-action" type="button"
-                      class="jenkins-button jenkins-button--primary"
+                      class="jenkins-button jenkins-button--primary jenkins-hidden"
                       data-message-success="${%All selected maintenance windows were deleted successfully}">${%Delete selected}</button>
             </f:bottomButtonBar>
           </p:hasAnyPermission>

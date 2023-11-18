@@ -73,7 +73,7 @@
                     <div class="am__link-delete"
                          data-message="${%deleteMaintenanceOf} ${c.displayName}"
                          data-message-success="${%Maintenance window was successfully deleted}">
-                      <l:icon src="symbol-close-outline plugin-ionicons-api" class="icon-sm alert-danger am__table-icon"
+                      <l:icon src="symbol-trash-outline plugin-ionicons-api" class="icon-sm icon-red am__table-icon"
                               tooltip="Delete this maintenance windows for ${h.escape(c.displayName)}"/>
                     </div>
                   </td>
@@ -94,7 +94,7 @@
           </div>
         </j:if>
         <f:bottomButtonBar>
-          <div class="am__div--select">
+          <div id="am__div--select" class="jenkins-hidden">
             Select:
             <span id="select-all" class="am__select">${%All}</span>,
             <span id="select-active" class="am__select">${%Active}</span>,
