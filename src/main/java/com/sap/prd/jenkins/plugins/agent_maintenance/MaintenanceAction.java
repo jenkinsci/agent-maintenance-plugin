@@ -49,7 +49,9 @@ public class MaintenanceAction implements Action {
     return computer;
   }
   
-  private boolean isVisible() {
+
+  @Restricted(NoExternalUse.class)
+  public boolean isVisible() {
     return (computer.hasPermission(Computer.DISCONNECT) || computer.hasPermission(Computer.CONFIGURE)
         || computer.hasPermission(Computer.EXTENDED_READ)) && computer.getNode() != null;
   }
