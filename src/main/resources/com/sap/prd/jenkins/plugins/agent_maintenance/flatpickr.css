@@ -1,0 +1,8 @@
+.am__flatpickr {
+  display: flex;
+  gap: 5px;
+}
+
+.am__flatpickr > input {
+  width: 150px;
+}

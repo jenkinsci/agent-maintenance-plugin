@@ -70,3 +70,7 @@
   flex-wrap: wrap;
   row-gap: 5px;
 }
+
+.jenkins-dialog__contents {
+  padding-top: 5px;
+}
