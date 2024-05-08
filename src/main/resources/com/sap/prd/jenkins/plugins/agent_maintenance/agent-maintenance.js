@@ -6,6 +6,7 @@ function openForm(formName) {
     dialog.form(form, {
       title: title,
       okText: dialog.translations.add,
+      minWidth: "900px",
     });
 }
 
