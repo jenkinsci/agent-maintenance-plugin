@@ -1,31 +1,6 @@
 /* The popup form - hidden by default */
 .am__modal {
-    display: none; /* Hidden by default */
-    position: fixed; /* Stay in place */
-    flex-direction: column;
-    justify-content: center;
-    left: 50%;
-    top: 50%;
-    width: 100%; /* Full width */
-    height: 100%; /* Full height */
-    transform: translate(-50%, -50%);
-    background-color: rgb(0, 0, 0); /* Fallback color */
-    background-color: rgba(0, 0, 0, 0.6); /* Black w/ opacity */
-    z-index: 999;
-}
-
-.am__modal-content {
-    position: relative;
-    background-color: var(--background);
-    margin: auto;
-    padding: 20px;
-    border: 1px solid #888;
-    border-radius: 6px;
-    width: 80%;
-    max-width: 1750px;
-    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
-    max-height: 80vh;
-    overflow-y: auto;
+    display: none;
 }
 
 .am__table
