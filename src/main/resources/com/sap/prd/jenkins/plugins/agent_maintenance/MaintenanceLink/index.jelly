@@ -10,7 +10,7 @@
       <h1>${%Planned Maintenances}</h1>
 
 <div class="am__modal" id="maintenance-add-form" data-title="${%Add Maintenance Window for multiple agents}">
-  <f:form action="add" method="post" name="config" class="no-json">
+  <f:form action="add" method="post" name="config" class="no-json jenkins-!-padding-top-1">
     <f:entry field="label" title="${%Label}" help="/plugin/agent-maintenance/help/help-label.html">
       <f:textbox
         checkUrl="${rootURL}/agent-maintenances/checkLabel"

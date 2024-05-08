@@ -10,7 +10,7 @@
         <h1>${%Planned Maintenances}</h1>
 
 <div class="am__modal" id="maintenance-add-form" data-title="${%Add Maintenance Window}">
-  <f:form action="add" method="post" name="config" class="no-json">
+  <f:form action="add" method="post" name="config" class="no-json jenkins-!-padding-top-1">
     <st:include class="${it.getMaintenanceWindowClass()}" page="config.jelly"/>
   </f:form>
 </div>
@@ -87,7 +87,7 @@
         <br/>
         <h1>${%Recurring Maintenances}</h1>
         <div class="am__modal" id="recurring-maintenance-add-form" data-title="${%Add Recurring Maintenance Window}">
-          <f:form action="addRecurring" method="post" name="config" class="no-json">
+          <f:form action="addRecurring" method="post" name="config" class="no-json jenkins-!-padding-top-1">
             <st:include class="${it.getRecurringMaintenanceWindowClass()}" page="config.jelly"/>
           </f:form>
         </div>
