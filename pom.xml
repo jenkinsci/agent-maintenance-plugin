@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>plugin</artifactId>
-    <version>4.71</version>
+    <version>4.75</version>
     <relativePath/>
   </parent>
 
@@ -44,7 +44,7 @@
     <gitHubRepo>jenkinsci/agent-maintenance-plugin</gitHubRepo>
     <jenkins.version>2.440</jenkins.version>
     <powermock.version>1.6.1</powermock.version>
-    <checkstyle.version>10.12.2</checkstyle.version>
+    <checkstyle.version>10.13.0</checkstyle.version>
     <hpi.compatibleSinceVersion>2.0</hpi.compatibleSinceVersion>
   </properties>
 
@@ -67,7 +67,7 @@
     <dependency>
       <groupId>com.cronutils</groupId>
       <artifactId>cron-utils</artifactId>
-      <version>9.2.0</version>
+      <version>9.2.1</version>
     </dependency>
     <dependency>
       <groupId>org.mockito</groupId>
@@ -131,7 +131,7 @@
       <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-checkstyle-plugin</artifactId>
-          <version>3.3.0</version>
+          <version>3.3.1</version>
           <dependencies>
             <dependency>
               <groupId>com.puppycrawl.tools</groupId>
