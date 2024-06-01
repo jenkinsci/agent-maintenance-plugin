@@ -1,13 +1,29 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+    <st:adjunct includes="io.jenkins.plugins.flatpickr"/>
+    <st:adjunct includes="com.sap.prd.jenkins.plugins.agent_maintenance.flatpickr"/>
     <j:invokeStatic var="defaultStart" method="getDefaultStartTime" className="com.sap.prd.jenkins.plugins.agent_maintenance.MaintenanceAction"/>
     <j:invokeStatic var="defaultEnd" method="getDefaultEndTime" className="com.sap.prd.jenkins.plugins.agent_maintenance.MaintenanceAction"/>
     <f:entry title="${%startTime}" help="/descriptor/com.sap.prd.jenkins.plugins.agent_maintenance.MaintenanceWindow/help/startTime">
-      <f:textbox name="startTime" value="${mw.startTime}" default="${defaultStart}"
-          checkUrl="${rootURL}/descriptorByName/com.sap.prd.jenkins.plugins.agent_maintenance.MaintenanceWindow/checkStartTime" checkDependsOn="startTime endTime"/>
+        <div class="am__flatpickr" data-now="${defaultStart}">
+          <f:textbox name="startTime" value="${mw.startTime}" default="${defaultStart}"
+                     checkUrl="${rootURL}/descriptorByName/com.sap.prd.jenkins.plugins.agent_maintenance.MaintenanceWindow/checkStartTime"
+                     checkDependsOn="startTime endTime"
+                     data-input=""/>
+
+            <button class="jenkins-button" type="button" data-toggle="" tooltip="Open datetime picker">
+              <l:icon src="symbol-calendar-outline plugin-ionicons-api"/>
+            </button>
+        </div>
     </f:entry>
     <f:entry title="${%endTime}" help="/descriptor/com.sap.prd.jenkins.plugins.agent_maintenance.MaintenanceWindow/help/endTime">
-        <f:textbox name="endTime" value="${mw.endTime}" default="${defaultEnd}"/>
+        <div class="am__flatpickr" data-now="${defaultStart}">
+            <f:textbox name="endTime" value="${mw.endTime}" default="${defaultEnd}"
+                       data-input=""/>
+            <button class="jenkins-button" type="button" data-toggle="" tooltip="Open datetime picker">
+              <l:icon src="symbol-calendar-outline plugin-ionicons-api"/>
+            </button>
+        </div>
     </f:entry>
     <f:entry field="reason" title="${%Reason}" help="/plugin/agent-maintenance/help/help-reason.html">
         <f:textbox value="${mw.reason}"/>
