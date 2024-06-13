@@ -7,7 +7,18 @@ function openForm(formName) {
       title: title,
       okText: dialog.translations.add,
       minWidth: "900px",
-    });
+      submitButton: false,
+    }).then(formData => {
+      buildFormTree(form);
+      fetch(form.action, {
+        body: new URLSearchParams(new FormData(form)),
+        method: "post",
+        headers: crumb.wrap({
+          "Content-Type": "application/x-www-form-urlencoded",
+        }),
+      });
+      location.reload();
+    })
 }
 
 function refresh() {
