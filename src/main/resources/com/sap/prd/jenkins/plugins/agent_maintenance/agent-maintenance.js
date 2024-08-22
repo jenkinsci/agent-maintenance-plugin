@@ -66,6 +66,7 @@ let selectMaintenanceWindows = function(toggle, className) {
       input.checked = toggle;
     }
     updateDeleteSelectedButton(table);
+    window.updateTableHeaderCheckbox()
 };
 
 Behaviour.specify(".am__action-delete", 'agent-maintenance', 0, function(e) {
@@ -356,27 +357,27 @@ Behaviour.specify("#delete-selected-button-link", 'agent-maintenance', 0, functi
   }
 });
 
-Behaviour.specify("#select-all", 'agent-maintenance', 0, function(e) {
-  e.onclick = function() {
+Behaviour.specify("[data-select='all']", 'agent-maintenance', 0, function(e) {
+  e.addEventListener("click", function() {
     selectMaintenanceWindows(true, "");
-  }
+  });
 });
 
 
 Behaviour.specify("#select-active", 'agent-maintenance', 0, function(e) {
-  e.onclick = function() {
+  e.addEventListener("click", function() {
     selectMaintenanceWindows(true, ".active");
-  }
+  });
 });
 
 Behaviour.specify("#select-inactive", 'agent-maintenance', 0, function(e) {
-  e.onclick = function() {
+  e.addEventListener("click", function() {
     selectMaintenanceWindows(true, ".inactive");
-  }
+  });
 });
 
-Behaviour.specify("#select-none", 'agent-maintenance', 0, function(e) {
-  e.onclick = function() {
+Behaviour.specify("[data-select='none']", 'agent-maintenance', 0, function(e) {
+  e.addEventListener("click", function() {
     selectMaintenanceWindows(false, "");
-  }
+  });
 });
