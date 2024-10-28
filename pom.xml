@@ -45,7 +45,7 @@
     <jenkins.base>2.440</jenkins.base>
     <jenkins.version>${jenkins.base}.3</jenkins.version>
     <powermock.version>1.6.1</powermock.version>
-    <checkstyle.version>10.17.0</checkstyle.version>
+    <checkstyle.version>10.19.0</checkstyle.version>
     <hpi.compatibleSinceVersion>2.0</hpi.compatibleSinceVersion>
   </properties>
 
