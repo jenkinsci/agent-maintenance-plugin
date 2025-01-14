@@ -42,8 +42,9 @@
     <revision>2</revision>
     <changelist>999999-SNAPSHOT</changelist>
     <gitHubRepo>jenkinsci/agent-maintenance-plugin</gitHubRepo>
-    <jenkins.base>2.440</jenkins.base>
-    <jenkins.version>${jenkins.base}.3</jenkins.version>
+    <!-- https://www.jenkins.io/doc/developer/plugin-development/choosing-jenkins-baseline/ -->
+    <jenkins.baseline>2.440</jenkins.baseline>
+    <jenkins.version>${jenkins.baseline}.3</jenkins.version>
     <powermock.version>1.6.1</powermock.version>
     <checkstyle.version>10.17.0</checkstyle.version>
     <hpi.compatibleSinceVersion>2.0</hpi.compatibleSinceVersion>
@@ -53,7 +54,7 @@
     <dependencies>
         <dependency>
             <groupId>io.jenkins.tools.bom</groupId>
-            <artifactId>bom-${jenkins.base}.x</artifactId>
+            <artifactId>bom-${jenkins.baseline}.x</artifactId>
             <version>3234.v5ca_5154341ef</version>
             <type>pom</type>
             <scope>import</scope>
