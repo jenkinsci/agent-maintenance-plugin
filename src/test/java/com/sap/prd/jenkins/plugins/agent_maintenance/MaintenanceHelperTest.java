@@ -35,7 +35,6 @@ public class MaintenanceHelperTest {
   public void getMaintenanceWindowsNonExistingAgent() throws Exception {
     String agentName = "notExisting";
     Set<MaintenanceWindow> mwSet = helper.getMaintenanceWindows(agentName);
-    assertThat(helper.getMaintenanceWindows(agentName).size(), is(0));
     assertThat(mwSet.size(), is(0));
     MaintenanceWindow mw = new MaintenanceWindow("1970-01-01 11:00", "2099-12-31 23:59", "test", true, true, "10", "user", null);
     mwSet.add(mw);
