@@ -9,6 +9,7 @@ import hudson.model.Computer;
 import hudson.security.Permission;
 import hudson.slaves.SlaveComputer;
 import hudson.util.FormApply;
+import jakarta.servlet.ServletException;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -20,13 +21,12 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.servlet.ServletException;
 import net.sf.json.JSONObject;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.bind.JavaScriptMethod;
 import org.kohsuke.stapler.verb.POST;
 
@@ -183,7 +183,7 @@ public class MaintenanceAction implements Action {
    * @throws ServletException if an error occurs reading the form
    */
   @POST
-  public HttpResponse doAdd(StaplerRequest req) throws IOException, ServletException {
+  public HttpResponse doAdd(StaplerRequest2 req) throws IOException, ServletException {
     computer.checkAnyPermission(CONFIGURE_AND_DISCONNECT);
 
     JSONObject src = req.getSubmittedForm();
@@ -201,7 +201,7 @@ public class MaintenanceAction implements Action {
    * @throws ServletException if an error occurs reading the form
    */
   @POST
-  public void doAddRecurring(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+  public void doAddRecurring(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
     computer.checkAnyPermission(CONFIGURE_AND_DISCONNECT);
 
     JSONObject src = req.getSubmittedForm();
@@ -325,7 +325,7 @@ public class MaintenanceAction implements Action {
    * @throws ServletException if an error occurs reading the form
    */
   @POST
-  public synchronized HttpResponse doConfigSubmit(StaplerRequest req) throws IOException, ServletException {
+  public synchronized HttpResponse doConfigSubmit(StaplerRequest2 req) throws IOException, ServletException {
     computer.checkPermission(Computer.CONFIGURE);
 
     JSONObject src = req.getSubmittedForm();
@@ -354,7 +354,7 @@ public class MaintenanceAction implements Action {
    * @throws IOException when something goes wrong
    */
   @POST
-  public void doEnable(StaplerResponse rsp) throws IOException {
+  public void doEnable(StaplerResponse2 rsp) throws IOException {
     computer.checkPermission(Computer.CONFIGURE);
 
     MaintenanceHelper.getInstance().injectRetentionStrategy(computer);
@@ -368,7 +368,7 @@ public class MaintenanceAction implements Action {
    * @throws IOException when something goes wrong
    */
   @POST
-  public void doDisable(StaplerResponse rsp) throws IOException {
+  public void doDisable(StaplerResponse2 rsp) throws IOException {
     computer.checkPermission(Computer.CONFIGURE);
 
     MaintenanceHelper.getInstance().removeRetentionStrategy(computer);
