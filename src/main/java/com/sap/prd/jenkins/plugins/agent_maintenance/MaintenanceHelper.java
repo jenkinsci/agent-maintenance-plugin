@@ -10,6 +10,7 @@ import hudson.slaves.RetentionStrategy;
 import hudson.slaves.SlaveComputer;
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
@@ -217,6 +218,9 @@ public class MaintenanceHelper {
   public MaintenanceDefinitions getMaintenanceDefinitions(String computerName) throws IOException {
 
     LOGGER.log(Level.FINEST, "Loading maintenance list for {0}", getSafeComputerName(computerName));
+    if (Jenkins.get().getComputer(computerName) == null) {
+      return new MaintenanceDefinitions(new TreeSet<>(), new HashSet<>());
+    }
 
     MaintenanceDefinitions md = cache.get(computerName);
 
