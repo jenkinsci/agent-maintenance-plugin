@@ -17,8 +17,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.security.access.AccessDeniedException;
@@ -26,9 +26,9 @@ import org.springframework.security.access.AccessDeniedException;
 /** Tests for the action. */
 public class MaintenanceActionTest extends BasePermissionChecks {
   @Mock
-  private StaplerRequest req;
+  private StaplerRequest2 req;
   @Mock
-  private StaplerResponse rsp;
+  private StaplerResponse2 rsp;
   private AutoCloseable mocks;
 
   @Before

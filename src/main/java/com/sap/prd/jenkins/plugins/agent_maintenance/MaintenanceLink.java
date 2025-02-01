@@ -11,6 +11,7 @@ import hudson.security.Permission;
 import hudson.slaves.AbstractCloudComputer;
 import hudson.slaves.SlaveComputer;
 import hudson.util.FormValidation;
+import jakarta.servlet.ServletException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -22,15 +23,14 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.servlet.ServletException;
 import jenkins.management.Badge;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.bind.JavaScriptMethod;
 import org.kohsuke.stapler.verb.POST;
 
@@ -236,7 +236,7 @@ public class MaintenanceLink extends ManagementLink {
    * @throws ServletException when reading the form failed
    */
   @POST
-  public void doAdd(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+  public void doAdd(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
     Jenkins j = Jenkins.get();
 
     JSONObject src = req.getSubmittedForm();
