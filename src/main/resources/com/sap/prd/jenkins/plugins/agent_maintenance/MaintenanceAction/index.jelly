@@ -3,6 +3,11 @@
          xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:p="/lib/permissions">
   <l:layout title="${%Planned Maintenances}" norefresh="true">
     <st:include it="${it.computer}" page="sidepanel.jelly"/>
+
+    <l:header>
+      <script src="${resURL}/jsbundles/components/row-selection-controller.js" type="text/javascript" defer="true" />
+    </l:header>
+
     <l:main-panel>
       <st:bind var="maintenanceJavaScriptBind" value="${it}"/>
       <st:adjunct includes="com.sap.prd.jenkins.plugins.agent_maintenance.agent-maintenance"/>
@@ -30,7 +35,22 @@
                 <th>${%Auto Connect}</th>
                 <th>${%Created By}</th>
                 <p:hasAnyPermission permissions="${it.CONFIGURE_AND_DISCONNECT}">
-                  <th/>
+                  <th data-sort-disable="true">
+                    <l:rowSelectionController class="am__checkbox">
+                      <button type="button" id="select-active" class="jenkins-button jenkins-button--tertiary">
+                        <div class="jenkins-table__checkbox-dropdown__icon">
+                          <l:icon src="symbol-compatible" />
+                        </div>
+                        ${%Active}
+                      </button>
+                      <button type="button" id="select-inactive" class="jenkins-button jenkins-button--tertiary">
+                        <div class="jenkins-table__checkbox-dropdown__icon">
+                          <l:icon src="symbol-compatible" />
+                        </div>
+                        ${%Inctive}
+                      </button>
+                    </l:rowSelectionController>
+                  </th>
                   <th/>
                 </p:hasAnyPermission>
               </tr>
@@ -66,14 +86,6 @@
           </table>
           <p:hasAnyPermission permissions="${it.CONFIGURE_AND_DISCONNECT}">
             <f:bottomButtonBar>
-              <div id="am__div--select" class="${mw.size() == 0?'jenkins-hidden':''}">
-                Select:
-                <span id="select-all" class="am__select">${%All}</span>,
-                <span id="select-active" class="am__select">${%Active}</span>,
-                <span id="select-inactive" class="am__select">${%Inactive}</span>,
-                <span id="select-none" class="am__select">${%None}</span>
-              </div>
-              <div class="am__div--break"/>
               <button type="button" id="edit-button" class="jenkins-button jenkins-button--primary  ${mw.size() == 0?'jenkins-hidden':''}">${%Edit}</button>
               <button id="add-button" type="button"
                       class="jenkins-button jenkins-button--primary">${%Add}</button>
@@ -104,7 +116,9 @@
                 <th>${%Auto Connect}</th>
                 <th>${%Created By}</th>
                 <p:hasAnyPermission permissions="${it.CONFIGURE_AND_DISCONNECT}">
-                  <th></th>
+                  <th data-sort-disable="true">
+                    <l:rowSelectionController class="am__checkbox"/>
+                  </th>
                   <th></th>
                 </p:hasAnyPermission>
               </tr>
