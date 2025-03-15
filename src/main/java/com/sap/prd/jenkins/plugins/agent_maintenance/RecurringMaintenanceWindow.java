@@ -1,7 +1,5 @@
 package com.sap.prd.jenkins.plugins.agent_maintenance;
 
-import static hudson.Util.fixNull;
-
 import antlr.ANTLRException;
 import com.cronutils.model.Cron;
 import com.cronutils.model.definition.CronDefinition;
@@ -14,7 +12,6 @@ import hudson.Extension;
 import hudson.Util;
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.Descriptor;
-import hudson.scheduler.CronTabList;
 import hudson.security.ACL;
 import hudson.util.FormValidation;
 import java.io.ObjectStreamException;
@@ -177,19 +174,19 @@ public class RecurringMaintenanceWindow extends AbstractDescribableImpl<Recurrin
 
       Instant instant = Instant.ofEpochSecond(nextCheck);
       ZonedDateTime time = ZonedDateTime.ofInstant(instant, zoneId).truncatedTo(ChronoUnit.MINUTES);
-      ZonedDateTime endCheckTime = time.plus(CHECK_INTERVAL_MINUTES, ChronoUnit.MINUTES);
+      ZonedDateTime endCheckTime = time.plusMinutes(CHECK_INTERVAL_MINUTES);
 
       if (endCheckTime.isBefore(now)) {
-        endCheckTime = now.plus(CHECK_INTERVAL_MINUTES, ChronoUnit.MINUTES);
+        endCheckTime = now.plusMinutes(CHECK_INTERVAL_MINUTES);
       }
       ZonedDateTime nextCheckTime = endCheckTime;
 
-      time = time.plus(LEAD_TIME_DAYS * 24L, ChronoUnit.HOURS);
+      time = time.plusHours(LEAD_TIME_DAYS * 24L);
       if (time.isBefore(now)) {
         time = now;
       }
-      endCheckTime = endCheckTime.plus(LEAD_TIME_DAYS * 24L, ChronoUnit.HOURS);
-      endCheckTime = endCheckTime.minus(1, ChronoUnit.MINUTES);
+      endCheckTime = endCheckTime.plusHours(LEAD_TIME_DAYS * 24L);
+      endCheckTime = endCheckTime.minusMinutes(1);
 
       LOGGER.log(Level.FINE, "Check for maintenance window starts between: {0} and {1}", new Object[] { time.toString(),
           endCheckTime.toString()});
@@ -198,7 +195,7 @@ public class RecurringMaintenanceWindow extends AbstractDescribableImpl<Recurrin
           LOGGER.log(Level.FINER, "Time matched: {0}", time.toString());
           futureMaintenanceWindows.add(getMaintenanceWindow(time));
         }
-        time = time.plus(1, ChronoUnit.MINUTES);
+        time = time.plusMinutes(1);
       }
       nextCheck = nextCheckTime.toEpochSecond();
       LOGGER.log(Level.FINER, "Setting next Check time to: {0}", nextCheckTime.toString());
@@ -208,7 +205,7 @@ public class RecurringMaintenanceWindow extends AbstractDescribableImpl<Recurrin
 
   private MaintenanceWindow getMaintenanceWindow(ZonedDateTime time) {
     LocalDateTime startTime = LocalDateTime.ofInstant(time.toInstant(), time.getZone());
-    LocalDateTime endTime = startTime.plus(duration, ChronoUnit.MINUTES);
+    LocalDateTime endTime = startTime.plusMinutes(duration);
     return new MaintenanceWindow(startTime, endTime, reason, takeOnline, keepUpWhenActive,
         maxWaitMinutes, userid, "");
   }
@@ -261,6 +258,7 @@ public class RecurringMaintenanceWindow extends AbstractDescribableImpl<Recurrin
   public static class DescriptorImpl extends Descriptor<RecurringMaintenanceWindow> {
 
     @Override
+    @NonNull
     public String getDisplayName() {
       return "";
     }

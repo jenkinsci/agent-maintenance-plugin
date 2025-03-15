@@ -1,6 +1,7 @@
 package com.sap.prd.jenkins.plugins.agent_maintenance;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.model.Descriptor;
 import hudson.model.DescriptorVisibilityFilter;
@@ -121,8 +122,7 @@ public class AgentMaintenanceRetentionStrategy extends RetentionStrategy<SlaveCo
     } else {
       if (c.isOffline()) {
         OfflineCause oc = c.getOfflineCause();
-        if (oc instanceof MaintenanceOfflineCause) {
-          MaintenanceOfflineCause moc = (MaintenanceOfflineCause) oc;
+        if (oc instanceof MaintenanceOfflineCause moc) {
           if (!moc.isTakeOnline()) {
             LOGGER.log(Level.INFO, "Computer should not be taken online automatically: {0}", c.getName());
             return 5;
@@ -139,6 +139,7 @@ public class AgentMaintenanceRetentionStrategy extends RetentionStrategy<SlaveCo
   @Symbol("agent-maintenance")
   public static class DescriptorImpl extends Descriptor<RetentionStrategy<?>> {
     @Override
+    @NonNull
     public String getDisplayName() {
       return Messages.AgentMaintenanceRetentionStrategy_displayName();
     }
