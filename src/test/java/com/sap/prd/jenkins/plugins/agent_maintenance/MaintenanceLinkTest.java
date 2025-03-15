@@ -4,7 +4,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
-import static org.mockito.Mockito.when;
 
 import hudson.model.ManagementLink;
 import hudson.model.User;
@@ -12,15 +11,13 @@ import hudson.security.ACL;
 import hudson.security.ACLContext;
 import java.util.List;
 import jenkins.model.Jenkins;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 import org.htmlunit.html.HtmlPage;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -28,9 +25,9 @@ import org.mockito.MockitoAnnotations;
 public class MaintenanceLinkTest extends BasePermissionChecks {
 
   @Mock
-  private StaplerRequest req;
+  private StaplerRequest2 req;
   @Mock
-  private StaplerResponse rsp;
+  private StaplerResponse2 rsp;
   
   private AutoCloseable closeable;
 
