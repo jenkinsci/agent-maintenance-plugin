@@ -1,5 +1,6 @@
 package com.sap.prd.jenkins.plugins.agent_maintenance;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.Util;
 import hudson.model.AbstractDescribableImpl;
@@ -203,6 +204,7 @@ public class MaintenanceWindow extends AbstractDescribableImpl<MaintenanceWindow
   public static class DescriptorImpl extends Descriptor<MaintenanceWindow> {
 
     @Override
+    @NonNull
     public String getDisplayName() {
       return "";
     }
@@ -286,16 +288,11 @@ public class MaintenanceWindow extends AbstractDescribableImpl<MaintenanceWindow
         return false;
     } else if (!startDateTime.equals(other.startDateTime))
       return false;
-    if (takeOnline != other.takeOnline)
-      return false;
-    return true;
+    return takeOnline == other.takeOnline;
   }
 
   @Override
-  public int compareTo(MaintenanceWindow other) {
-    if (other == null) {
-      throw new NullPointerException();
-    }
+  public int compareTo(@NonNull MaintenanceWindow other) {
     int compare = startDateTime.compareTo(other.startDateTime);
     if (compare != 0) {
       return compare;
@@ -317,9 +314,6 @@ public class MaintenanceWindow extends AbstractDescribableImpl<MaintenanceWindow
       return compare;
     }
     compare = Boolean.compare(takeOnline, other.takeOnline);
-    if (compare != 0) {
-      return compare;
-    }
-    return 0;
+    return compare;
   }
 }

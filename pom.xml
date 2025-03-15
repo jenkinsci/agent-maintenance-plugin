@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>plugin</artifactId>
-    <version>5.6</version>
+    <version>5.9</version>
     <relativePath/>
   </parent>
 
@@ -46,7 +46,7 @@
     <jenkins.baseline>2.479</jenkins.baseline>
     <jenkins.version>${jenkins.baseline}.1</jenkins.version>
     <powermock.version>1.6.1</powermock.version>
-    <checkstyle.version>10.21.2</checkstyle.version>
+    <checkstyle.version>10.21.4</checkstyle.version>
     <hpi.compatibleSinceVersion>2.0</hpi.compatibleSinceVersion>
   </properties>
 
@@ -55,7 +55,7 @@
         <dependency>
             <groupId>io.jenkins.tools.bom</groupId>
             <artifactId>bom-${jenkins.baseline}.x</artifactId>
-            <version>4051.v78dce3ce8b_d6</version>
+            <version>4440.v39a_9eb_b_c6b_4d</version>
             <type>pom</type>
             <scope>import</scope>
         </dependency>
@@ -69,7 +69,7 @@
     <dependency>
       <groupId>io.jenkins.plugins</groupId>
       <artifactId>flatpickr-api</artifactId>
-      <version>4.6.13-15.vf6e534338831</version>
+      <version>4.6.13-18.vcf5f6a_5b_8468</version>
     </dependency>
     <dependency>
       <groupId>com.cronutils</groupId>
@@ -90,7 +90,7 @@
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>mock-slave</artifactId>
-      <version>189.vca_72fb_1d2b_52</version>
+      <version>193.v88c279d0c584</version>
       <scope>test</scope>
     </dependency>
       <dependency>

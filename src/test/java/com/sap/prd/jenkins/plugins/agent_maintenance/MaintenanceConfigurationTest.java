@@ -14,7 +14,7 @@ import hudson.slaves.RetentionStrategy;
 import hudson.slaves.RetentionStrategy.Always;
 import org.junit.Before;
 import org.junit.Test;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.mockito.Mock;
 
 /**
@@ -23,7 +23,7 @@ import org.mockito.Mock;
 public class MaintenanceConfigurationTest extends PermissionSetup {
 
   @Mock
-  private StaplerResponse rsp;
+  private StaplerResponse2 rsp;
 
   private Slave agent;
   private Slave agent2;

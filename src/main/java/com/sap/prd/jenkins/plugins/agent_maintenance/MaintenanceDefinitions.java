@@ -7,8 +7,8 @@ import java.util.SortedSet;
  * Container that holds the scheduled and recurring maintenance windows for an agent.
  */
 public class MaintenanceDefinitions {
-  private SortedSet<MaintenanceWindow> scheduled;
-  private Set<RecurringMaintenanceWindow> recurring;
+  private final SortedSet<MaintenanceWindow> scheduled;
+  private final Set<RecurringMaintenanceWindow> recurring;
 
   /**
    * Create definitions container.
