@@ -4,13 +4,15 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
 import hudson.model.Slave;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 /** Test recurring maintenance windows. */
-public class RecurringTest extends BaseIntegationTest {
+@WithJenkins
+class RecurringTest extends BaseIntegrationTest {
 
   @Test
-  public void recurringMaintenanceInjectsMaintenance() throws Exception {
+  void recurringMaintenanceInjectsMaintenance() throws Exception {
     String agentName = "recurring";
     Slave agent = getAgent(agentName);
     RecurringMaintenanceWindow rw = new RecurringMaintenanceWindow("0 2 * * *",

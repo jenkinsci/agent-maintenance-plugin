@@ -6,14 +6,12 @@ import hudson.security.ProjectMatrixAuthorizationStrategy;
 import jenkins.model.Jenkins;
 import org.jenkinsci.plugins.matrixauth.AuthorizationType;
 import org.jenkinsci.plugins.matrixauth.PermissionEntry;
-import org.junit.Before;
-import org.junit.Rule;
-import org.jvnet.hudson.test.JenkinsRule;
+import org.junit.jupiter.api.BeforeEach;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 /** Base class for permission checks. */
-public abstract class PermissionSetup {
-
-  @Rule public JenkinsRule rule = new JenkinsRule();
+@WithJenkins
+abstract class PermissionSetup extends BaseIntegrationTest {
 
   protected static final String READER = "reader";
   protected static final String CONFIGURE = "configure";
@@ -30,8 +28,8 @@ public abstract class PermissionSetup {
    *
    * @throws Exception when something goes wrong
    */
-  @Before
-  public void setupPermissions() throws Exception {
+  @BeforeEach
+  protected void setupPermissions() throws Exception {
     HudsonPrivateSecurityRealm realm = new HudsonPrivateSecurityRealm(false, false, null);
     rule.jenkins.setSecurityRealm(realm);
     realm.createAccount(READER, READER);
@@ -54,7 +52,7 @@ public abstract class PermissionSetup {
     PermissionEntry manage = new PermissionEntry(AuthorizationType.USER, MANAGE);
     matrixAuth.add(Jenkins.READ, manage);
     matrixAuth.add(Jenkins.MANAGE, manage);
-    
+
     // Administrator
     PermissionEntry admin = new PermissionEntry(AuthorizationType.USER, ADMIN);
     matrixAuth.add(Jenkins.ADMINISTER, admin);

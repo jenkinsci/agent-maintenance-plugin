@@ -11,22 +11,23 @@ import hudson.slaves.DumbSlave;
 import hudson.slaves.RetentionStrategy;
 import hudson.slaves.RetentionStrategy.Always;
 import hudson.slaves.RetentionStrategy.Demand;
+import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
-import org.junit.After;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 /** Tests the node listener. */
-public class MaintenanceNodeListenerTest {
+@WithJenkins
+class MaintenanceNodeListenerTest extends BaseIntegrationTest {
 
-  @Rule public JenkinsRule rule = new JenkinsRule();
+  @TempDir
+  private File folder;
 
-  @Rule public TemporaryFolder folder = new TemporaryFolder();
-
-  private MaintenanceHelper maintenanceHelper = MaintenanceHelper.getInstance();
   private Slave agent;
 
   /**
@@ -34,21 +35,23 @@ public class MaintenanceNodeListenerTest {
    *
    * @throws Exception in case of an error
    */
-  public void setup() throws Exception {
+  @Override
+  @BeforeEach
+  void setup(JenkinsRule rule) throws Exception {
+    super.setup(rule);
     agent = rule.createOnlineSlave();
     AgentMaintenanceRetentionStrategy strategy =
         new AgentMaintenanceRetentionStrategy(new Always());
     agent.setRetentionStrategy(strategy);
   }
 
-  @After
-  public void tearDown() throws IOException {
+  @AfterEach
+  void tearDown() throws IOException {
     maintenanceHelper.getMaintenanceWindows(agent.getNodeName()).clear();
   }
 
   @Test
-  public void agentDeleted() throws Exception {
-    setup();
+  void agentDeleted() throws Exception {
     LocalDateTime start = LocalDateTime.now().minusMinutes(1);
     LocalDateTime end = start.plusMinutes(5);
     MaintenanceWindow mw =
@@ -68,8 +71,7 @@ public class MaintenanceNodeListenerTest {
   }
 
   @Test
-  public void agentRenamed() throws Exception {
-    setup();
+  void agentRenamed() throws Exception {
     LocalDateTime start = LocalDateTime.now().minusMinutes(1);
     LocalDateTime end = start.plusMinutes(10);
     MaintenanceWindow mw =
@@ -86,21 +88,21 @@ public class MaintenanceNodeListenerTest {
     assertThat(agent.toComputer().isAcceptingTasks(), is(false));
     Slave newAgent =
         new DumbSlave(
-            "newAgent", folder.newFolder().getAbsolutePath(), rule.createComputerLauncher(null));
+            "newAgent", newFolder(folder, "junit").getAbsolutePath(), rule.createComputerLauncher(null));
     rule.jenkins.getNodesObject().replaceNode(agent, newAgent);
     assertThat(maintenanceHelper.hasMaintenanceWindows(agent.getNodeName()), is(false));
     assertThat(maintenanceHelper.hasMaintenanceWindows(newAgent.getNodeName()), is(true));
   }
 
   @Test
-  public void retentionStrategyIsInjected() throws Exception {
+  void retentionStrategyIsInjected() throws Exception {
     MaintenanceConfiguration.getInstance().setInjectRetentionStrategy(true);
     agent = rule.createOnlineSlave();
     assertThat(agent.getRetentionStrategy(), instanceOf(AgentMaintenanceRetentionStrategy.class));
   }
 
   @Test
-  public void retentionStrategyIsInjectedOnRename() throws Exception {
+  void retentionStrategyIsInjectedOnRename() throws Exception {
     MaintenanceConfiguration.getInstance().setInjectRetentionStrategy(false);
     agent = rule.createOnlineSlave();
     assertThat(
@@ -108,7 +110,7 @@ public class MaintenanceNodeListenerTest {
     MaintenanceConfiguration.getInstance().setInjectRetentionStrategy(true);
     Slave newAgent =
         new DumbSlave(
-            "newAgent", folder.newFolder().getAbsolutePath(), rule.createComputerLauncher(null));
+            "newAgent", newFolder(folder, "junit").getAbsolutePath(), rule.createComputerLauncher(null));
     Demand demand = new Demand(1, 1);
     newAgent.setRetentionStrategy(demand);
     rule.jenkins.getNodesObject().replaceNode(agent, newAgent);
@@ -119,10 +121,19 @@ public class MaintenanceNodeListenerTest {
   }
 
   @Test
-  public void retentionStrategyIsNotInjected() throws Exception {
+  void retentionStrategyIsNotInjected() throws Exception {
     MaintenanceConfiguration.getInstance().setInjectRetentionStrategy(false);
     agent = rule.createOnlineSlave();
     assertThat(
         agent.getRetentionStrategy(), not(instanceOf(AgentMaintenanceRetentionStrategy.class)));
+  }
+
+  private static File newFolder(File root, String... subDirs) throws IOException {
+    String subFolder = String.join("/", subDirs);
+    File result = new File(root, subFolder);
+    if (!result.mkdirs()) {
+      throw new IOException("Couldn't create folders " + root);
+    }
+    return result;
   }
 }

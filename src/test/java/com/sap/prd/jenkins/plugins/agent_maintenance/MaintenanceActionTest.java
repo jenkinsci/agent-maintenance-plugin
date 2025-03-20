@@ -5,7 +5,7 @@ import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import hudson.model.User;
 import hudson.security.ACL;
@@ -13,36 +13,28 @@ import hudson.security.ACLContext;
 import hudson.slaves.RetentionStrategy.Demand;
 import hudson.slaves.SlaveComputer;
 import org.htmlunit.html.HtmlPage;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.StaplerResponse2;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.access.AccessDeniedException;
 
 /** Tests for the action. */
-public class MaintenanceActionTest extends BasePermissionChecks {
+@WithJenkins
+@ExtendWith(MockitoExtension.class)
+class MaintenanceActionTest extends BasePermissionChecks {
+
   @Mock
   private StaplerRequest2 req;
   @Mock
   private StaplerResponse2 rsp;
-  private AutoCloseable mocks;
-
-  @Before
-  public void setup() throws Exception {
-    mocks = MockitoAnnotations.openMocks(this);
-  }
-
-  @After
-  public void tearDown() throws Exception {
-    mocks.close();
-  }
 
   @Test
-  public void readPermissionHasNoAccess() throws Exception {
+  void readPermissionHasNoAccess() throws Exception {
     WebClient w = rule.createWebClient();
     w.login(USER);
     HtmlPage managePage = w.withThrowExceptionOnFailingStatusCode(false).goTo(agentMaintenanceUrl);
@@ -50,7 +42,7 @@ public class MaintenanceActionTest extends BasePermissionChecks {
   }
 
   @Test
-  public void extendedReadPermissionDoesNotExposeDeleteLink() throws Exception {
+  void extendedReadPermissionDoesNotExposeDeleteLink() throws Exception {
     WebClient w = rule.createWebClient();
     w.login(READER);
     HtmlPage managePage = w.goTo(agentMaintenanceUrl);
@@ -58,7 +50,7 @@ public class MaintenanceActionTest extends BasePermissionChecks {
   }
 
   @Test
-  public void configurePermissionDoesExposeDeleteLink() throws Exception {
+  void configurePermissionDoesExposeDeleteLink() throws Exception {
     WebClient w = rule.createWebClient();
     w.login(CONFIGURE);
     HtmlPage managePage = w.goTo(agentMaintenanceUrl);
@@ -66,7 +58,7 @@ public class MaintenanceActionTest extends BasePermissionChecks {
   }
 
   @Test
-  public void disconnectPermissionDoesExposeDeleteLink() throws Exception {
+  void disconnectPermissionDoesExposeDeleteLink() throws Exception {
     WebClient w = rule.createWebClient();
     w.login(DISCONNECT);
     HtmlPage managePage = w.goTo(agentMaintenanceUrl);
@@ -74,7 +66,7 @@ public class MaintenanceActionTest extends BasePermissionChecks {
   }
 
   @Test
-  public void extendedReadPermissionCantPost() throws Exception {
+  void extendedReadPermissionCantPost() {
     MaintenanceAction action = new MaintenanceAction((SlaveComputer) agent.toComputer());
     try (ACLContext ignored = ACL.as(User.getById(READER, false))) {
       assertThrows(AccessDeniedException.class, () -> action.doConfigSubmit(req));
@@ -85,7 +77,7 @@ public class MaintenanceActionTest extends BasePermissionChecks {
   }
 
   @Test
-  public void dicsonnectUserCantEnableDisable() throws Exception {
+  void disconnectUserCantEnableDisable() {
     MaintenanceAction action = new MaintenanceAction((SlaveComputer) agent.toComputer());
     try (ACLContext ignored = ACL.as(User.getById(DISCONNECT, false))) {
       assertThrows(AccessDeniedException.class, () -> action.doDisable(rsp));
@@ -94,7 +86,7 @@ public class MaintenanceActionTest extends BasePermissionChecks {
   }
 
   @Test
-  public void deleteEnableKeepsOriginalStrategy() throws Exception {
+  void deleteEnableKeepsOriginalStrategy() throws Exception {
     MaintenanceAction action = new MaintenanceAction((SlaveComputer) agent.toComputer());
     try (ACLContext ignored = ACL.as(User.getById(CONFIGURE, false))) {
       action.doDisable(rsp);

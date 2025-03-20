@@ -11,11 +11,11 @@ import hudson.model.Slave;
 import hudson.slaves.OfflineCause;
 import java.time.LocalDateTime;
 import java.util.concurrent.TimeUnit;
-import org.junit.Test;
-import org.jvnet.hudson.test.recipes.WithTimeout;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 /** Integration tests for the maintenance strategy. */
-public class AgentMaintenanceRetentionStrategyTest extends BaseIntegationTest {
+class AgentMaintenanceRetentionStrategyTest extends BaseIntegrationTest {
 
   private void waitForMaintenanceEnd(MaintenanceWindow mw, Slave agent) throws InterruptedException {
     while (mw.isMaintenanceScheduled()) {
@@ -25,8 +25,8 @@ public class AgentMaintenanceRetentionStrategyTest extends BaseIntegationTest {
   }
 
   @Test
-  @WithTimeout(600)
-  public void activeMaintenanceWindow() throws Exception {
+  @Timeout(600)
+  void activeMaintenanceWindow() throws Exception {
     Slave agent = getAgent("activeMaintenanceWindow");
     LocalDateTime start = LocalDateTime.now().minusMinutes(1);
     LocalDateTime end = start.plusMinutes(2);
@@ -50,8 +50,8 @@ public class AgentMaintenanceRetentionStrategyTest extends BaseIntegationTest {
   }
 
   @Test
-  @WithTimeout(600)
-  public void agentGetsDisconnected() throws Exception {
+  @Timeout(600)
+  void agentGetsDisconnected() throws Exception {
     Slave agent = getAgent("agentGetsDisconnected");
     LocalDateTime start = LocalDateTime.now().minusMinutes(1);
     LocalDateTime end = start.plusMinutes(15);
@@ -75,8 +75,8 @@ public class AgentMaintenanceRetentionStrategyTest extends BaseIntegationTest {
   }
 
   @Test
-  @WithTimeout(600)
-  public void agentComesBackOnline() throws Exception {
+  @Timeout(600)
+  void agentComesBackOnline() throws Exception {
     String agentName = "agentComesBackOnline";
     Slave agent = getAgent(agentName);
     LocalDateTime start = LocalDateTime.now().minusMinutes(1);
@@ -111,8 +111,8 @@ public class AgentMaintenanceRetentionStrategyTest extends BaseIntegationTest {
   }
 
   @Test
-  @WithTimeout(600)
-  public void agentStaysOffline() throws Exception {
+  @Timeout(600)
+  void agentStaysOffline() throws Exception {
     String agentName = "agentStaysOffline";
     Slave agent = getAgent(agentName);
     LocalDateTime start = LocalDateTime.now().minusMinutes(1);
