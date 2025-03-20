@@ -7,22 +7,19 @@ import static org.hamcrest.Matchers.is;
 import hudson.model.Node;
 import hudson.slaves.RetentionStrategy;
 import java.io.IOException;
-import org.junit.Rule;
-import org.junit.Test;
-import org.jvnet.hudson.test.JenkinsRule;
+import org.junit.jupiter.api.Test;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.jvnet.hudson.test.recipes.LocalData;
 
 /**
  * Tests that the old data format for maintenance windows is properly read.
  */
-public class MigrationTest {
-
-  @Rule
-  public JenkinsRule rule = new JenkinsRule();
+@WithJenkins
+class MigrationTest extends BaseIntegrationTest {
 
   @Test
   @LocalData
-  public void readOldData() throws IOException {
+  void readOldData() throws IOException {
     Node agent = rule.jenkins.getNode("agent");
     RetentionStrategy retentionStrategy = agent.toComputer().getRetentionStrategy();
     assertThat(retentionStrategy, instanceOf(AgentMaintenanceRetentionStrategy.class));

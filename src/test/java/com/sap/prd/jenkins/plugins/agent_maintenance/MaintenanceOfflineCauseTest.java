@@ -8,17 +8,15 @@ import hudson.model.Slave;
 import hudson.slaves.RetentionStrategy;
 import java.time.LocalDateTime;
 import java.util.SortedSet;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 /** Tests the offline cause. */
-public class MaintenanceOfflineCauseTest {
-  @Rule
-  public JenkinsRule rule = new JenkinsRule();
+@WithJenkins
+class MaintenanceOfflineCauseTest extends BaseIntegrationTest {
 
-  private MaintenanceHelper maintenanceHelper = MaintenanceHelper.getInstance();
   private Slave agent;
 
   /**
@@ -26,8 +24,10 @@ public class MaintenanceOfflineCauseTest {
    *
    * @throws Exception in case of an error
    */
-  @Before
-  public void setup() throws Exception {
+  @Override
+  @BeforeEach
+  void setup(JenkinsRule rule) throws Exception {
+    super.setup(rule);
     agent = rule.createOnlineSlave();
     AgentMaintenanceRetentionStrategy strategy =
         new AgentMaintenanceRetentionStrategy(new RetentionStrategy.Always());
@@ -35,8 +35,7 @@ public class MaintenanceOfflineCauseTest {
   }
 
   @Test
-  public void offlineCauseIsUpdated() throws Exception {
-    setup();
+  void offlineCauseIsUpdated() throws Exception {
     LocalDateTime start = LocalDateTime.now().minusMinutes(1);
     LocalDateTime end = start.plusMinutes(5);
     MaintenanceWindow mw =
