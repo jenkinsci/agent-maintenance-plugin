@@ -96,7 +96,7 @@
       <dependency>
           <groupId>org.jenkins-ci.plugins</groupId>
           <artifactId>mock-security-realm</artifactId>
-          <version>87.v8c9fc41f4319</version>
+          <version>106.va_5286004db_2e</version>
           <scope>test</scope>
       </dependency>
     <dependency>
