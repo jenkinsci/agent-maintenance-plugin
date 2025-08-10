@@ -6,10 +6,12 @@ import hudson.slaves.RetentionStrategy.Always;
 import hudson.slaves.RetentionStrategy.Demand;
 import java.io.IOException;
 import org.jenkinsci.plugins.matrixauth.AuthorizationMatrixNodeProperty;
-import org.junit.Before;
+import org.junit.jupiter.api.BeforeEach;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 /** Base class for permission checks. */
-public abstract class BasePermissionChecks extends PermissionSetup {
+@WithJenkins
+abstract class BasePermissionChecks extends PermissionSetup {
 
   protected static Slave agent;
   protected static Slave agentRestricted;
@@ -35,7 +37,7 @@ public abstract class BasePermissionChecks extends PermissionSetup {
    *
    * @throws Exception when something goes wrong
    */
-  @Before
+  @BeforeEach
   public void setupAgents() throws Exception {
     agent = rule.createOnlineSlave();
     agentRestricted = rule.createOnlineSlave();

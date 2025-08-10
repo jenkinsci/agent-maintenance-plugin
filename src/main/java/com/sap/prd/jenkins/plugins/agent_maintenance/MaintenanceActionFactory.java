@@ -1,5 +1,6 @@
 package com.sap.prd.jenkins.plugins.agent_maintenance;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.model.Action;
 import hudson.slaves.AbstractCloudComputer;
@@ -14,10 +15,11 @@ import jenkins.model.TransientActionFactory;
 public class MaintenanceActionFactory extends TransientActionFactory<SlaveComputer> {
 
   @Override
-  public Collection<? extends Action> createFor(SlaveComputer target) {
+  @NonNull
+  public Collection<? extends Action> createFor(@NonNull SlaveComputer target) {
     List<Action> result = new ArrayList<>();
     if (!(target instanceof AbstractCloudComputer)
-        && target.getActions().stream().filter(x -> x instanceof MaintenanceAction).count() == 0) {
+        && target.getActions().stream().noneMatch(x -> x instanceof MaintenanceAction)) {
       MaintenanceAction action = new MaintenanceAction(target);
       result.add(action);
       target.addAction(new MaintenanceAction(target));

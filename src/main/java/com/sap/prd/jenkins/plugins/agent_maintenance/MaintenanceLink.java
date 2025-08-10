@@ -1,5 +1,6 @@
 package com.sap.prd.jenkins.plugins.agent_maintenance;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.model.AutoCompletionCandidates;
 import hudson.model.Computer;
@@ -20,6 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -64,6 +66,7 @@ public class MaintenanceLink extends ManagementLink {
   }
 
   @Override
+  @NonNull
   public Permission getRequiredPermission() {
     return Jenkins.SYSTEM_READ;
   }
@@ -147,7 +150,7 @@ public class MaintenanceLink extends ManagementLink {
    * @param computerName The name of the computer to which the maintenance belongs
    */
   @JavaScriptMethod
-  public boolean deleteMaintenance(String id, String computerName) throws IOException, ServletException {
+  public boolean deleteMaintenance(String id, String computerName) {
     if (hasPermission(computerName)) {
       try {
         MaintenanceHelper.getInstance().deleteMaintenanceWindow(computerName, id);
@@ -166,7 +169,7 @@ public class MaintenanceLink extends ManagementLink {
    * @param json An json with maintenance ids to delete and corresponding computer names
    */
   @JavaScriptMethod
-  public String[] deleteMultiple(JSONObject json) throws IOException, ServletException {
+  public String[] deleteMultiple(JSONObject json) {
     Map<String, String> mwList = (Map<String, String>) JSONObject.toBean(json, Map.class);
     List<String> deletedList = new ArrayList<>();
     for (Entry<String, String> entry : mwList.entrySet()) {
@@ -230,8 +233,8 @@ public class MaintenanceLink extends ManagementLink {
   /**
    * Add a maintenance window to a list of machines.
    *
-   * @param req StaplerRequest
-   * @param rsp StaplerResponse
+   * @param req StaplerRequest2
+   * @param rsp StaplerResponse2
    * @throws IOException      when saving xml failed
    * @throws ServletException when reading the form failed
    */
@@ -250,7 +253,7 @@ public class MaintenanceLink extends ManagementLink {
   
       nodes.stream()
           .filter(n -> n.toComputer() instanceof SlaveComputer && !(n.toComputer() instanceof AbstractCloudComputer)
-              && n.toComputer().getRetentionStrategy() instanceof AgentMaintenanceRetentionStrategy
+              && Objects.requireNonNull(n.toComputer()).getRetentionStrategy() instanceof AgentMaintenanceRetentionStrategy
               && n.hasAnyPermission(MaintenanceAction.CONFIGURE_AND_DISCONNECT))
           .forEach(n -> {
             try {

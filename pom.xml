@@ -39,7 +39,7 @@
     <jenkins.baseline>2.516</jenkins.baseline>
     <jenkins.version>${jenkins.baseline}.1</jenkins.version>
     <powermock.version>1.6.1</powermock.version>
-    <checkstyle.version>10.21.4</checkstyle.version>
+    <checkstyle.version>10.26.1</checkstyle.version>
     <hpi.compatibleSinceVersion>2.0</hpi.compatibleSinceVersion>
   </properties>
 
@@ -62,7 +62,7 @@
     <dependency>
       <groupId>io.jenkins.plugins</groupId>
       <artifactId>flatpickr-api</artifactId>
-      <version>4.6.13-5.v534d8025a_a_59</version>
+      <version>4.6.13-18.vcf5f6a_5b_8468</version>
     </dependency>
     <dependency>
       <groupId>com.cronutils</groupId>
@@ -71,7 +71,7 @@
     </dependency>
     <dependency>
       <groupId>org.mockito</groupId>
-      <artifactId>mockito-core</artifactId>
+      <artifactId>mockito-junit-jupiter</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -83,13 +83,13 @@
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>mock-slave</artifactId>
-      <version>189.vca_72fb_1d2b_52</version>
+      <version>193.v88c279d0c584</version>
       <scope>test</scope>
     </dependency>
       <dependency>
           <groupId>org.jenkins-ci.plugins</groupId>
           <artifactId>mock-security-realm</artifactId>
-          <version>87.v8c9fc41f4319</version>
+          <version>106.va_5286004db_2e</version>
           <scope>test</scope>
       </dependency>
     <dependency>
@@ -117,7 +117,7 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>tidy-maven-plugin</artifactId>
-        <version>1.3.0</version>
+        <version>1.4.0</version>
         <executions>
           <execution>
             <id>validate</id>

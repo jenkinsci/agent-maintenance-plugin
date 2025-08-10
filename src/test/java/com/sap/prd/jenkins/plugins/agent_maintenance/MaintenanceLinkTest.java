@@ -4,7 +4,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
-import static org.mockito.Mockito.when;
 
 import hudson.model.ManagementLink;
 import hudson.model.User;
@@ -12,41 +11,28 @@ import hudson.security.ACL;
 import hudson.security.ACLContext;
 import java.util.List;
 import jenkins.model.Jenkins;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 import org.htmlunit.html.HtmlPage;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 /** Access tests for the management link. */
-public class MaintenanceLinkTest extends BasePermissionChecks {
+@WithJenkins
+@ExtendWith(MockitoExtension.class)
+class MaintenanceLinkTest extends BasePermissionChecks {
 
   @Mock
-  private StaplerRequest req;
+  private StaplerRequest2 req;
   @Mock
-  private StaplerResponse rsp;
-  
-  private AutoCloseable closeable;
-
-
-  @Before
-  public void openMocks() {
-    closeable = MockitoAnnotations.openMocks(this);
-  }
-
-  @After
-  public void releaseMocks() throws Exception {
-    closeable.close();
-  }
+  private StaplerResponse2 rsp;
 
   @Test
-  public void readPermissionHasNoAccess() throws Exception {
+  void readPermissionHasNoAccess() throws Exception {
     WebClient w = rule.createWebClient();
     w.login(USER);
     HtmlPage managePage = w.withThrowExceptionOnFailingStatusCode(false).goTo("agent-maintenances/");
@@ -54,7 +40,7 @@ public class MaintenanceLinkTest extends BasePermissionChecks {
   }
 
   @Test
-  public void systemReadPermissionDoesNotExposeDeleteLink() throws Exception {
+  void systemReadPermissionDoesNotExposeDeleteLink() throws Exception {
     WebClient w = rule.createWebClient();
     w.login(READER);
     HtmlPage managePage = w.goTo("agent-maintenances/");
@@ -63,7 +49,7 @@ public class MaintenanceLinkTest extends BasePermissionChecks {
   }
 
   @Test
-  public void managePermissionDoesNotExposeDeleteLink() throws Exception {
+  void managePermissionDoesNotExposeDeleteLink() throws Exception {
     WebClient w = rule.createWebClient();
     w.login(MANAGE);
     HtmlPage managePage = w.goTo("agent-maintenances/");
@@ -72,7 +58,7 @@ public class MaintenanceLinkTest extends BasePermissionChecks {
   }
 
   @Test
-  public void deleteMaintenanceWindow() throws Exception {
+  void deleteMaintenanceWindow() throws Exception {
     MaintenanceLink instance = null;
     List<ManagementLink> list = Jenkins.get().getManagementLinks();
     for (ManagementLink link : list) {
@@ -82,7 +68,7 @@ public class MaintenanceLinkTest extends BasePermissionChecks {
       }
     }
 
-    assert instance != null;
+    assertThat(instance, is(notNullValue()));
 
     WebClient w = rule.createWebClient();
     w.login(ADMIN);
@@ -99,7 +85,7 @@ public class MaintenanceLinkTest extends BasePermissionChecks {
   }
 
   @Test
-  public void configurePermissionDoesExposeDeleteLink() throws Exception {
+  void configurePermissionDoesExposeDeleteLink() throws Exception {
     WebClient w = rule.createWebClient();
     w.login(CONFIGURE);
     HtmlPage managePage = w.goTo("agent-maintenances/");
@@ -108,7 +94,7 @@ public class MaintenanceLinkTest extends BasePermissionChecks {
   }
 
   @Test
-  public void disconnectPermissionDoesExposeDeleteLink() throws Exception {
+  void disconnectPermissionDoesExposeDeleteLink() throws Exception {
     WebClient w = rule.createWebClient();
     w.login(DISCONNECT);
     HtmlPage managePage = w.goTo("agent-maintenances/");

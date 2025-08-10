@@ -5,13 +5,13 @@ import static org.hamcrest.Matchers.is;
 
 import com.sap.prd.jenkins.plugins.agent_maintenance.MaintenanceWindow.DescriptorImpl;
 import hudson.util.FormValidation;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for the maintenance window. */
-public class MaintenanceWindowTest {
+class MaintenanceWindowTest {
 
   @Test
-  public void testDoCheckStartTime() {
+  void testDoCheckStartTime() {
     DescriptorImpl d = new DescriptorImpl();
     assertThat(d.doCheckStartTime("2022-01-01 12:00", "").kind, is(FormValidation.Kind.ERROR));
     assertThat(d.doCheckStartTime("", "2022-01-01 12:00").kind, is(FormValidation.Kind.ERROR));
@@ -20,7 +20,7 @@ public class MaintenanceWindowTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     MaintenanceWindow m1 = new MaintenanceWindow("2022-01-01 12:00", "2022-01-02 12:00", "test", false, false, "0", "user", "id");
     MaintenanceWindow m2 = new MaintenanceWindow("2022-01-01 12:00", "2022-01-02 12:00", "test", false, false, "0", "user", "id");
     MaintenanceWindow m3 = new MaintenanceWindow("2022-01-01 12:00", "2022-01-02 12:00", "test", false, false, "0", "user2", "id");

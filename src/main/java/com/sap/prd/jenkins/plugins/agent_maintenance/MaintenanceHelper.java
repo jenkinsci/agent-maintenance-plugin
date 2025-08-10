@@ -2,7 +2,6 @@ package com.sap.prd.jenkins.plugins.agent_maintenance;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.XmlFile;
 import hudson.model.Computer;
 import hudson.model.Slave;
@@ -10,7 +9,6 @@ import hudson.slaves.RetentionStrategy;
 import hudson.slaves.SlaveComputer;
 import java.io.File;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
@@ -36,7 +34,7 @@ public class MaintenanceHelper {
 
   private static final MaintenanceHelper INSTANCE = new MaintenanceHelper();
 
-  private Map<String, MaintenanceDefinitions> cache = new ConcurrentHashMap<>();
+  private final Map<String, MaintenanceDefinitions> cache = new ConcurrentHashMap<>();
 
   private MaintenanceHelper() {
   }
@@ -86,7 +84,7 @@ public class MaintenanceHelper {
   }
 
   public boolean hasMaintenanceWindows(String computerName) throws IOException {
-    return cache.containsKey(computerName) && getMaintenanceWindows(computerName).size() > 0;
+    return cache.containsKey(computerName) && !getMaintenanceWindows(computerName).isEmpty();
   }
 
   /**
@@ -334,7 +332,7 @@ public class MaintenanceHelper {
     synchronized (md) {
       for (RecurringMaintenanceWindow rmw : md.getRecurring()) {
         Set<MaintenanceWindow> fmw = rmw.getFutureMaintenanceWindows();
-        if (fmw.size() > 0) {
+        if (!fmw.isEmpty()) {
           LOGGER.log(Level.FINER, "Found future maintenance windows for {0}", getSafeComputerName(computerName));
           md.getScheduled().addAll(fmw);
           added = true;
@@ -417,8 +415,7 @@ public class MaintenanceHelper {
    * @return true if strategy was injected, false otherwise
    */
   public boolean injectRetentionStrategy(Computer c) {
-    if (c instanceof SlaveComputer) {
-      SlaveComputer computer = (SlaveComputer) c;
+    if (c instanceof SlaveComputer computer) {
       @SuppressWarnings("unchecked")
       RetentionStrategy<SlaveComputer> strategy = computer.getRetentionStrategy();
       if (!(strategy instanceof AgentMaintenanceRetentionStrategy)) {
@@ -444,15 +441,12 @@ public class MaintenanceHelper {
    * @param c The computer for which to remove the strategy
    * @return true if strategy was removed, false otherwise
    */
-  @SuppressFBWarnings(value = "RV_RETURN_VALUE_IGNORED_BAD_PRACTICE")
   public boolean removeRetentionStrategy(Computer c) {
-    if (c instanceof SlaveComputer) {
-      SlaveComputer computer = (SlaveComputer) c;
+    if (c instanceof SlaveComputer computer) {
       String computerName = computer.getName();
       @SuppressWarnings("unchecked")
       RetentionStrategy<SlaveComputer> strategy = computer.getRetentionStrategy();
-      if (strategy instanceof AgentMaintenanceRetentionStrategy) {
-        AgentMaintenanceRetentionStrategy maintenanceStrategy = (AgentMaintenanceRetentionStrategy) strategy;
+      if (strategy instanceof AgentMaintenanceRetentionStrategy maintenanceStrategy) {
         Slave node = computer.getNode();
         if (node != null) {
           node.setRetentionStrategy(maintenanceStrategy.getRegularRetentionStrategy());

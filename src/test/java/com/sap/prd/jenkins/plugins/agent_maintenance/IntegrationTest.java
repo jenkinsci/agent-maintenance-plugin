@@ -16,18 +16,20 @@ import hudson.slaves.RetentionStrategy.Demand;
 import java.time.LocalDateTime;
 import java.util.concurrent.TimeUnit;
 import jenkins.model.InterruptedBuildAction;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.jvnet.hudson.test.SleepBuilder;
-import org.jvnet.hudson.test.recipes.WithTimeout;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 /**
  * Tests retention strategy that involves running jobs.
  */
-public class IntegrationTest extends BaseIntegationTest {
+@WithJenkins
+class IntegrationTest extends BaseIntegrationTest {
 
   @Test
-  @WithTimeout(300)
-  public void waitForRunningProjectToFinishBeforeDisconnect() throws Exception {
+  @Timeout(300)
+  void waitForRunningProjectToFinishBeforeDisconnect() throws Exception {
     Slave agent = getAgent("waitForRunningProjectToFinishBeforeDisconnect");
     FreeStyleProject project = rule.createFreeStyleProject();
     project.setAssignedLabel(agent.getSelfLabel());
@@ -54,8 +56,8 @@ public class IntegrationTest extends BaseIntegationTest {
   }
 
   @Test
-  @WithTimeout(300)
-  public void projectGetsAbortedWhenRunningTooLong() throws Exception {
+  @Timeout(300)
+  void projectGetsAbortedWhenRunningTooLong() throws Exception {
     Slave agent = getAgent("projectGetsAbortedWhenRunningTooLong");
     FreeStyleProject project = rule.createFreeStyleProject();
     project.setAssignedLabel(agent.getSelfLabel());
@@ -85,8 +87,8 @@ public class IntegrationTest extends BaseIntegationTest {
   }
 
   @Test
-  @WithTimeout(300)
-  public void projectGetsAbortedWithoutKeepOnline() throws Exception {
+  @Timeout(300)
+  void projectGetsAbortedWithoutKeepOnline() throws Exception {
     Slave agent = getAgent("projectGetsAbortedWhenRunningTooLong");
     FreeStyleProject project = rule.createFreeStyleProject();
     project.setAssignedLabel(agent.getSelfLabel());
@@ -114,8 +116,8 @@ public class IntegrationTest extends BaseIntegationTest {
   }
 
   @Test
-  @WithTimeout(300)
-  public void onDemandStrategyIsAppliedProperly() throws Exception {
+  @Timeout(300)
+  void onDemandStrategyIsAppliedProperly() throws Exception {
     Demand demandStrategy = new Demand(1, 1);
     Slave agent = getAgent("onDemandStrategyIsAppliedProperly", demandStrategy);
     FreeStyleProject project = rule.createFreeStyleProject();

@@ -6,18 +6,24 @@ import hudson.slaves.RetentionStrategy.Always;
 import hudson.slaves.SlaveComputer;
 import java.time.LocalDateTime;
 import java.util.concurrent.TimeUnit;
-import org.junit.Rule;
+import org.junit.jupiter.api.BeforeEach;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 /**
  * Base class for tests of the retention strategy.
  */
-public abstract class BaseIntegationTest {
+@WithJenkins
+abstract class BaseIntegrationTest {
 
-  @Rule
-  public JenkinsRule rule = new JenkinsRule();
+  protected JenkinsRule rule;
 
   protected MaintenanceHelper maintenanceHelper = MaintenanceHelper.getInstance();
+
+  @BeforeEach
+  void setup(JenkinsRule rule) throws Exception {
+    this.rule = rule;
+  }
 
   protected Slave getAgent(String name) throws Exception {
     return getAgent(name, null);
@@ -42,7 +48,7 @@ public abstract class BaseIntegationTest {
       triggerCheckCycle(agent);
       LocalDateTime now = LocalDateTime.now();
       if (now.isAfter(timeout)) {
-        String active = "unknown"; 
+        String active = "unknown";
         if (mw != null) {
           active = "" + mw.isMaintenanceScheduled();
         }

@@ -10,7 +10,7 @@ import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.verb.POST;
 
 /** The global configuration of the plugin. */
@@ -44,7 +44,7 @@ public class MaintenanceConfiguration extends GlobalConfiguration {
    * @return A HttpResponse
    */
   @POST
-  public HttpResponse doInject(StaplerResponse rsp) {
+  public HttpResponse doInject(StaplerResponse2 rsp) {
     Jenkins.get().checkPermission(Jenkins.ADMINISTER);
     int counter = 0;
     for (Node node : Jenkins.get().getNodes()) {
@@ -65,7 +65,7 @@ public class MaintenanceConfiguration extends GlobalConfiguration {
    * @return A HttpResponse
    */
   @POST
-  public HttpResponse doRemove(StaplerResponse rsp) {
+  public HttpResponse doRemove(StaplerResponse2 rsp) {
     Jenkins.get().checkPermission(Jenkins.ADMINISTER);
     int counter = 0;
     for (Node node : Jenkins.get().getNodes()) {
