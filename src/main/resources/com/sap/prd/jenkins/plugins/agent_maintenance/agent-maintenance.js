@@ -59,13 +59,17 @@ window.addEventListener("DOMContentLoaded", (event) => {
   window.setInterval(refresh, 20000);
 });
 
-let selectMaintenanceWindows = function(toggle, className) {
-    let table = document.getElementById("maintenance-table");
-    let inputs = table.querySelectorAll('tr' + className + ' input.am__checkbox');
-    for (let input of inputs) {
-      input.checked = toggle;
-    }
-    updateDeleteSelectedButton(table);
+let selectMaintenanceWindows = function(button, toggle, className) {
+  const table = document.getElementById("maintenance-table");
+  const inputs = table.querySelectorAll('tr' + className + ' input.am__checkbox');
+  for (let input of inputs) {
+    input.checked = toggle;
+  }
+  updateDeleteSelectedButton(table);
+  const ev = new CustomEvent("updateIcon", {
+    bubbles: true,
+  });
+  button.dispatchEvent(ev);
 };
 
 Behaviour.specify(".am__action-delete", 'agent-maintenance', 0, function(e) {
@@ -356,27 +360,21 @@ Behaviour.specify("#delete-selected-button-link", 'agent-maintenance', 0, functi
   }
 });
 
-Behaviour.specify("#select-all", 'agent-maintenance', 0, function(e) {
-  e.onclick = function() {
-    selectMaintenanceWindows(true, "");
-  }
+Behaviour.specify("[data-select='all'], [data-select='none'], .jenkins-table__checkbox", 'agent-maintenance', 0, function(e) {
+  e.addEventListener("click", function() {
+    const table = e.closest(".jenkins-table");
+    updateDeleteSelectedButton(table);
+  });
 });
 
-
 Behaviour.specify("#select-active", 'agent-maintenance', 0, function(e) {
-  e.onclick = function() {
-    selectMaintenanceWindows(true, ".active");
-  }
+  e.addEventListener("click", function() {
+    selectMaintenanceWindows(e, true, ".active");
+  });
 });
 
 Behaviour.specify("#select-inactive", 'agent-maintenance', 0, function(e) {
-  e.onclick = function() {
-    selectMaintenanceWindows(true, ".inactive");
-  }
-});
-
-Behaviour.specify("#select-none", 'agent-maintenance', 0, function(e) {
-  e.onclick = function() {
-    selectMaintenanceWindows(false, "");
-  }
+  e.addEventListener("click", function() {
+    selectMaintenanceWindows(e, true, ".inactive");
+  });
 });
