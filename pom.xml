@@ -39,7 +39,7 @@
     <jenkins.baseline>2.516</jenkins.baseline>
     <jenkins.version>${jenkins.baseline}.1</jenkins.version>
     <powermock.version>1.6.1</powermock.version>
-    <checkstyle.version>12.0.1</checkstyle.version>
+    <checkstyle.version>12.3.0</checkstyle.version>
     <ban-junit4-imports.skip>false</ban-junit4-imports.skip>
     <hpi.compatibleSinceVersion>2.0</hpi.compatibleSinceVersion>
   </properties>
