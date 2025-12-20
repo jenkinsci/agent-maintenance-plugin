@@ -195,8 +195,8 @@ public class MaintenanceWindow extends AbstractDescribableImpl<MaintenanceWindow
     return !now.isBefore(endDateTime);
   }
 
-  public OfflineCause getOfflineCause(String computerName) {
-    return new MaintenanceOfflineCause(this, computerName);
+  public OfflineCause getOfflineCause(String targetName) {
+    return new MaintenanceOfflineCause(this, targetName);
   }
 
   /** Descriptor for UI only. */

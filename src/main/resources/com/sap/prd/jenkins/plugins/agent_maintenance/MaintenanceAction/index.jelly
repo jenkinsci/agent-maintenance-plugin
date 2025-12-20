@@ -2,7 +2,9 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
          xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:p="/lib/permissions">
   <l:layout title="${%Planned Maintenances}" norefresh="true">
-    <st:include it="${it.computer}" page="sidepanel.jelly"/>
+    <j:if test="${it.isAgent()}">
+      <st:include it="${it.getAgentComputer()}" page="sidepanel.jelly"/>
+    </j:if>
 
     <l:header>
       <script src="${resURL}/jsbundles/components/row-selection-controller.js" type="text/javascript" defer="true" />
@@ -11,7 +13,7 @@
     <l:main-panel>
       <st:bind var="maintenanceJavaScriptBind" value="${it}"/>
       <st:adjunct includes="com.sap.prd.jenkins.plugins.agent_maintenance.agent-maintenance"/>
-      <j:if test="${it.enabled}">
+      <j:if test="${it.isVisible()}">
         <h1>${%Planned Maintenances}</h1>
 
 <div class="am__modal" id="maintenance-add-form" data-title="${%Add Maintenance Window}">
@@ -47,7 +49,7 @@
                         <div class="jenkins-table__checkbox-dropdown__icon">
                           <l:icon src="symbol-compatible" />
                         </div>
-                        ${%Inctive}
+                        ${%Inactive}
                       </button>
                     </l:rowSelectionController>
                   </th>
@@ -163,23 +165,31 @@
         </f:form>
         <br/>
         <br/>
-        <l:hasPermission permission="${it.computer.CONFIGURE}">
-          <f:entry title="${%Disable Agent Maintenance Availability}" help="/plugin/agent-maintenance/help/help-disable.html">
+        <j:if test="${it.isAgent()}">
+          <l:hasPermission permission="${it.getAgentComputer().CONFIGURE}">
+            <f:entry title="${%Disable Agent Maintenance Availability}" help="/plugin/agent-maintenance/help/help-disable.html">
               <button class="jenkins-button jenkins-button--primary am__disable"
                       data-message="${%Disable Agent Maintenance Availability}">${%Disable}</button>
-          </f:entry>
-        </l:hasPermission>
-
+            </f:entry>
+          </l:hasPermission>
+        </j:if>
       </j:if>
-      <j:if test="${!it.enabled}">
-        <l:hasPermission permission="${it.computer.CONFIGURE}">
-          <f:entry title="${%Enable Agent Maintenance Availability}" help="/plugin/agent-maintenance/help/help-enable.html">
+
+      <j:if test="${it.isCloud()}">
+        <div>Cloud maintenance blocks new provisioning</div>
+      </j:if>
+
+      <j:if test="${it.isAgent()}">
+        <j:if test="${!it.enabled}">
+          <l:hasPermission permission="${it.getAgentComputer().CONFIGURE}">
+            <f:entry title="${%Enable Agent Maintenance Availability}" help="/plugin/agent-maintenance/help/help-enable.html">
               <button class="jenkins-button jenkins-button--primary am__enable"
-              data-message="${%Enable Agent Maintenance Availability}">${%Enable}</button>
-          </f:entry>
-        </l:hasPermission>
-        <j:if test="${!h.hasPermission(it, it.computer.CONFIGURE)}">
-          ${%missingPermission}
+                      data-message="${%Enable Agent Maintenance Availability}">${%Enable}</button>
+            </f:entry>
+          </l:hasPermission>
+          <j:if test="${!it.hasPermissions()}">
+            ${%missingPermission}
+          </j:if>
         </j:if>
       </j:if>
     </l:main-panel>

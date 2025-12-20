@@ -10,6 +10,7 @@ import hudson.model.Node;
 import hudson.model.labels.LabelExpression;
 import hudson.security.Permission;
 import hudson.slaves.AbstractCloudComputer;
+import hudson.slaves.Cloud;
 import hudson.slaves.SlaveComputer;
 import hudson.util.FormValidation;
 import jakarta.servlet.ServletException;
@@ -62,7 +63,7 @@ public class MaintenanceLink extends ManagementLink {
 
   @Override
   public String getUrlName() {
-    return "agent-maintenances";
+    return "target-maintenances";
   }
 
   @Override
@@ -76,19 +77,30 @@ public class MaintenanceLink extends ManagementLink {
    *
    * @return List of actions
    */
-  public List<MaintenanceAction> getAgents() {
-    List<MaintenanceAction> agentList = new ArrayList<>();
+  public List<MaintenanceAction> getTargets() {
+    List<MaintenanceAction> targetList = new ArrayList<>();
+
+    // Existing agent specific logic
     for (Node node : Jenkins.get().getNodes()) {
       Computer computer = node.toComputer();
       if (computer instanceof SlaveComputer) {
-        MaintenanceAction action = new MaintenanceAction((SlaveComputer) computer);
+        MaintenanceTarget target = new MaintenanceTarget(MaintenanceTarget.TargetType.AGENT, node.getNodeName());
+        MaintenanceAction action = new MaintenanceAction(target);
         if (action.hasMaintenanceWindows()) {
-          agentList.add(action);
+          targetList.add(action);
         }
       }
     }
 
-    return agentList;
+    // New: Adding clouds to the list
+    for (Cloud cloud : Jenkins.get().clouds) {
+      MaintenanceTarget target = new MaintenanceTarget(MaintenanceTarget.TargetType.CLOUD, cloud.name);
+      MaintenanceAction action = new MaintenanceAction(target);
+
+      if (action.hasMaintenanceWindows()) targetList.add(action);
+    }
+
+    return targetList;
   }
 
   private void setError(Throwable error) {
@@ -115,7 +127,7 @@ public class MaintenanceLink extends ManagementLink {
   public Badge getBadge() {
     int active = 0;
     int total = 0;
-    List<MaintenanceAction> mwList = getAgents();
+    List<MaintenanceAction> mwList = getTargets();
     for (MaintenanceAction ma : mwList) {
       total++;
       if (ma.hasActiveMaintenanceWindows()) {
@@ -147,13 +159,13 @@ public class MaintenanceLink extends ManagementLink {
    * Delete given maintenance window.
    *
    * @param id The id of the maintenance to delete
-   * @param computerName The name of the computer to which the maintenance belongs
+   * @param targetKey The name of the computer to which the maintenance belongs
    */
   @JavaScriptMethod
-  public boolean deleteMaintenance(String id, String computerName) {
-    if (hasPermission(computerName)) {
+  public boolean deleteMaintenance(String id, String targetKey) {
+    if (hasPermission(targetKey)) {
       try {
-        MaintenanceHelper.getInstance().deleteMaintenanceWindow(computerName, id);
+        MaintenanceHelper.getInstance().deleteMaintenanceWindow(targetKey, id);
         return true;
       } catch (Throwable e) {
         LOGGER.log(Level.WARNING, "Error while deleting maintenance window", e);
@@ -173,11 +185,11 @@ public class MaintenanceLink extends ManagementLink {
     Map<String, String> mwList = (Map<String, String>) JSONObject.toBean(json, Map.class);
     List<String> deletedList = new ArrayList<>();
     for (Entry<String, String> entry : mwList.entrySet()) {
-      String computerName = entry.getValue();
-      if (hasPermission(computerName)) {
+      String targetKey = entry.getValue();
+      if (hasPermission(targetKey)) {
         String id = entry.getKey();
         try {
-          MaintenanceHelper.getInstance().deleteMaintenanceWindow(computerName, id);
+          MaintenanceHelper.getInstance().deleteMaintenanceWindow(targetKey, id);
           deletedList.add(id);
         } catch (Throwable e) {
           LOGGER.log(Level.WARNING, "Error while deleting maintenance window", e);
@@ -195,29 +207,28 @@ public class MaintenanceLink extends ManagementLink {
   @JavaScriptMethod
   public Map<String, Boolean> getMaintenanceStatus() {
     Map<String, Boolean> statusList = new HashMap<>();
-    for (MaintenanceAction action : getAgents()) {
-      Computer computer = action.getComputer();
-      if (computer.hasAnyPermission(Computer.DISCONNECT, Computer.CONFIGURE, Computer.EXTENDED_READ)) {
+    for (MaintenanceAction action : getTargets()) {
         try {
-          for (MaintenanceWindow mw : MaintenanceHelper.getInstance().getMaintenanceWindows(computer.getName())) {
-            if (!mw.isMaintenanceOver()) {
-              statusList.put(mw.getId(), mw.isMaintenanceScheduled());
+          if (!action.hasPermissions()) continue;
+
+          MaintenanceTarget target = action.getTarget();
+          if (target != null) {
+            for (MaintenanceWindow mw : MaintenanceHelper.getInstance().getMaintenanceWindows(target.toKey())) {
+              if (!mw.isMaintenanceOver()) {
+                statusList.put(mw.getId(), mw.isMaintenanceScheduled());
+              }
             }
           }
         } catch (IOException ioe) {
           LOGGER.log(Level.WARNING, "Failed to read maintenance windows", ioe);
         }
-      }
     }
     return statusList;
   }
 
-  private boolean hasPermission(String computerName) {
-    Computer c = Jenkins.get().getComputer(computerName);
-    if (c != null) {
-      return c.hasAnyPermission(MaintenanceAction.CONFIGURE_AND_DISCONNECT);
-    }
-    return false;
+  private boolean hasPermission(String targetKey) {
+    MaintenanceAction action = new MaintenanceAction(MaintenanceTarget.fromKey(targetKey));
+    return action.hasPermissions();
   }
 
   @Restricted(NoExternalUse.class)
@@ -243,12 +254,13 @@ public class MaintenanceLink extends ManagementLink {
     Jenkins j = Jenkins.get();
 
     JSONObject src = req.getSubmittedForm();
+    MaintenanceWindow maintenanceWindow = req.bindJSON(MaintenanceWindow.class, src);
+
     String labelString = src.optString("label");
     Label label = j.getLabel(labelString);
     if (label != null) {
       Set<Node> nodes = label.getNodes();
-      MaintenanceWindow mw = req.bindJSON(MaintenanceWindow.class, src);
-      LOGGER.log(Level.FINER, "Adding maintenance windows {0}", mw);
+      LOGGER.log(Level.FINER, "Adding maintenance windows {0}", maintenanceWindow);
       LOGGER.log(Level.FINER, "Adding maintenance windows for agents: {0}", nodes);
   
       nodes.stream()
@@ -258,13 +270,39 @@ public class MaintenanceLink extends ManagementLink {
           .forEach(n -> {
             try {
               SlaveComputer computer = (SlaveComputer) n.toComputer();
-              MaintenanceWindow maintenanceWindow = req.bindJSON(MaintenanceWindow.class, src);
-              MaintenanceHelper.getInstance().addMaintenanceWindow(computer.getName(), maintenanceWindow);
+              MaintenanceTarget target = new MaintenanceTarget(MaintenanceTarget.TargetType.AGENT, computer.getName());
+              MaintenanceHelper.getInstance().addMaintenanceWindow(target.toKey(), maintenanceWindow);
             } catch (Exception e) {
               LOGGER.log(Level.WARNING, "Error while adding maintenance window", e);
               setError(e);
             }
           });
+    }
+
+    // Support for bulk action on clouds
+    Map<String, Cloud> cloudByName = new HashMap<>();
+    for (Cloud cloud : j.clouds) {
+      cloudByName.put(cloud.name, cloud);
+    }
+
+    if (src.has("clouds")) {
+      LOGGER.log(Level.FINER, "Adding maintenance windows {0}", maintenanceWindow);
+      LOGGER.log(Level.FINER, "Adding maintenance windows for clouds: {0}", cloudByName.values());
+      for (Object o : src.getJSONArray("clouds")) {
+        String cloudName = String.valueOf(o);
+        Cloud cloud = cloudByName.get(cloudName);
+        if (cloud == null) continue;
+
+        if (!j.hasPermission(Jenkins.ADMINISTER)) continue;
+
+        try {
+          MaintenanceTarget target = new MaintenanceTarget(MaintenanceTarget.TargetType.CLOUD, cloud.name);
+          MaintenanceHelper.getInstance().addMaintenanceWindow(target.toKey(), maintenanceWindow);
+        } catch (Exception e) {
+          LOGGER.log(Level.WARNING, "Error while adding maintenance window", e);
+          setError(e);
+        }
+      }
     }
     rsp.sendRedirect(".");
   }

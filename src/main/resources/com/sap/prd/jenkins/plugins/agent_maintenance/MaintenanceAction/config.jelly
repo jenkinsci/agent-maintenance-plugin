@@ -1,8 +1,10 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
          xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <l:layout title="Edit Maintenances" norefresh="true" permissions="${it.permissions}">
-     <st:include it="${it.computer}" page="sidepanel.jelly"/>
+  <l:layout title="Edit Maintenances" norefresh="true">
+      <j:if test="${it.isAgent()}">
+          <st:include it="${it.getAgentComputer()}" page="sidepanel.jelly"/>
+      </j:if>
     <l:main-panel>
       <h1>${%Edit Planned Maintenances}</h1>
       <br/>
