@@ -5,6 +5,9 @@
     <j:if test="${it.isAgent()}">
       <st:include it="${it.getAgentComputer()}" page="sidepanel.jelly"/>
     </j:if>
+    <j:if test="${it.isCloud()}">
+      <st:include it="${it.getCloud()}" page="sidepanel.jelly"/>
+    </j:if>
 
     <l:header>
       <script src="${resURL}/jsbundles/components/row-selection-controller.js" type="text/javascript" defer="true" />

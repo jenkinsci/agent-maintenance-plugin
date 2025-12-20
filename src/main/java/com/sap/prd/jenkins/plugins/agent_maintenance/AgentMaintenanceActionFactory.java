@@ -23,7 +23,6 @@ public class AgentMaintenanceActionFactory extends TransientActionFactory<SlaveC
       MaintenanceTarget mt = new MaintenanceTarget(MaintenanceTarget.TargetType.AGENT, target.getName());
       MaintenanceAction action = new MaintenanceAction(mt);
       result.add(action);
-      target.addAction(action);
     }
     return result;
   }

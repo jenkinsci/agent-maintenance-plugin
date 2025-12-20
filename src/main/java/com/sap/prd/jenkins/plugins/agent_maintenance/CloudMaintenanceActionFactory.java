@@ -18,17 +18,14 @@ public class CloudMaintenanceActionFactory extends TransientActionFactory<Cloud>
   @NonNull
   @Override
   public Collection<? extends Action> createFor(@NonNull Cloud target) {
-    List<Action> result = new ArrayList<>();
     if (!Jenkins.get().hasPermission(Jenkins.ADMINISTER)) {
       return Collections.emptyList();
     }
-    if (target.getAllActions().stream().noneMatch(x -> x instanceof MaintenanceAction)) {
-      MaintenanceTarget mt = new MaintenanceTarget(MaintenanceTarget.TargetType.CLOUD, target.name);
-      MaintenanceAction action = new MaintenanceAction(mt);
-      result.add(action);
-      target.addAction(action);
-    }
-    return result;
+    MaintenanceTarget mt = new MaintenanceTarget(MaintenanceTarget.TargetType.CLOUD, target.name);
+    MaintenanceAction action = new MaintenanceAction(mt);
+//    target.addAction(action);
+
+    return Collections.singletonList(action);
   }
 
   @Override

@@ -386,8 +386,12 @@ public class MaintenanceHelper {
       case CLOUD -> "clouds";
     };
     File targetDir = new File(Jenkins.get().getRootDir(), type);
-    if (!targetDir.exists() || !targetDir.isDirectory()) {
-      throw new IOException(type + " directory does not exist");
+    if (!targetDir.exists()) {
+      if (!targetDir.mkdirs() && !targetDir.exists()) {
+        throw new IOException("Failed to create " + type + " directory: " + targetDir);
+      }
+    } else if (!targetDir.isDirectory()) {
+      throw new IOException(targetDir + " is not a directory");
     }
     return targetDir;
   }
