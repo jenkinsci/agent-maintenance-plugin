@@ -21,7 +21,12 @@
 
 <div class="am__modal" id="maintenance-add-form" data-title="${%Add Maintenance Window}">
   <f:form action="add" method="post" name="config" class="no-json jenkins-!-padding-top-1">
-    <st:include class="${it.getMaintenanceWindowClass()}" page="config.jelly"/>
+    <j:if test="${it.isAgent()}">
+      <st:include class="${it.getMaintenanceWindowClass()}" page="agent-config.jelly"/>
+    </j:if>
+    <j:if test="${it.isCloud()}">
+      <st:include class="${it.getMaintenanceWindowClass()}" page="cloud-config.jelly"/>
+    </j:if>
   </f:form>
 </div>
 
@@ -35,9 +40,11 @@
                 </th>
                 <th>${%End Time}</th>
                 <th>${%Reason}</th>
-                <th>${%Keep Online}</th>
-                <th>${%Max Wait}</th>
-                <th>${%Auto Connect}</th>
+                <j:if test="${it.isAgent()}">
+                  <th>${%Keep Online}</th>
+                  <th>${%Max Wait}</th>
+                  <th>${%Auto Connect}</th>
+                </j:if>
                 <th>${%Created By}</th>
                 <p:hasAnyPermission permissions="${it.CONFIGURE_AND_DISCONNECT}">
                   <th data-sort-disable="true">
@@ -67,9 +74,11 @@
                   <td>${m.startTime}</td>
                   <td>${m.endTime}</td>
                   <td>${m.reason}</td>
-                  <td class="center" ><f:checkbox readOnlyMode="true" checked="${m.keepUpWhenActive ? 'true' : null}"/></td>
-                  <td class="right">${m.maxWaitMinutes}</td>
-                  <td class="center"><f:checkbox readOnlyMode="true" checked="${m.takeOnline ? 'true' : null}"/></td>
+                  <j:if test="${it.isAgent()}">
+                    <td class="center" ><f:checkbox readOnlyMode="true" checked="${m.keepUpWhenActive ? 'true' : null}"/></td>
+                    <td class="right">${m.maxWaitMinutes}</td>
+                    <td class="center"><f:checkbox readOnlyMode="true" checked="${m.takeOnline ? 'true' : null}"/></td>
+                  </j:if>
                   <td>${m.userid}</td>
                   <p:hasAnyPermission permissions="${it.CONFIGURE_AND_DISCONNECT}">
                     <td>
@@ -116,9 +125,11 @@
                 <th>${%Schedule}</th>
                 <th>${%Duration}</th>
                 <th>${%Reason}</th>
-                <th>${%Keep Online}</th>
-                <th>${%Max Wait}</th>
-                <th>${%Auto Connect}</th>
+                <j:if test="${it.isAgent()}">
+                  <th>${%Keep Online}</th>
+                  <th>${%Max Wait}</th>
+                  <th>${%Auto Connect}</th>
+                </j:if>
                 <th>${%Created By}</th>
                 <p:hasAnyPermission permissions="${it.CONFIGURE_AND_DISCONNECT}">
                   <th data-sort-disable="true">
@@ -135,9 +146,11 @@
                   <td>${m.startTimeSpec}</td>
                   <td>${m.duration}</td>
                   <td>${m.reason}</td>
-                  <td class="center" ><f:checkbox readOnlyMode="true" checked="${m.keepUpWhenActive ? 'true' : null}"/></td>
-                  <td class="right">${m.maxWaitMinutes}</td>
-                  <td class="center"><f:checkbox readOnlyMode="true" checked="${m.takeOnline ? 'true' : null}"/></td>
+                  <j:if test="${it.isAgent()}">
+                    <td class="center" ><f:checkbox readOnlyMode="true" checked="${m.keepUpWhenActive ? 'true' : null}"/></td>
+                    <td class="right">${m.maxWaitMinutes}</td>
+                    <td class="center"><f:checkbox readOnlyMode="true" checked="${m.takeOnline ? 'true' : null}"/></td>
+                  </j:if>
                   <td>${m.userid}</td>
                   <p:hasAnyPermission permissions="${it.CONFIGURE_AND_DISCONNECT}">
                     <td>

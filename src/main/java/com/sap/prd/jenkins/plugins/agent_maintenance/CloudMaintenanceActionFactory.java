@@ -7,10 +7,8 @@ import hudson.slaves.Cloud;
 import jenkins.model.Jenkins;
 import jenkins.model.TransientActionFactory;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 
 @Extension
 public class CloudMaintenanceActionFactory extends TransientActionFactory<Cloud> {
@@ -23,7 +21,6 @@ public class CloudMaintenanceActionFactory extends TransientActionFactory<Cloud>
     }
     MaintenanceTarget mt = new MaintenanceTarget(MaintenanceTarget.TargetType.CLOUD, target.name);
     MaintenanceAction action = new MaintenanceAction(mt);
-//    target.addAction(action);
 
     return Collections.singletonList(action);
   }

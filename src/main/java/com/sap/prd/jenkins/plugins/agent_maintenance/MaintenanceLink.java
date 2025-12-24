@@ -26,6 +26,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+
 import jenkins.management.Badge;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
@@ -101,6 +103,20 @@ public class MaintenanceLink extends ManagementLink {
     }
 
     return targetList;
+  }
+
+  public List<MaintenanceAction> getAgentTargets() {
+    List<MaintenanceAction> allTargets = getTargets();
+    return allTargets.stream()
+            .filter(MaintenanceAction::isAgent)
+            .toList();
+  }
+
+  public List<MaintenanceAction> getCloudTargets() {
+    List<MaintenanceAction> allTargets = getTargets();
+    return allTargets.stream()
+            .filter(MaintenanceAction::isCloud)
+            .toList();
   }
 
   private void setError(Throwable error) {

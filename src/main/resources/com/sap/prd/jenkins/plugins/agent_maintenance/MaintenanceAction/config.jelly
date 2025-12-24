@@ -2,9 +2,12 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
          xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <l:layout title="Edit Maintenances" norefresh="true">
-      <j:if test="${it.isAgent()}">
-          <st:include it="${it.getAgentComputer()}" page="sidepanel.jelly"/>
-      </j:if>
+    <j:if test="${it.isAgent()}">
+      <st:include it="${it.getAgentComputer()}" page="sidepanel.jelly"/>
+    </j:if>
+    <j:if test="${it.isCloud()}">
+      <st:include it="${it.getCloud()}" page="sidepanel.jelly"/>
+    </j:if>
     <l:main-panel>
       <h1>${%Edit Planned Maintenances}</h1>
       <br/>
@@ -12,7 +15,12 @@
         <f:entry title="${%Maintenance Windows}" help="/plugin/agent-maintenance/help/help-maintenanceList.html">
           <f:helpArea />
           <f:repeatable name="maintenanceWindows" var="mw" items="${it.maintenanceWindows}" minimum="0">
-              <st:include class="${it.getMaintenanceWindowClass()}" page="config.jelly"/>
+            <j:if test="${it.isCloud()}">
+              <st:include class="${it.getMaintenanceWindowClass()}" page="cloud-config.jelly"/>
+            </j:if>
+            <j:if test="${it.isAgent()}">
+              <st:include class="${it.getMaintenanceWindowClass()}" page="agent-config.jelly"/>
+            </j:if>
               <f:invisibleEntry>
                 <f:textbox field="userid" value="${mw.userid}"/>
               </f:invisibleEntry>

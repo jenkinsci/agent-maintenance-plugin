@@ -1,40 +1,50 @@
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-    <st:adjunct includes="io.jenkins.plugins.flatpickr"/>
-    <st:adjunct includes="com.sap.prd.jenkins.plugins.agent_maintenance.flatpickr"/>
-    <j:invokeStatic var="defaultStart" method="getDefaultStartTime" className="com.sap.prd.jenkins.plugins.agent_maintenance.MaintenanceAction"/>
-    <j:invokeStatic var="defaultEnd" method="getDefaultEndTime" className="com.sap.prd.jenkins.plugins.agent_maintenance.MaintenanceAction"/>
-    <f:entry title="${%startTime}" help="/descriptor/com.sap.prd.jenkins.plugins.agent_maintenance.MaintenanceWindow/help/startTime">
-        <div class="am__flatpickr" data-now="${defaultStart}">
-          <f:textbox name="startTime" value="${mw.startTime}" default="${defaultStart}"
-                     checkUrl="${rootURL}/descriptorByName/com.sap.prd.jenkins.plugins.agent_maintenance.MaintenanceWindow/checkStartTime"
-                     checkDependsOn="startTime endTime"
-                     data-input=""/>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
+         xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+  <st:adjunct includes="io.jenkins.plugins.flatpickr"/>
+  <st:adjunct includes="com.sap.prd.jenkins.plugins.agent_maintenance.flatpickr"/>
+  <j:invokeStatic var="defaultStart" method="getDefaultStartTime"
+                  className="com.sap.prd.jenkins.plugins.agent_maintenance.MaintenanceAction"/>
+  <j:invokeStatic var="defaultEnd" method="getDefaultEndTime"
+                  className="com.sap.prd.jenkins.plugins.agent_maintenance.MaintenanceAction"/>
+  <f:entry title="${%startTime}"
+           help="/descriptor/com.sap.prd.jenkins.plugins.agent_maintenance.MaintenanceWindow/help/startTime">
+    <div class="am__flatpickr" data-now="${defaultStart}">
+      <f:textbox name="startTime" value="${mw.startTime}" default="${defaultStart}"
+                 checkUrl="${rootURL}/descriptorByName/com.sap.prd.jenkins.plugins.agent_maintenance.MaintenanceWindow/checkStartTime"
+                 checkDependsOn="startTime endTime"
+                 data-input=""/>
 
-            <button class="jenkins-button" type="button" data-toggle="" tooltip="Open datetime picker">
-              <l:icon src="symbol-calendar-outline plugin-ionicons-api"/>
-            </button>
-        </div>
-    </f:entry>
-    <f:entry title="${%endTime}" help="/descriptor/com.sap.prd.jenkins.plugins.agent_maintenance.MaintenanceWindow/help/endTime">
-        <div class="am__flatpickr" data-now="${defaultStart}">
-            <f:textbox name="endTime" value="${mw.endTime}" default="${defaultEnd}"
-                       data-input=""/>
-            <button class="jenkins-button" type="button" data-toggle="" tooltip="Open datetime picker">
-              <l:icon src="symbol-calendar-outline plugin-ionicons-api"/>
-            </button>
-        </div>
-    </f:entry>
-    <f:entry field="reason" title="${%Reason}" help="/plugin/agent-maintenance/help/help-reason.html">
-        <f:textbox value="${mw.reason}"/>
-    </f:entry>
-    <f:entry field="keepUpWhenActive" title="${%keepUpWhenActive}" help="/plugin/agent-maintenance/help/help-keepUpWhenActive.html">
-        <f:checkbox default="true" checked="${mw.keepUpWhenActive}"/>
-    </f:entry>
-    <f:entry field="maxWaitMinutes" title="${%maxWaitMinutes}" help="/plugin/agent-maintenance/help/help-maxWaitMinutes.html">
-        <f:textbox default="-1" value="${mw.maxWaitMinutes}"/>
-    </f:entry>
-    <f:entry field="takeOnline" title="${%takeOnline}" help="/plugin/agent-maintenance/help/help-takeOnline.html">
-        <f:checkbox default="true" checked="${mw.takeOnline}"/>
-    </f:entry>
+      <button class="jenkins-button" type="button" data-toggle="" tooltip="Open datetime picker">
+        <l:icon src="symbol-calendar-outline plugin-ionicons-api"/>
+      </button>
+    </div>
+  </f:entry>
+  <f:entry title="${%endTime}"
+           help="/descriptor/com.sap.prd.jenkins.plugins.agent_maintenance.MaintenanceWindow/help/endTime">
+    <div class="am__flatpickr" data-now="${defaultStart}">
+      <f:textbox name="endTime" value="${mw.endTime}" default="${defaultEnd}"
+                 data-input=""/>
+      <button class="jenkins-button" type="button" data-toggle="" tooltip="Open datetime picker">
+        <l:icon src="symbol-calendar-outline plugin-ionicons-api"/>
+      </button>
+    </div>
+  </f:entry>
+  <f:entry field="reason" title="${%Reason}" help="/plugin/agent-maintenance/help/help-reason.html">
+    <f:textbox value="${mw.reason}"/>
+  </f:entry>
+<!--  <j:if test="${it.isAgent() || isAgentForm}">-->
+<!--    <f:entry field="keepUpWhenActive" title="${%keepUpWhenActive}"-->
+<!--             help="/plugin/agent-maintenance/help/help-keepUpWhenActive.html" class="agent-only-field">-->
+<!--      <f:checkbox default="true" checked="${mw.keepUpWhenActive}"/>-->
+<!--    </f:entry>-->
+<!--    <f:entry field="maxWaitMinutes" title="${%maxWaitMinutes}"-->
+<!--             help="/plugin/agent-maintenance/help/help-maxWaitMinutes.html" class="agent-only-field">-->
+<!--      <f:textbox default="-1" value="${mw.maxWaitMinutes}"/>-->
+<!--    </f:entry>-->
+<!--    <f:entry field="takeOnline" title="${%takeOnline}" help="/plugin/agent-maintenance/help/help-takeOnline.html"-->
+<!--             class="agent-only-field">-->
+<!--      <f:checkbox default="true" checked="${mw.takeOnline}"/>-->
+<!--    </f:entry>-->
+<!--  </j:if>-->
 </j:jelly>

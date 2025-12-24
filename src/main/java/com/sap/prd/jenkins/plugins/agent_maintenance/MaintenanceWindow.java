@@ -94,7 +94,7 @@ public class MaintenanceWindow extends AbstractDescribableImpl<MaintenanceWindow
     this.endDateTime = endTime;
     this.reason = reason;
     this.takeOnline = takeOnline;
-    this.maxWaitMinutes = MaintenanceHelper.parseDurationString(maxWaitMinutes);
+    this.maxWaitMinutes = MaintenanceHelper.parseDurationString((maxWaitMinutes != null) ? maxWaitMinutes : "-1");
     this.keepUpWhenActive = keepUpWhenActive;
     if (Util.fixEmptyAndTrim(userid) == null) {
       Authentication auth = Jenkins.getAuthentication2();

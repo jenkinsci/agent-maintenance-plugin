@@ -77,7 +77,14 @@ public class MaintenanceHelper {
 
     return switch (target.getType()) {
       case AGENT -> Jenkins.get().getComputer(name) != null;
-      case CLOUD -> Jenkins.get().clouds.stream().anyMatch(c -> c.name.equals(name));
+      case CLOUD -> {
+        try {
+          yield Jenkins.get().getCloud(name) != null;
+        } catch (Exception e) {
+          yield Jenkins.get().clouds != null &&
+                  Jenkins.get().clouds.stream().anyMatch(c -> c.name.equals(name));
+        }
+      }
     };
   }
 
@@ -99,7 +106,8 @@ public class MaintenanceHelper {
    */
   public boolean hasActiveMaintenanceWindows(String targetKey) throws IOException {
     if (!cache.containsKey(targetKey)) {
-      return false;
+      // Lazy loading from disk in case of cache stale
+      getMaintenanceDefinitions(targetKey);
     }
     SortedSet<MaintenanceWindow> maintenanceList;
     try {
