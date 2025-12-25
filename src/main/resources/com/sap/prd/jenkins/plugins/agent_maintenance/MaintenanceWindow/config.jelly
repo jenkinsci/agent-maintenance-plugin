@@ -31,6 +31,6 @@
     </div>
   </f:entry>
   <f:entry field="reason" title="${%Reason}" help="/plugin/agent-maintenance/help/help-reason.html">
-    <f:textbox value="${mw.reason}"/>
+    <f:textbox name="reason" value="${mw.reason}"/>
   </f:entry>
 </j:jelly>

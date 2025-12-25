@@ -13,6 +13,7 @@ import hudson.slaves.AbstractCloudComputer;
 import hudson.slaves.Cloud;
 import hudson.slaves.SlaveComputer;
 import hudson.util.FormValidation;
+import hudson.util.ListBoxModel;
 import jakarta.servlet.ServletException;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -30,6 +31,7 @@ import java.util.stream.Collectors;
 
 import jenkins.management.Badge;
 import jenkins.model.Jenkins;
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -269,6 +271,38 @@ public class MaintenanceLink extends ManagementLink {
   public void doAdd(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
     Jenkins j = Jenkins.get();
 
+    // Check if cloud form (URL parameters)
+    String[] cloudParams = req.getParameterValues("clouds");
+    if (cloudParams != null && cloudParams.length > 0) {
+      // Cloud form - simple constructor (no agent fields)
+      String startTime = req.getParameter("startTime");
+      String endTime = req.getParameter("endTime");
+      String reason = req.getParameter("reason");
+
+      MaintenanceWindow maintenanceWindow = new MaintenanceWindow(startTime, endTime, reason);
+
+      for (String cloudName : cloudParams) {
+        Cloud cloud = j.clouds.getByName(cloudName);
+        if (cloud == null) {
+          continue;
+        }
+        if (!j.hasPermission(Jenkins.ADMINISTER)) {
+          continue;
+        }
+
+        try {
+          MaintenanceTarget target = new MaintenanceTarget(MaintenanceTarget.TargetType.CLOUD, cloud.name);
+          MaintenanceHelper.getInstance().addMaintenanceWindow(target.toKey(), maintenanceWindow);
+        } catch (Exception e) {
+          LOGGER.log(Level.WARNING, "Error adding cloud maintenance window", e);
+          setError(e);
+        }
+      }
+
+      rsp.sendRedirect(".");
+      return;
+    }
+
     JSONObject src = req.getSubmittedForm();
     MaintenanceWindow maintenanceWindow = req.bindJSON(MaintenanceWindow.class, src);
 
@@ -293,32 +327,6 @@ public class MaintenanceLink extends ManagementLink {
               setError(e);
             }
           });
-    }
-
-    // Support for bulk action on clouds
-    Map<String, Cloud> cloudByName = new HashMap<>();
-    for (Cloud cloud : j.clouds) {
-      cloudByName.put(cloud.name, cloud);
-    }
-
-    if (src.has("clouds")) {
-      LOGGER.log(Level.FINER, "Adding maintenance windows {0}", maintenanceWindow);
-      LOGGER.log(Level.FINER, "Adding maintenance windows for clouds: {0}", cloudByName.values());
-      for (Object o : src.getJSONArray("clouds")) {
-        String cloudName = String.valueOf(o);
-        Cloud cloud = cloudByName.get(cloudName);
-        if (cloud == null) continue;
-
-        if (!j.hasPermission(Jenkins.ADMINISTER)) continue;
-
-        try {
-          MaintenanceTarget target = new MaintenanceTarget(MaintenanceTarget.TargetType.CLOUD, cloud.name);
-          MaintenanceHelper.getInstance().addMaintenanceWindow(target.toKey(), maintenanceWindow);
-        } catch (Exception e) {
-          LOGGER.log(Level.WARNING, "Error while adding maintenance window", e);
-          setError(e);
-        }
-      }
     }
     rsp.sendRedirect(".");
   }

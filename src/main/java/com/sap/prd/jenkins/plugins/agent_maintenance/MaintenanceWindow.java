@@ -113,6 +113,16 @@ public class MaintenanceWindow extends AbstractDescribableImpl<MaintenanceWindow
     this.id = id;
   }
 
+  /**
+   * Create a maintenance window for clouds (no agent-specific fields).
+   *
+   * @param startTime Start time
+   * @param endTime   End time
+   * @param reason    Reason
+   */
+  public MaintenanceWindow(String startTime, String endTime, String reason) {
+    this(startTime, endTime, reason, false, false, "-1", null, null);
+  }
 
   public String getId() {
     return id;

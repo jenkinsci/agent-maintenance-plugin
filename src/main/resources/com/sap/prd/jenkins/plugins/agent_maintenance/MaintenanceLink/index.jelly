@@ -179,8 +179,9 @@
 
       <div class="am__modal" id="cloud-maintenance-add-form" data-title="${%Add Maintenance Window for clouds}">
         <f:form action="add" method="post" name="configCloud">
-          <f:entry title="${%Select Clouds}" help="/plugin/agent-maintenance/help/help-clouds.html">
-            <select name="clouds" multiple="multiple" class="jenkins-select" size="5" style="width: 100%">
+          <f:entry title="${%Select Clouds}">
+            <select id="clouds-select" name="clouds" multiple="multiple" size="5"
+                    style="width: 100%; min-height: 120px;" class="jenkins-select__input">
               <j:forEach var="cloud" items="${app.clouds}">
                 <option value="${cloud.name}">${cloud.name}</option>
               </j:forEach>
