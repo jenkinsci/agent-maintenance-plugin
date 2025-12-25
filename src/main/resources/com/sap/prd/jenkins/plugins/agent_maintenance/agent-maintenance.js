@@ -184,6 +184,12 @@ Behaviour.specify("#add-button", 'agent-maintenance', 0, function(e) {
   };
 });
 
+Behaviour.specify("#add-button-clouds", 'agent-maintenance', 0, function(e) {
+  e.onclick = function() {
+    openForm("cloud-maintenance-add-form")
+  };
+});
+
 Behaviour.specify("#add-recurring", 'agent-maintenance', 0, function(e) {
     e.onclick = function() {
     openForm("recurring-maintenance-add-form")

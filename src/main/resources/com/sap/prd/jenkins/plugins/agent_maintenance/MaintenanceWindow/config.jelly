@@ -33,18 +33,4 @@
   <f:entry field="reason" title="${%Reason}" help="/plugin/agent-maintenance/help/help-reason.html">
     <f:textbox value="${mw.reason}"/>
   </f:entry>
-<!--  <j:if test="${it.isAgent() || isAgentForm}">-->
-<!--    <f:entry field="keepUpWhenActive" title="${%keepUpWhenActive}"-->
-<!--             help="/plugin/agent-maintenance/help/help-keepUpWhenActive.html" class="agent-only-field">-->
-<!--      <f:checkbox default="true" checked="${mw.keepUpWhenActive}"/>-->
-<!--    </f:entry>-->
-<!--    <f:entry field="maxWaitMinutes" title="${%maxWaitMinutes}"-->
-<!--             help="/plugin/agent-maintenance/help/help-maxWaitMinutes.html" class="agent-only-field">-->
-<!--      <f:textbox default="-1" value="${mw.maxWaitMinutes}"/>-->
-<!--    </f:entry>-->
-<!--    <f:entry field="takeOnline" title="${%takeOnline}" help="/plugin/agent-maintenance/help/help-takeOnline.html"-->
-<!--             class="agent-only-field">-->
-<!--      <f:checkbox default="true" checked="${mw.takeOnline}"/>-->
-<!--    </f:entry>-->
-<!--  </j:if>-->
 </j:jelly>
