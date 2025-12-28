@@ -113,8 +113,13 @@
         <br/>
         <h1>${%Recurring Maintenances}</h1>
         <div class="am__modal" id="recurring-maintenance-add-form" data-title="${%Add Recurring Maintenance Window}">
-          <f:form action="addRecurring" method="post" name="config" class="no-json jenkins-!-padding-top-1">
-            <st:include class="${it.getRecurringMaintenanceWindowClass()}" page="config.jelly"/>
+          <f:form action="addRecurring" method="post" name="configRecurring" class="no-json jenkins-!-padding-top-1">
+            <j:if test="${it.isAgent()}">
+              <st:include class="${it.getRecurringMaintenanceWindowClass()}" page="agent-config.jelly"/>
+            </j:if>
+            <j:if test="${it.isCloud()}">
+              <st:include class="${it.getRecurringMaintenanceWindowClass()}" page="cloud-config.jelly"/>
+            </j:if>
           </f:form>
         </div>
         <f:form action="deleteMultipleRecurring" method="post" name="delete">
