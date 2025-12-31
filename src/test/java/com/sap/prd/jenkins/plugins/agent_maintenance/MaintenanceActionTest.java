@@ -11,7 +11,6 @@ import hudson.model.User;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
 import hudson.slaves.RetentionStrategy.Demand;
-import hudson.slaves.SlaveComputer;
 import org.htmlunit.html.HtmlPage;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -32,6 +31,8 @@ class MaintenanceActionTest extends BasePermissionChecks {
   private StaplerRequest2 req;
   @Mock
   private StaplerResponse2 rsp;
+
+  // ====== AGENT TESTS =====
 
   @Test
   void readPermissionHasNoAccess() throws Exception {
@@ -67,7 +68,8 @@ class MaintenanceActionTest extends BasePermissionChecks {
 
   @Test
   void extendedReadPermissionCantPost() {
-    MaintenanceAction action = new MaintenanceAction((SlaveComputer) agent.toComputer());
+    MaintenanceTarget target = new MaintenanceTarget(MaintenanceTarget.TargetType.AGENT, agent.getNodeName());
+    MaintenanceAction action = new MaintenanceAction(target);
     try (ACLContext ignored = ACL.as(User.getById(READER, false))) {
       assertThrows(AccessDeniedException.class, () -> action.doConfigSubmit(req));
       assertThrows(AccessDeniedException.class, () -> action.doAdd(req));
@@ -78,7 +80,8 @@ class MaintenanceActionTest extends BasePermissionChecks {
 
   @Test
   void disconnectUserCantEnableDisable() {
-    MaintenanceAction action = new MaintenanceAction((SlaveComputer) agent.toComputer());
+    MaintenanceTarget target = new MaintenanceTarget(MaintenanceTarget.TargetType.AGENT, agent.getNodeName());
+    MaintenanceAction action = new MaintenanceAction(target);
     try (ACLContext ignored = ACL.as(User.getById(DISCONNECT, false))) {
       assertThrows(AccessDeniedException.class, () -> action.doDisable(rsp));
       assertThrows(AccessDeniedException.class, () -> action.doEnable(rsp));
@@ -87,7 +90,8 @@ class MaintenanceActionTest extends BasePermissionChecks {
 
   @Test
   void deleteEnableKeepsOriginalStrategy() throws Exception {
-    MaintenanceAction action = new MaintenanceAction((SlaveComputer) agent.toComputer());
+    MaintenanceTarget target = new MaintenanceTarget(MaintenanceTarget.TargetType.AGENT, agent.getNodeName());
+    MaintenanceAction action = new MaintenanceAction(target);
     try (ACLContext ignored = ACL.as(User.getById(CONFIGURE, false))) {
       action.doDisable(rsp);
       assertThat(agent.getRetentionStrategy(), instanceOf(Demand.class));
@@ -100,4 +104,8 @@ class MaintenanceActionTest extends BasePermissionChecks {
       assertThat(demand.getInDemandDelay(), is(1L));
     }
   }
+
+  // ===== CLOUD TESTS =====
+
+
 }
