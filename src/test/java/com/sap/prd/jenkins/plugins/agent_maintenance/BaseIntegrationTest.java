@@ -23,6 +23,7 @@ abstract class BaseIntegrationTest {
   @BeforeEach
   void setup(JenkinsRule rule) throws Exception {
     this.rule = rule;
+    maintenanceHelper.clearCache(); // Cache clear before each test
   }
 
   protected Slave getAgent(String name) throws Exception {

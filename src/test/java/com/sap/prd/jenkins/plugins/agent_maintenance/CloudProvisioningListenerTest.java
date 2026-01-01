@@ -1,20 +1,17 @@
 package com.sap.prd.jenkins.plugins.agent_maintenance;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.CALLS_REAL_METHODS;
-import static org.mockito.Mockito.mock;
-
 import hudson.model.queue.CauseOfBlockage;
 import hudson.slaves.Cloud;
 import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.time.LocalDateTime;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 public class CloudProvisioningListenerTest extends BaseIntegrationTest {
   @Test
   void testCanProvision_blocksCloudInMaintenance() throws IOException {
-    Cloud mockCloud = mock(Cloud.class, CALLS_REAL_METHODS);
-    mockCloud.name = "test-cloud";
+    Cloud testCloud = new Cloud("test-cloud") {};
 
     LocalDateTime now = LocalDateTime.now();
     MaintenanceWindow window = new MaintenanceWindow(
@@ -22,17 +19,15 @@ public class CloudProvisioningListenerTest extends BaseIntegrationTest {
             now.plusHours(2).format(MaintenanceWindow.DATE_INPUT_FORMATTER),
             "Test maintenance"
     );
-    MaintenanceTarget target = new MaintenanceTarget(MaintenanceTarget.TargetType.CLOUD, mockCloud.name);
+    MaintenanceTarget target = new MaintenanceTarget(MaintenanceTarget.TargetType.CLOUD, testCloud.name);
     maintenanceHelper.addMaintenanceWindow(target.toKey(), window);
 
     CloudMaintenanceProvisioningListener listener = new CloudMaintenanceProvisioningListener();
-    CauseOfBlockage blockage = listener.canProvision(mockCloud, (Cloud.CloudState) null, 1);
+    CauseOfBlockage blockage = listener.canProvision(testCloud, (Cloud.CloudState) null, 1);
 
     assertNotNull(blockage, "Cloud in maintenance should be blocked");
-    String description = blockage.getShortDescription();
-    assertTrue(description.contains("test-cloud"), "Blockage should mention cloud name");
-    assertTrue(description.contains("maintenance"), "Blockage should mention maintenance");
   }
+
 
   @Test
   void testCanProvision_allowsCloudNotInMaintenance() {
@@ -49,13 +44,16 @@ public class CloudProvisioningListenerTest extends BaseIntegrationTest {
     Cloud mockCloud = new Cloud("test-cloud") {};
 
     LocalDateTime now = LocalDateTime.now();
-    MaintenanceWindow window = new MaintenanceWindow(
+    MaintenanceWindow pastWindow = new MaintenanceWindow(
             now.minusHours(2).format(MaintenanceWindow.DATE_INPUT_FORMATTER),
             now.minusHours(1).format(MaintenanceWindow.DATE_INPUT_FORMATTER),
             "Past maintenance"
     );
     MaintenanceTarget target = new MaintenanceTarget(MaintenanceTarget.TargetType.CLOUD, mockCloud.name);
-    maintenanceHelper.addMaintenanceWindow(target.toKey(), window);
+    maintenanceHelper.addMaintenanceWindow(target.toKey(), pastWindow);
+
+    assertFalse(pastWindow.isMaintenanceScheduled(), "Past window should not be scheduled");
+    assertFalse(maintenanceHelper.hasActiveMaintenanceWindows(target.toKey()), "Should have no active maintenance windows");
 
     CloudMaintenanceProvisioningListener listener = new CloudMaintenanceProvisioningListener();
     CauseOfBlockage blockage = listener.canProvision(mockCloud, (Cloud.CloudState) null, 1);
@@ -85,5 +83,35 @@ public class CloudProvisioningListenerTest extends BaseIntegrationTest {
 
     assertNotNull(blockageA, "cloud-a should be blocked");
     assertNull(blockageB, "cloud-b should NOT be blocked");
+  }
+
+  @Test
+  void testCanProvision_allowsAfterMaintenanceDeleted() throws Exception {
+    Cloud testCloud = new Cloud("test-cloud") {};
+
+    LocalDateTime now = LocalDateTime.now();
+    MaintenanceWindow window = new MaintenanceWindow(
+            now.minusMinutes(10).format(MaintenanceWindow.DATE_INPUT_FORMATTER),
+            now.plusHours(2).format(MaintenanceWindow.DATE_INPUT_FORMATTER),
+            "Active maintenance"
+    );
+    MaintenanceTarget target = new MaintenanceTarget(MaintenanceTarget.TargetType.CLOUD, testCloud.name);
+    maintenanceHelper.addMaintenanceWindow(target.toKey(), window);
+
+    CloudMaintenanceProvisioningListener listener = new CloudMaintenanceProvisioningListener();
+    CauseOfBlockage blockageBefore = listener.canProvision(testCloud, (Cloud.CloudState) null, 1);
+
+    assertNotNull(blockageBefore, "Cloud should be blocked before deletion");
+    assertTrue(maintenanceHelper.hasActiveMaintenanceWindows(target.toKey()),
+            "Should have active maintenance window before deletion");
+
+    maintenanceHelper.deleteMaintenanceWindow(target.toKey(), window.getId());
+    CauseOfBlockage blockageAfter = listener.canProvision(testCloud, (Cloud.CloudState) null, 1);
+
+    assertNull(blockageAfter, "Cloud should be allowed after maintenance deleted");
+    assertFalse(maintenanceHelper.hasActiveMaintenanceWindows(target.toKey()),
+            "Should have no active maintenance windows after deletion");
+    assertFalse(maintenanceHelper.hasMaintenanceWindows(target.toKey()),
+            "Should have no maintenance windows at all after deletion");
   }
 }

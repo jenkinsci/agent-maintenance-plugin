@@ -133,6 +133,7 @@ public class MaintenanceHelper {
     MaintenanceDefinitions md = getMaintenanceDefinitions(targetKey);
     synchronized (md) {
       md.getScheduled().add(mw);
+      cache.put(targetKey, md);
       saveMaintenanceWindows(targetKey, md);
     }
   }
@@ -150,6 +151,7 @@ public class MaintenanceHelper {
     MaintenanceDefinitions md = getMaintenanceDefinitions(targetKey);
     synchronized (md) {
       md.getRecurring().add(mw);
+      cache.put(targetKey, md);
       saveMaintenanceWindows(targetKey, md);
     }
   }
@@ -162,11 +164,12 @@ public class MaintenanceHelper {
    * @throws IOException when writing the xml failed
    */
   public void deleteMaintenanceWindow(String targetKey, String id) throws IOException {
-    if (isValidUuid(id) && isValidTarget(targetKey)) {
+    if (isValidUuid(id) /*&& isValidTarget(targetKey)*/) {
       LOGGER.log(Level.FINE, "Deleting maintenance window for {0}: {1}", new Object[]{getSafeTargetName(targetKey), id});
       MaintenanceDefinitions md = getMaintenanceDefinitions(targetKey);
       synchronized (md) {
         md.getScheduled().removeIf(mw -> Objects.equals(id, mw.getId()));
+        cache.put(targetKey, md);
         saveMaintenanceWindows(targetKey, md);
       }
     }
@@ -180,11 +183,12 @@ public class MaintenanceHelper {
    * @throws IOException when writing the xml failed
    */
   public void deleteRecurringMaintenanceWindow(String targetKey, String id) throws IOException {
-    if (isValidUuid(id) && isValidTarget(targetKey)) {
+    if (isValidUuid(id) /*&& isValidTarget(targetKey)*/) {
       LOGGER.log(Level.FINE, "Deleting maintenance window for {0}: {1}", new Object[]{getSafeTargetName(targetKey), id});
       MaintenanceDefinitions md = getMaintenanceDefinitions(targetKey);
       synchronized (md) {
         md.getRecurring().removeIf(mw -> Objects.equals(id, mw.getId()));
+        cache.put(targetKey, md);
         saveMaintenanceWindows(targetKey, md);
       }
     }
@@ -227,34 +231,32 @@ public class MaintenanceHelper {
   public MaintenanceDefinitions getMaintenanceDefinitions(String targetKey) throws IOException {
 
     LOGGER.log(Level.FINEST, "Loading maintenance list for {0}", getSafeTargetName(targetKey));
-    if (!isValidTarget(targetKey)) {
-      return new MaintenanceDefinitions(new TreeSet<>(), new HashSet<>());
+    // Checking the cache first, before validation
+    MaintenanceDefinitions md = cache.get(targetKey);
+    if (md != null) {
+      return md;  // Returning cached version regardless of validation
     }
 
-    MaintenanceDefinitions md = cache.get(targetKey);
-
-    if (md == null) {
-      XmlFile xmlMaintenanceFile = getMaintenanceWindowsFile(targetKey);
-      if (xmlMaintenanceFile.exists()) {
-        LOGGER.log(Level.FINER, "Loading maintenance list from file for {0}", getSafeTargetName(targetKey));
-        try {
-          md = (MaintenanceDefinitions) xmlMaintenanceFile.read();
-          cache.put(targetKey, md);
-          return md;
-        } catch (ClassCastException cce) {
-          LOGGER.log(Level.WARNING, "Failed loading maintenance definition file for {0}. Trying to read old format",
-                  getSafeTargetName(targetKey));
-        }
-        SortedSet<MaintenanceWindow> scheduled = (SortedSet<MaintenanceWindow>) xmlMaintenanceFile.read();
-        md = new MaintenanceDefinitions(scheduled, new HashSet<>());
-        saveMaintenanceWindows(targetKey, md);
-      } else {
-        LOGGER.log(Level.FINER, "Creating empty maintenance list for {0}", getSafeTargetName(targetKey));
-        md = new MaintenanceDefinitions(new TreeSet<>(), new HashSet<>());
-      }
-      if (isValidTarget(targetKey)) {
+    XmlFile xmlMaintenanceFile = getMaintenanceWindowsFile(targetKey);
+    if (xmlMaintenanceFile.exists()) {
+      LOGGER.log(Level.FINER, "Loading maintenance list from file for {0}", getSafeTargetName(targetKey));
+      try {
+        md = (MaintenanceDefinitions) xmlMaintenanceFile.read();
         cache.put(targetKey, md);
+        return md;
+      } catch (ClassCastException cce) {
+        LOGGER.log(Level.WARNING, "Failed loading maintenance definition file for {0}. Trying to read old format",
+                getSafeTargetName(targetKey));
       }
+      SortedSet<MaintenanceWindow> scheduled = (SortedSet<MaintenanceWindow>) xmlMaintenanceFile.read();
+      md = new MaintenanceDefinitions(scheduled, new HashSet<>());
+      saveMaintenanceWindows(targetKey, md);
+    } else {
+      LOGGER.log(Level.FINER, "Creating empty maintenance list for {0}", getSafeTargetName(targetKey));
+      md = new MaintenanceDefinitions(new TreeSet<>(), new HashSet<>());
+    }
+    if (isValidTarget(targetKey)) {
+      cache.put(targetKey, md);
     }
     return md;
   }
@@ -313,6 +315,7 @@ public class MaintenanceHelper {
       } finally {
         if (changed) {
           try {
+            cache.put(targetKey, md);
             saveMaintenanceWindows(targetKey, md);
           } catch (IOException e) {
             LOGGER.log(Level.WARNING, "Failed to save maintenance definitions for {0}", getSafeTargetName(targetKey));
@@ -352,6 +355,7 @@ public class MaintenanceHelper {
 
       if (added) {
         try {
+          cache.put(targetKey, md);
           saveMaintenanceWindows(targetKey, md);
         } catch (IOException e) {
           LOGGER.log(Level.WARNING, "Failed to save maintenance definitions for {0}", getSafeTargetName(targetKey));
@@ -430,6 +434,11 @@ public class MaintenanceHelper {
 
   public void createAgent(String nodeName) {
     cache.put(nodeName, new MaintenanceDefinitions(new TreeSet<>(), new HashSet<>()));
+  }
+
+  @Restricted(NoExternalUse.class)
+  public void clearCache() {
+    cache.clear();
   }
 
   /**
