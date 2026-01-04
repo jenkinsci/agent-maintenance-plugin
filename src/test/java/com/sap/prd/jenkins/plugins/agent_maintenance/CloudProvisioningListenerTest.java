@@ -1,17 +1,20 @@
 package com.sap.prd.jenkins.plugins.agent_maintenance;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import hudson.model.queue.CauseOfBlockage;
 import hudson.slaves.Cloud;
 import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.time.LocalDateTime;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 public class CloudProvisioningListenerTest extends BaseIntegrationTest {
   @Test
   void testCanProvision_blocksCloudInMaintenance() throws IOException {
-    Cloud testCloud = new Cloud("test-cloud") {};
+    Cloud testCloud = getTestCloud("test-cloud");
 
     LocalDateTime now = LocalDateTime.now();
     MaintenanceWindow window = new MaintenanceWindow(
@@ -31,7 +34,7 @@ public class CloudProvisioningListenerTest extends BaseIntegrationTest {
 
   @Test
   void testCanProvision_allowsCloudNotInMaintenance() {
-    Cloud mockCloud = new Cloud("test-cloud") {};
+    Cloud mockCloud = getTestCloud("test-cloud");
 
     CloudMaintenanceProvisioningListener listener = new CloudMaintenanceProvisioningListener();
     CauseOfBlockage blockage = listener.canProvision(mockCloud, (Cloud.CloudState) null, 1);
@@ -41,7 +44,7 @@ public class CloudProvisioningListenerTest extends BaseIntegrationTest {
 
   @Test
   void testCanProvision_allowsAfterMaintenanceEnds() throws IOException {
-    Cloud mockCloud = new Cloud("test-cloud") {};
+    Cloud mockCloud = getTestCloud("test-cloud");
 
     LocalDateTime now = LocalDateTime.now();
     MaintenanceWindow pastWindow = new MaintenanceWindow(
@@ -64,8 +67,8 @@ public class CloudProvisioningListenerTest extends BaseIntegrationTest {
   @Test
   void testCanProvision_onlyBlocksSpecificCloud() throws IOException {
     // Two clouds - only one in maintenance
-    Cloud cloudA = new Cloud("cloud-a") {};
-    Cloud cloudB = new Cloud("cloud-b") {};
+    Cloud cloudA = getTestCloud("cloud-a");
+    Cloud cloudB = getTestCloud("cloud-b");
 
     LocalDateTime now = LocalDateTime.now();
     MaintenanceWindow window = new MaintenanceWindow(
@@ -87,7 +90,7 @@ public class CloudProvisioningListenerTest extends BaseIntegrationTest {
 
   @Test
   void testCanProvision_allowsAfterMaintenanceDeleted() throws Exception {
-    Cloud testCloud = new Cloud("test-cloud") {};
+    Cloud testCloud = getTestCloud("test-cloud");
 
     LocalDateTime now = LocalDateTime.now();
     MaintenanceWindow window = new MaintenanceWindow(

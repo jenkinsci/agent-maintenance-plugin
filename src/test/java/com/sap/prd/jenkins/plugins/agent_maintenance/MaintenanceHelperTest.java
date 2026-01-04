@@ -2,11 +2,11 @@ package com.sap.prd.jenkins.plugins.agent_maintenance;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-
 import hudson.model.Slave;
-import java.util.Set;
 import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
+
+import java.util.Set;
 
 /**
  * Test the helper.

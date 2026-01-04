@@ -164,7 +164,7 @@ public class MaintenanceHelper {
    * @throws IOException when writing the xml failed
    */
   public void deleteMaintenanceWindow(String targetKey, String id) throws IOException {
-    if (isValidUuid(id) /*&& isValidTarget(targetKey)*/) {
+    if (isValidUuid(id) && isValidTarget(targetKey)) {
       LOGGER.log(Level.FINE, "Deleting maintenance window for {0}: {1}", new Object[]{getSafeTargetName(targetKey), id});
       MaintenanceDefinitions md = getMaintenanceDefinitions(targetKey);
       synchronized (md) {
@@ -183,7 +183,7 @@ public class MaintenanceHelper {
    * @throws IOException when writing the xml failed
    */
   public void deleteRecurringMaintenanceWindow(String targetKey, String id) throws IOException {
-    if (isValidUuid(id) /*&& isValidTarget(targetKey)*/) {
+    if (isValidUuid(id) && isValidTarget(targetKey)) {
       LOGGER.log(Level.FINE, "Deleting maintenance window for {0}: {1}", new Object[]{getSafeTargetName(targetKey), id});
       MaintenanceDefinitions md = getMaintenanceDefinitions(targetKey);
       synchronized (md) {
@@ -231,10 +231,13 @@ public class MaintenanceHelper {
   public MaintenanceDefinitions getMaintenanceDefinitions(String targetKey) throws IOException {
 
     LOGGER.log(Level.FINEST, "Loading maintenance list for {0}", getSafeTargetName(targetKey));
-    // Checking the cache first, before validation
+    if (!isValidTarget(targetKey)) {
+      return new MaintenanceDefinitions(new TreeSet<>(), new HashSet<>());
+    }
+
     MaintenanceDefinitions md = cache.get(targetKey);
     if (md != null) {
-      return md;  // Returning cached version regardless of validation
+      return md;
     }
 
     XmlFile xmlMaintenanceFile = getMaintenanceWindowsFile(targetKey);

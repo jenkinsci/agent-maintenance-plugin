@@ -1,14 +1,17 @@
 package com.sap.prd.jenkins.plugins.agent_maintenance;
 
 import hudson.model.Slave;
+import hudson.slaves.Cloud;
 import hudson.slaves.RetentionStrategy;
 import hudson.slaves.RetentionStrategy.Always;
 import hudson.slaves.SlaveComputer;
-import java.time.LocalDateTime;
-import java.util.concurrent.TimeUnit;
+import jenkins.model.Jenkins;
 import org.junit.jupiter.api.BeforeEach;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
+
+import java.time.LocalDateTime;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Base class for tests of the retention strategy.
@@ -24,6 +27,7 @@ abstract class BaseIntegrationTest {
   void setup(JenkinsRule rule) throws Exception {
     this.rule = rule;
     maintenanceHelper.clearCache(); // Cache clear before each test
+    Jenkins.get().clouds.clear();
   }
 
   protected Slave getAgent(String name) throws Exception {
@@ -40,6 +44,12 @@ abstract class BaseIntegrationTest {
     agent.setRetentionStrategy(ams);
 
     return agent;
+  }
+
+  protected Cloud getTestCloud(String name) {
+    Cloud testCloud = new Cloud(name) {};
+    Jenkins.get().clouds.add(testCloud);
+    return testCloud;
   }
 
   protected void waitForDisconnect(Slave agent, MaintenanceWindow mw) throws Exception {

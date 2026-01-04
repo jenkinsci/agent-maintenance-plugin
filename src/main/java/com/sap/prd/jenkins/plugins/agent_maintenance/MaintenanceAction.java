@@ -1,7 +1,6 @@
 package com.sap.prd.jenkins.plugins.agent_maintenance;
 
 import static com.sap.prd.jenkins.plugins.agent_maintenance.MaintenanceWindow.DATE_FORMATTER;
-
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Util;
 import hudson.model.Action;
@@ -10,6 +9,18 @@ import hudson.security.Permission;
 import hudson.slaves.Cloud;
 import hudson.util.FormApply;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletResponse;
+import jenkins.model.Jenkins;
+import net.sf.json.JSONObject;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerResponse2;
+import org.kohsuke.stapler.bind.JavaScriptMethod;
+import org.kohsuke.stapler.verb.POST;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -23,16 +34,6 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import jenkins.model.Jenkins;
-import net.sf.json.JSONObject;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.StaplerRequest2;
-import org.kohsuke.stapler.StaplerResponse2;
-import org.kohsuke.stapler.bind.JavaScriptMethod;
-import org.kohsuke.stapler.verb.POST;
 
 /**
  * Action to display link to maintenance window configuration.
@@ -106,11 +107,7 @@ public class MaintenanceAction implements Action {
 
   @Override
   public String getUrlName() {
-    if (isVisible()) {
-      return "maintenanceWindows";
-    } else {
-      return null;
-    }
+    return "maintenanceWindows";
   }
 
   public MaintenanceTarget getTarget() {
@@ -459,5 +456,26 @@ public class MaintenanceAction implements Action {
     }
 
     rsp.sendRedirect(".");
+  }
+
+  /**
+   * Entry point for the maintenance windows page.
+   * Checks permission before showing content.
+   */
+  public void doIndex(StaplerRequest req, StaplerResponse rsp)
+          throws IOException, javax.servlet.ServletException {
+
+    if (isAgent()) {
+      Computer c = Jenkins.get().getComputer(target.getName());
+      if (c == null) {
+        rsp.sendError(HttpServletResponse.SC_NOT_FOUND);  // 404
+        return;
+      }
+      c.checkAnyPermission(Computer.EXTENDED_READ, Computer.CONFIGURE, Computer.DISCONNECT);
+    } else {
+      Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+    }
+
+    req.getView(this, "index.jelly").forward(req, rsp);
   }
 }
