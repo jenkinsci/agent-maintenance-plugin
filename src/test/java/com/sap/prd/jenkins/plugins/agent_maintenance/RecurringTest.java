@@ -15,10 +15,11 @@ class RecurringTest extends BaseIntegrationTest {
   void recurringMaintenanceInjectsMaintenance() throws Exception {
     String agentName = "recurring";
     Slave agent = getAgent(agentName);
+    MaintenanceTarget target = new MaintenanceTarget(MaintenanceTarget.TargetType.AGENT, agentName);
     RecurringMaintenanceWindow rw = new RecurringMaintenanceWindow("0 2 * * *",
         "test", true, true, "10m", "60m",  "test", null, 0);
-    maintenanceHelper.addRecurringMaintenanceWindow(agent.getNodeName(), rw);
+    maintenanceHelper.addRecurringMaintenanceWindow(target.toKey(), rw);
     triggerCheckCycle(agent);
-    assertThat(maintenanceHelper.hasMaintenanceWindows(agentName), is(true));
+    assertThat(maintenanceHelper.hasMaintenanceWindows(target.toKey()), is(true));
   }
 }

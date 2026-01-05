@@ -13,7 +13,6 @@ import hudson.slaves.AbstractCloudComputer;
 import hudson.slaves.Cloud;
 import hudson.slaves.SlaveComputer;
 import hudson.util.FormValidation;
-import hudson.util.ListBoxModel;
 import jakarta.servlet.ServletException;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -27,11 +26,9 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 import jenkins.management.Badge;
 import jenkins.model.Jenkins;
-import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -274,6 +271,11 @@ public class MaintenanceLink extends ManagementLink {
     // Check if cloud form (URL parameters)
     String[] cloudParams = req.getParameterValues("clouds");
     if (cloudParams != null && cloudParams.length > 0) {
+      if (!j.hasPermission(Jenkins.ADMINISTER)) {
+        rsp.sendError(403, "You do not have permission to add cloud maintenance windows");
+        return;
+      }
+
       // Cloud form - simple constructor (no agent fields)
       String startTime = req.getParameter("startTime");
       String endTime = req.getParameter("endTime");
@@ -286,9 +288,6 @@ public class MaintenanceLink extends ManagementLink {
         if (cloud == null) {
           continue;
         }
-        if (!j.hasPermission(Jenkins.ADMINISTER)) {
-          continue;
-        }
 
         try {
           MaintenanceTarget target = new MaintenanceTarget(MaintenanceTarget.TargetType.CLOUD, cloud.name);
@@ -298,7 +297,6 @@ public class MaintenanceLink extends ManagementLink {
           setError(e);
         }
       }
-
       rsp.sendRedirect(".");
       return;
     }

@@ -12,6 +12,8 @@ import jenkins.model.Jenkins;
 import org.htmlunit.html.HtmlPage;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.kohsuke.stapler.StaplerRequest2;
@@ -20,6 +22,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 /** Access tests for the management link. */
 @WithJenkins
@@ -30,6 +33,13 @@ class MaintenanceLinkTest extends BasePermissionChecks {
   private StaplerRequest2 req;
   @Mock
   private StaplerResponse2 rsp;
+
+  static Stream<MaintenanceTarget.TargetType> allTargets() {
+    return Stream.of(
+            MaintenanceTarget.TargetType.AGENT,
+            MaintenanceTarget.TargetType.CLOUD
+    );
+  }
 
   @Test
   void readPermissionHasNoAccess() throws Exception {
@@ -46,6 +56,7 @@ class MaintenanceLinkTest extends BasePermissionChecks {
     HtmlPage managePage = w.goTo("target-maintenances/");
     assertThat(managePage.querySelector("#" + maintenanceId + " .am__link-delete"), is(nullValue()));
     assertThat(managePage.querySelector("#" + maintenanceIdRestricted + " .am__link-delete"), is(nullValue()));
+    assertThat(managePage.getElementById(cloudMaintenanceId), is(nullValue()));
   }
 
   @Test
@@ -55,10 +66,12 @@ class MaintenanceLinkTest extends BasePermissionChecks {
     HtmlPage managePage = w.goTo("target-maintenances/");
     assertThat(managePage.querySelector("#" + maintenanceId + " .am__link-delete"), is(nullValue()));
     assertThat(managePage.querySelector("#" + maintenanceIdRestricted + " .am__link-delete"), is(nullValue()));
+    assertThat(managePage.getElementById(cloudMaintenanceId), is(nullValue()));
   }
 
-  @Test
-  void deleteMaintenanceWindow() throws Exception {
+  @ParameterizedTest(name = "deleteMaintenanceWindow[{0}]")
+  @MethodSource("allTargets")
+  void deleteMaintenanceWindow(MaintenanceTarget.TargetType target) throws Exception {
     MaintenanceLink instance = null;
     List<ManagementLink> list = Jenkins.get().getManagementLinks();
     for (ManagementLink link : list) {
@@ -73,15 +86,19 @@ class MaintenanceLinkTest extends BasePermissionChecks {
     WebClient w = rule.createWebClient();
     w.login(ADMIN);
     HtmlPage managePage = w.goTo("target-maintenances/");
-    assertThat(managePage.getElementById(maintenanceIdToDelete), is(notNullValue()));
+    String idToDelete = getMaintenanceIdToDelete(target);
+    String id = getMaintenanceId(target);
+    MaintenanceTarget mt = createTarget(target);
 
-    try (ACLContext ignored = ACL.as(User.getById(CONFIGURE, false))) {
-      instance.deleteMaintenance(maintenanceIdToDelete, agent.getNodeName());
+    assertThat(managePage.getElementById(idToDelete), is(notNullValue()));
+
+    try (ACLContext ignored = ACL.as(User.getById(ADMIN, false))) {
+      instance.deleteMaintenance(idToDelete, mt.toKey());
     }
 
     managePage = w.goTo("target-maintenances/");
-    assertThat(managePage.getElementById(maintenanceIdToDelete), is(nullValue()));
-    assertThat(managePage.getElementById(maintenanceIdRestricted), is(notNullValue()));
+    assertThat(managePage.getElementById(idToDelete), is(nullValue()));
+    assertThat(managePage.getElementById(id), is(notNullValue()));
   }
 
   @Test
@@ -89,8 +106,10 @@ class MaintenanceLinkTest extends BasePermissionChecks {
     WebClient w = rule.createWebClient();
     w.login(CONFIGURE);
     HtmlPage managePage = w.goTo("target-maintenances/");
+
     assertThat(managePage.querySelector("#" + maintenanceId + " .am__link-delete"), is(notNullValue()));
     assertThat(managePage.querySelector("#" + maintenanceIdRestricted + " .am__link-delete"), is(nullValue()));
+    assertThat(managePage.getElementById(cloudMaintenanceId), is(nullValue()));
   }
 
   @Test
@@ -98,7 +117,20 @@ class MaintenanceLinkTest extends BasePermissionChecks {
     WebClient w = rule.createWebClient();
     w.login(DISCONNECT);
     HtmlPage managePage = w.goTo("target-maintenances/");
+
     assertThat(managePage.querySelector("#" + maintenanceId + " .am__link-delete"), is(notNullValue()));
     assertThat(managePage.querySelector("#" + maintenanceIdRestricted + " .am__link-delete"), is(nullValue()));
+    assertThat(managePage.getElementById(cloudMaintenanceId), is(nullValue()));
+  }
+
+  @Test
+  void adminPermissionDoesExposeDeleteLink() throws Exception {
+    WebClient w = rule.createWebClient();
+    w.login(ADMIN);
+    HtmlPage managePage = w.goTo("target-maintenances/");
+
+    assertThat(managePage.querySelector("#" + maintenanceId + " .am__link-delete"), is(notNullValue()));
+    assertThat(managePage.querySelector("#" + maintenanceIdRestricted + " .am__link-delete"), is(nullValue()));
+    assertThat(managePage.querySelector("#" + cloudMaintenanceId + " .am__link-delete"), is(notNullValue()));
   }
 }
