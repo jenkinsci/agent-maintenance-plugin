@@ -8,7 +8,6 @@ import hudson.slaves.RetentionStrategy;
 import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.jvnet.hudson.test.recipes.LocalData;
-
 import java.io.IOException;
 
 /**
@@ -20,6 +19,7 @@ class MigrationTest extends BaseIntegrationTest {
   @Test
   @LocalData
   void readOldData() throws IOException {
+    MaintenanceHelper.getInstance().clearCache();
     Node agent = rule.jenkins.getNode("agent");
     MaintenanceTarget target = new MaintenanceTarget(MaintenanceTarget.TargetType.AGENT, "agent");
     RetentionStrategy retentionStrategy = agent.toComputer().getRetentionStrategy();

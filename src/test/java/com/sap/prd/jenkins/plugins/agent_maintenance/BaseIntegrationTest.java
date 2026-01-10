@@ -9,7 +9,6 @@ import jenkins.model.Jenkins;
 import org.junit.jupiter.api.BeforeEach;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
-
 import java.time.LocalDateTime;
 import java.util.concurrent.TimeUnit;
 
@@ -46,12 +45,6 @@ abstract class BaseIntegrationTest {
     return agent;
   }
 
-  protected Cloud getTestCloud(String name) {
-    Cloud testCloud = new Cloud(name) {};
-    Jenkins.get().clouds.add(testCloud);
-    return testCloud;
-  }
-
   protected void waitForDisconnect(Slave agent, MaintenanceWindow mw) throws Exception {
     LocalDateTime timeout = LocalDateTime.now().plusMinutes(4);
     while (agent.getChannel() != null) {
@@ -73,5 +66,16 @@ abstract class BaseIntegrationTest {
     if (computer != null) {
       computer.getRetentionStrategy().check(computer);
     }
+  }
+
+  protected MaintenanceTarget getTarget(MaintenanceTarget.TargetType targetType, String name) {
+    MaintenanceTarget target;
+    if (targetType == MaintenanceTarget.TargetType.CLOUD) {
+      Cloud testCloud = new TestCloud(name);
+      target = new MaintenanceTarget(MaintenanceTarget.TargetType.CLOUD, testCloud.name);
+    } else {
+      target = new MaintenanceTarget(targetType, name);
+    }
+    return target;
   }
 }

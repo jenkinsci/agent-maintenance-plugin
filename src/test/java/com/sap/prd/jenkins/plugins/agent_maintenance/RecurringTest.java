@@ -23,11 +23,12 @@ class RecurringTest extends BaseIntegrationTest {
   @ParameterizedTest(name = "recurringMaintenanceInjectsMaintenance")
   @MethodSource("allTargets")
   void recurringMaintenanceInjectsMaintenance(MaintenanceTarget.TargetType targetType) throws Exception {
-    String targetName = "recurring";
-    MaintenanceTarget target = new MaintenanceTarget(targetType, targetName);
+    String targetName = "recurring-" + targetType.name().toLowerCase();
+    MaintenanceTarget target = getTarget(targetType, targetName);
     RecurringMaintenanceWindow rw = new RecurringMaintenanceWindow("0 2 * * *",
         "test", true, true, "10m", "60m",  "test", null, 0);
     maintenanceHelper.addRecurringMaintenanceWindow(target.toKey(), rw);
+    maintenanceHelper.checkRecurring(target.toKey());
     if (targetType == MaintenanceTarget.TargetType.AGENT) {
       Slave agent = getAgent(targetName);
       triggerCheckCycle(agent);

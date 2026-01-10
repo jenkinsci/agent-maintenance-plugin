@@ -73,9 +73,9 @@
                       <j:if test="${action.isAgent()}">
                         <l:icon src="${action.getAgentComputer().iconClassName}" class="icon-sm am__table-icon"/>
                       </j:if>
-                      <j:else>
+                      <j:if test="${action.isCloud()}">
                         <l:icon src="symbol-cloud-outline plugin-ionicons-api" class="icon-sm am__table-icon"/>
-                      </j:else>
+                      </j:if>
                     </td>
 
                     <td>
@@ -86,12 +86,12 @@
                             ${action.getAgentComputer().displayName}
                           </a>
                         </j:if>
-                        <j:else>
+                        <j:if test="${action.isCloud()}">
                           <a href="${rootURL}/clouds/${action.target.name}/maintenanceWindows"
                              class="jenkins-table__link model-link inside">
                             ${action.target.name}
                           </a>
-                        </j:else>
+                        </j:if>
                       </nobr>
                     </td>
 
@@ -112,8 +112,10 @@
                     <td>${m.userid}</td>
 
                     <j:if test="${action.isAgent()}">
-                      <p:hasAnyPermission it="${action.getAgentComputer()}"
-                                          permissions="Computer.CONFIGURE,Computer.DISCONNECT">
+                      <j:set var="hasDeletePermission" value="${action.hasAnyPermission(app.getPermission('hudson.model.Computer.CONFIGURE'), app.getPermission('hudson.model.Computer.DISCONNECT'))}"/>
+                      <j:set var="computer" value="${action.getAgentComputer()}"/>
+                      <j:set var="debugInfo" value="Computer: ${computer}, hasCONFIG: ${computer.hasPermission(app.getPermission('hudson.model.Computer.CONFIGURE'))}, hasDISCONNECT: ${computer.hasPermission(app.getPermission('hudson.model.Computer.DISCONNECT'))}"/>
+                      <j:if test="${hasDeletePermission}">
                         <td>
                           <f:checkbox class="am__checkbox" name="${mid}"/>
                         </td>
@@ -126,12 +128,11 @@
                                     tooltip="Delete this maintenance window for ${h.escape(action.target.toKey())}"/>
                           </div>
                         </td>
-                      </p:hasAnyPermission>
-                      <p:hasNoPermission it="${action.getAgentComputer()}"
-                                         permissions="Computer.CONFIGURE,Computer.DISCONNECT">
+                      </j:if>
+                      <j:if test="${!hasDeletePermission}">
+                        <td data-debug="${debugInfo}"/>
                         <td/>
-                        <td/>
-                      </p:hasNoPermission>
+                      </j:if>
                     </j:if>
                     <j:if test="${action.isCloud()}">
                       <p:hasAnyPermission it="${app}" permissions="Jenkins.ADMINISTER">

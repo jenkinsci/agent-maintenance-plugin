@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 public class CloudProvisioningListenerTest extends BaseIntegrationTest {
   @Test
   void testCanProvision_blocksCloudInMaintenance() throws IOException {
-    Cloud testCloud = getTestCloud("test-cloud");
+    Cloud testCloud = new TestCloud("test-cloud");
 
     LocalDateTime now = LocalDateTime.now();
     MaintenanceWindow window = new MaintenanceWindow(
@@ -34,7 +34,7 @@ public class CloudProvisioningListenerTest extends BaseIntegrationTest {
 
   @Test
   void testCanProvision_allowsCloudNotInMaintenance() {
-    Cloud mockCloud = getTestCloud("test-cloud");
+    Cloud mockCloud = new TestCloud("test-cloud");
 
     CloudMaintenanceProvisioningListener listener = new CloudMaintenanceProvisioningListener();
     CauseOfBlockage blockage = listener.canProvision(mockCloud, (Cloud.CloudState) null, 1);
@@ -44,7 +44,7 @@ public class CloudProvisioningListenerTest extends BaseIntegrationTest {
 
   @Test
   void testCanProvision_allowsAfterMaintenanceEnds() throws IOException {
-    Cloud mockCloud = getTestCloud("test-cloud");
+    Cloud mockCloud = new TestCloud("test-cloud");
 
     LocalDateTime now = LocalDateTime.now();
     MaintenanceWindow pastWindow = new MaintenanceWindow(
@@ -67,8 +67,8 @@ public class CloudProvisioningListenerTest extends BaseIntegrationTest {
   @Test
   void testCanProvision_onlyBlocksSpecificCloud() throws IOException {
     // Two clouds - only one in maintenance
-    Cloud cloudA = getTestCloud("cloud-a");
-    Cloud cloudB = getTestCloud("cloud-b");
+    Cloud cloudA = new TestCloud("cloud-a");
+    Cloud cloudB = new TestCloud("cloud-b");
 
     LocalDateTime now = LocalDateTime.now();
     MaintenanceWindow window = new MaintenanceWindow(
@@ -90,7 +90,7 @@ public class CloudProvisioningListenerTest extends BaseIntegrationTest {
 
   @Test
   void testCanProvision_allowsAfterMaintenanceDeleted() throws Exception {
-    Cloud testCloud = getTestCloud("test-cloud");
+    Cloud testCloud = new TestCloud("test-cloud");
 
     LocalDateTime now = LocalDateTime.now();
     MaintenanceWindow window = new MaintenanceWindow(
