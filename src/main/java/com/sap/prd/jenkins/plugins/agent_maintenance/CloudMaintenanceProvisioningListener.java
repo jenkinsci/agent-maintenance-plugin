@@ -4,10 +4,12 @@ import hudson.Extension;
 import hudson.model.queue.CauseOfBlockage;
 import hudson.slaves.Cloud;
 import hudson.slaves.CloudProvisioningListener;
-
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * Blocks provisioning of nodes on the Cloud during maintenance.
+ */
 @Extension
 public class CloudMaintenanceProvisioningListener extends CloudProvisioningListener {
   private static final Logger LOGGER = Logger.getLogger(CloudMaintenanceProvisioningListener.class.getName());
@@ -28,8 +30,8 @@ public class CloudMaintenanceProvisioningListener extends CloudProvisioningListe
         };
       }
     } catch (Exception e) {
-      LOGGER.log(Level.WARNING, "Failed to check maintenance for cloud " +
-              cloud.name, e);
+      LOGGER.log(Level.WARNING, "Failed to check maintenance for cloud "
+              + cloud.name, e);
     }
     return null; // Allow provisioning when no active maintenance window
   }

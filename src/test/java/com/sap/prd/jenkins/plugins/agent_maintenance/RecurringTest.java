@@ -2,12 +2,12 @@ package com.sap.prd.jenkins.plugins.agent_maintenance;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+
 import hudson.model.Slave;
+import java.util.stream.Stream;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
-
-import java.util.stream.Stream;
 
 /** Test recurring maintenance windows. */
 @WithJenkins

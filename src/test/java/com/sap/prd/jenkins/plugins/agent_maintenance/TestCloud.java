@@ -5,11 +5,11 @@ import hudson.model.Descriptor;
 import hudson.model.Label;
 import hudson.slaves.Cloud;
 import hudson.slaves.NodeProvisioner.PlannedNode;
-import jenkins.model.Jenkins;
-import org.kohsuke.stapler.DataBoundConstructor;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
+import jenkins.model.Jenkins;
+import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
  * Test cloud implementation for integration tests.
@@ -32,6 +32,9 @@ public class TestCloud extends Cloud implements Serializable {
     return true;
   }
 
+  /**
+   * Descriptor for TestCloud.
+   */
   @Extension
   public static class DescriptorImpl extends Descriptor<Cloud> {
     @Override

@@ -1,6 +1,7 @@
 package com.sap.prd.jenkins.plugins.agent_maintenance;
 
 import static com.sap.prd.jenkins.plugins.agent_maintenance.MaintenanceWindow.DATE_FORMATTER;
+
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Util;
 import hudson.model.Action;
@@ -10,18 +11,6 @@ import hudson.slaves.Cloud;
 import hudson.util.FormApply;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletResponse;
-import jenkins.model.Jenkins;
-import net.sf.json.JSONObject;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerRequest2;
-import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.StaplerResponse2;
-import org.kohsuke.stapler.bind.JavaScriptMethod;
-import org.kohsuke.stapler.verb.POST;
-
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -34,6 +23,15 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import jenkins.model.Jenkins;
+import net.sf.json.JSONObject;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
+import org.kohsuke.stapler.bind.JavaScriptMethod;
+import org.kohsuke.stapler.verb.POST;
 
 /**
  * Action to display link to maintenance window configuration.
@@ -52,18 +50,25 @@ public class MaintenanceAction implements Action {
     this.target = target;
   }
 
+  /**
+   * Checks if the action is visible based on permissions.
+   *
+   * @return true if visible.
+   */
   @Restricted(NoExternalUse.class)
   public boolean isVisible() {
     try {
-      if (!MaintenanceHelper.getInstance().isValidTarget(target.toKey())) return false;
+      if (!MaintenanceHelper.getInstance().isValidTarget(target.toKey())) {
+        return false;
+      }
 
       if (isAgent()) {
         Computer computer = Jenkins.get().getComputer(target.getName());
-        return computer != null &&
-                (computer.hasPermission(Computer.DISCONNECT) ||
-                        computer.hasPermission(Computer.CONFIGURE) ||
-                        computer.hasPermission(Computer.EXTENDED_READ)) &&
-                computer.getNode() != null;
+        return computer != null
+                && (computer.hasPermission(Computer.DISCONNECT)
+                        || computer.hasPermission(Computer.CONFIGURE)
+                        || computer.hasPermission(Computer.EXTENDED_READ))
+                && computer.getNode() != null;
       }
       return Jenkins.get().hasPermission(Jenkins.ADMINISTER);
     } catch (IOException e) {
@@ -110,6 +115,11 @@ public class MaintenanceAction implements Action {
     return "maintenanceWindows";
   }
 
+  /**
+   * Gets the target of this maintenance action.
+   *
+   * @return the maintenance target
+   */
   public MaintenanceTarget getTarget() {
     return target;
   }
@@ -130,12 +140,24 @@ public class MaintenanceAction implements Action {
     return RecurringMaintenanceWindow.class;
   }
 
+  /**
+   * Checks if Agent's retention strategy is enabled.
+   *
+   * @return true if it is.
+   */
   public boolean isEnabled() {
-    if (!isAgent()) return false;
+    if (!isAgent()) {
+      return false;
+    }
     Computer computer = Jenkins.get().getComputer(target.getName());
     return computer != null && computer.getRetentionStrategy() instanceof AgentMaintenanceRetentionStrategy;
   }
 
+  /**
+   * Gets the Cloud associated with the maintenance action.
+   *
+   * @return <code>Cloud</code> instance of the maintenance action.
+   */
   public Cloud getCloud() {
     if (isCloud()) {
       return Jenkins.get().getCloud(target.getName());
@@ -143,6 +165,11 @@ public class MaintenanceAction implements Action {
     return null;
   }
 
+  /**
+   * Gets the Agent associated with the maintenance action.
+   *
+   * @return <code>Computer</code> instance of the maintenance action.
+   */
   public Computer getAgentComputer() {
     Computer c = null;
     if (isAgent()) {
@@ -151,17 +178,29 @@ public class MaintenanceAction implements Action {
     return c;
   }
 
+  /**
+   * Checks if the user has permissions to access MaintenanceWindows.
+   *
+   * @return true if they do.
+   */
   public boolean hasPermissions() {
     if (isAgent()) {
       Computer c = Jenkins.get().getComputer(target.getName());
-      return c != null && (c.hasPermission(Computer.DISCONNECT) ||
-              c.hasPermission(Computer.CONFIGURE) ||
-              c.hasPermission(Computer.EXTENDED_READ));
+      return c != null
+              && (c.hasPermission(Computer.DISCONNECT)
+              || c.hasPermission(Computer.CONFIGURE)
+              || c.hasPermission(Computer.EXTENDED_READ));
     } else {
       return Jenkins.get().hasPermission(Jenkins.ADMINISTER);
     }
   }
 
+  /**
+   * Checks the given permissions.
+   *
+   * @param permissions A group of permissions to be checked.
+   * @return true if all permissions are granted.
+   */
   public boolean hasPermissions(Permission... permissions) {
     if (isAgent()) {
       Computer c = Jenkins.get().getComputer(target.getName());
@@ -462,8 +501,8 @@ public class MaintenanceAction implements Action {
    * Entry point for the maintenance windows page.
    * Checks permission before showing content.
    */
-  public void doIndex(StaplerRequest req, StaplerResponse rsp)
-          throws IOException, javax.servlet.ServletException {
+  public void doIndex(StaplerRequest2 req, StaplerResponse2 rsp)
+          throws IOException, ServletException {
 
     if (isAgent()) {
       Computer c = Jenkins.get().getComputer(target.getName());

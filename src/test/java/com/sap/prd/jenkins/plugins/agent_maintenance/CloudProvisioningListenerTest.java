@@ -7,10 +7,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import hudson.model.queue.CauseOfBlockage;
 import hudson.slaves.Cloud;
-import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.time.LocalDateTime;
+import org.junit.jupiter.api.Test;
 
+/**
+ * Tests cloud provisioning behavior for all maintenance window scenarios.
+ */
 public class CloudProvisioningListenerTest extends BaseIntegrationTest {
   @Test
   void testCanProvision_blocksCloudInMaintenance() throws IOException {

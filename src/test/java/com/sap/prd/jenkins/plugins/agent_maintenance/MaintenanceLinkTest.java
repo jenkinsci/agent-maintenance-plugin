@@ -4,10 +4,13 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
+
 import hudson.model.ManagementLink;
 import hudson.model.User;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
+import java.util.List;
+import java.util.stream.Stream;
 import jenkins.model.Jenkins;
 import org.htmlunit.html.HtmlPage;
 import org.junit.jupiter.api.Test;
@@ -20,9 +23,6 @@ import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.StaplerResponse2;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.util.List;
-import java.util.stream.Stream;
 
 /** Access tests for the management link. */
 @WithJenkins

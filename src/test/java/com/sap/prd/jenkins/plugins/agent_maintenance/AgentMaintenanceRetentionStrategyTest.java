@@ -6,13 +6,13 @@ import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
+
 import hudson.model.Slave;
 import hudson.slaves.OfflineCause;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Timeout;
-
 import java.time.LocalDateTime;
 import java.util.concurrent.TimeUnit;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 /** Integration tests for the maintenance strategy. */
 class AgentMaintenanceRetentionStrategyTest extends BaseIntegrationTest {

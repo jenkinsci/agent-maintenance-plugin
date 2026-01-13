@@ -43,7 +43,8 @@ public class AgentMaintenanceRetentionStrategy extends RetentionStrategy<SlaveCo
 
   @Override
   public boolean isAcceptingTasks(SlaveComputer c) {
-    MaintenanceWindow maintenance = MaintenanceHelper.getInstance().getMaintenance(c.getName());
+    MaintenanceTarget target = new MaintenanceTarget(MaintenanceTarget.TargetType.AGENT, c.getName());
+    MaintenanceWindow maintenance = MaintenanceHelper.getInstance().getMaintenance(target.toKey());
     if (maintenance != null) {
       return false;
     }
@@ -52,7 +53,8 @@ public class AgentMaintenanceRetentionStrategy extends RetentionStrategy<SlaveCo
 
   @Override
   public boolean isManualLaunchAllowed(final SlaveComputer c) {
-    MaintenanceWindow maintenance = MaintenanceHelper.getInstance().getMaintenance(c.getName());
+    MaintenanceTarget target = new MaintenanceTarget(MaintenanceTarget.TargetType.AGENT, c.getName());
+    MaintenanceWindow maintenance = MaintenanceHelper.getInstance().getMaintenance(target.toKey());
     if (maintenance != null) {
       return false;
     }

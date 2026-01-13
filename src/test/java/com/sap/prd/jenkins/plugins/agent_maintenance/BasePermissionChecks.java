@@ -5,11 +5,10 @@ import hudson.model.Slave;
 import hudson.slaves.Cloud;
 import hudson.slaves.RetentionStrategy.Always;
 import hudson.slaves.RetentionStrategy.Demand;
+import java.io.IOException;
 import org.jenkinsci.plugins.matrixauth.AuthorizationMatrixNodeProperty;
 import org.junit.jupiter.api.BeforeEach;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
-
-import java.io.IOException;
 
 /** Base class for permission checks. */
 @WithJenkins

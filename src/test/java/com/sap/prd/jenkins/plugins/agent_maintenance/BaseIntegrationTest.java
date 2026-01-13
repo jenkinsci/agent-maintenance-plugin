@@ -5,12 +5,12 @@ import hudson.slaves.Cloud;
 import hudson.slaves.RetentionStrategy;
 import hudson.slaves.RetentionStrategy.Always;
 import hudson.slaves.SlaveComputer;
+import java.time.LocalDateTime;
+import java.util.concurrent.TimeUnit;
 import jenkins.model.Jenkins;
 import org.junit.jupiter.api.BeforeEach;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
-import java.time.LocalDateTime;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Base class for tests of the retention strategy.

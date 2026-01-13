@@ -26,7 +26,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import jenkins.management.Badge;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
@@ -98,12 +97,19 @@ public class MaintenanceLink extends ManagementLink {
       MaintenanceTarget target = new MaintenanceTarget(MaintenanceTarget.TargetType.CLOUD, cloud.name);
       MaintenanceAction action = new MaintenanceAction(target);
 
-      if (action.hasMaintenanceWindows()) targetList.add(action);
+      if (action.hasMaintenanceWindows()) {
+        targetList.add(action);
+      }
     }
 
     return targetList;
   }
 
+  /**
+   * Gets all Agents' maintenance actions.
+   *
+   * @return List of all Agent actions.
+   */
   public List<MaintenanceAction> getAgentTargets() {
     List<MaintenanceAction> allTargets = getTargets();
     return allTargets.stream()
@@ -111,6 +117,11 @@ public class MaintenanceLink extends ManagementLink {
             .toList();
   }
 
+  /**
+   * Gets all Clouds' maintenance actions.
+   *
+   * @return List of all Cloud actions.
+   */
   public List<MaintenanceAction> getCloudTargets() {
     List<MaintenanceAction> allTargets = getTargets();
     return allTargets.stream()
@@ -123,7 +134,7 @@ public class MaintenanceLink extends ManagementLink {
   }
 
   /**
-   * The message of the last error that occured.
+   * The message of the last error that occurred.
    *
    * @return error message
    */
@@ -223,20 +234,22 @@ public class MaintenanceLink extends ManagementLink {
   public Map<String, Boolean> getMaintenanceStatus() {
     Map<String, Boolean> statusList = new HashMap<>();
     for (MaintenanceAction action : getTargets()) {
-        try {
-          if (!action.hasPermissions()) continue;
+      try {
+        if (!action.hasPermissions()) {
+          continue;
+        }
 
-          MaintenanceTarget target = action.getTarget();
-          if (target != null) {
-            for (MaintenanceWindow mw : MaintenanceHelper.getInstance().getMaintenanceWindows(target.toKey())) {
-              if (!mw.isMaintenanceOver()) {
-                statusList.put(mw.getId(), mw.isMaintenanceScheduled());
-              }
+        MaintenanceTarget target = action.getTarget();
+        if (target != null) {
+          for (MaintenanceWindow mw : MaintenanceHelper.getInstance().getMaintenanceWindows(target.toKey())) {
+            if (!mw.isMaintenanceOver()) {
+              statusList.put(mw.getId(), mw.isMaintenanceScheduled());
             }
           }
-        } catch (IOException ioe) {
-          LOGGER.log(Level.WARNING, "Failed to read maintenance windows", ioe);
         }
+      } catch (IOException ioe) {
+        LOGGER.log(Level.WARNING, "Failed to read maintenance windows", ioe);
+      }
     }
     return statusList;
   }

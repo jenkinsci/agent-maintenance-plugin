@@ -4,11 +4,13 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.model.Action;
 import hudson.slaves.Cloud;
-import jenkins.model.TransientActionFactory;
-
 import java.util.Collection;
 import java.util.Collections;
+import jenkins.model.TransientActionFactory;
 
+/**
+ * Injects the action link to all Clouds.
+ */
 @Extension
 public class CloudMaintenanceActionFactory extends TransientActionFactory<Cloud> {
 

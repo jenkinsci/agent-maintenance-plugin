@@ -71,6 +71,12 @@ public class MaintenanceHelper {
     }
   }
 
+  /**
+   * Checks if the target is valid.
+   *
+   * @param targetKey Key of the target to the checked.
+   * @return true if it is valid.
+   */
   public boolean isValidTarget(String targetKey) throws IOException {
     MaintenanceTarget target = MaintenanceTarget.fromKey(targetKey);
     String name = target.getName();
@@ -81,8 +87,8 @@ public class MaintenanceHelper {
         try {
           yield Jenkins.get().getCloud(name) != null;
         } catch (Exception e) {
-          yield Jenkins.get().clouds != null &&
-                  Jenkins.get().clouds.stream().anyMatch(c -> c.name.equals(name));
+          yield Jenkins.get().clouds != null
+                  && Jenkins.get().clouds.stream().anyMatch(c -> c.name.equals(name));
         }
       }
     };
@@ -94,7 +100,12 @@ public class MaintenanceHelper {
   }
 
   public boolean hasMaintenanceWindows(String targetKey) throws IOException {
-    return cache.containsKey(targetKey) && !getMaintenanceWindows(targetKey).isEmpty();
+    return !getMaintenanceWindows(targetKey).isEmpty() && cache.containsKey(targetKey);
+  }
+
+  // For MigrationTest
+  public boolean hasMaintenanceWindows2(String targetKey) throws IOException {
+    return !getMaintenanceWindows(targetKey).isEmpty();
   }
 
   /**
