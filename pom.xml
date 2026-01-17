@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>plugin</artifactId>
-    <version>5.27</version>
+    <version>6.2116.v7501b_67dc517</version>
     <relativePath/>
   </parent>
 
@@ -38,27 +38,27 @@
     <!-- https://www.jenkins.io/doc/developer/plugin-development/choosing-jenkins-baseline/ -->
     <jenkins.baseline>2.516</jenkins.baseline>
     <jenkins.version>${jenkins.baseline}.1</jenkins.version>
-    <powermock.version>1.6.1</powermock.version>
-    <checkstyle.version>12.0.1</checkstyle.version>
+    <checkstyle.version>13.0.0</checkstyle.version>
     <ban-junit4-imports.skip>false</ban-junit4-imports.skip>
+    <ban-commons-lang-2.skip>false</ban-commons-lang-2.skip>
     <hpi.compatibleSinceVersion>2.0</hpi.compatibleSinceVersion>
   </properties>
 
   <dependencyManagement>
     <dependencies>
-        <dependency>
-            <groupId>io.jenkins.tools.bom</groupId>
-            <artifactId>bom-${jenkins.baseline}.x</artifactId>
-            <version>5543.vfd758c7c868d</version>
-            <type>pom</type>
-            <scope>import</scope>
-        </dependency>
+      <dependency>
+        <groupId>io.jenkins.tools.bom</groupId>
+        <artifactId>bom-${jenkins.baseline}.x</artifactId>
+        <version>5933.vcf06f7b_5d1a_2</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
     </dependencies>
   </dependencyManagement>
   <dependencies>
     <dependency>
-        <groupId>io.jenkins.plugins</groupId>
-        <artifactId>ionicons-api</artifactId>
+      <groupId>io.jenkins.plugins</groupId>
+      <artifactId>ionicons-api</artifactId>
     </dependency>
     <dependency>
       <groupId>io.jenkins.plugins</groupId>
@@ -76,23 +76,17 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>com.github.stephenc.jcip</groupId>
-      <artifactId>jcip-annotations</artifactId>
-      <version>1.0-1</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>mock-slave</artifactId>
       <version>193.v88c279d0c584</version>
       <scope>test</scope>
     </dependency>
-      <dependency>
-          <groupId>org.jenkins-ci.plugins</groupId>
-          <artifactId>mock-security-realm</artifactId>
-          <version>106.va_5286004db_2e</version>
-          <scope>test</scope>
-      </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>mock-security-realm</artifactId>
+      <version>106.va_5286004db_2e</version>
+      <scope>test</scope>
+    </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>matrix-auth</artifactId>
@@ -141,30 +135,30 @@
             </dependency>
           </dependencies>
           <configuration>
-              <configLocation>${project.basedir}/.build-config/checkstyle.xml</configLocation>
-              <suppressionsLocation>${project.basedir}/.build-config/checkstyle-suppressions.xml</suppressionsLocation>
-              <suppressionsFileExpression>checkstyle.suppressions.file</suppressionsFileExpression>
-              <includeTestSourceDirectory>true</includeTestSourceDirectory>
-              <consoleOutput>true</consoleOutput>
+            <configLocation>${project.basedir}/.build-config/checkstyle.xml</configLocation>
+            <suppressionsLocation>${project.basedir}/.build-config/checkstyle-suppressions.xml</suppressionsLocation>
+            <suppressionsFileExpression>checkstyle.suppressions.file</suppressionsFileExpression>
+            <includeTestSourceDirectory>true</includeTestSourceDirectory>
+            <consoleOutput>true</consoleOutput>
           </configuration>
           <executions>
-              <execution>
-                  <id>compile-checkstyle</id>
-                  <goals>
-                      <goal>checkstyle</goal>
-                  </goals>
-                  <phase>compile</phase>
-              </execution>
-              <execution>
-                  <id>test-check</id>
-                  <goals>
-                      <goal>check</goal>
-                  </goals>
-                  <phase>test</phase>
-                  <configuration>
-                      <violationSeverity>warning</violationSeverity>
-                  </configuration>
-              </execution>
+            <execution>
+              <id>compile-checkstyle</id>
+              <goals>
+                <goal>checkstyle</goal>
+              </goals>
+              <phase>compile</phase>
+            </execution>
+            <execution>
+              <id>test-check</id>
+              <goals>
+                <goal>check</goal>
+              </goals>
+              <phase>test</phase>
+              <configuration>
+                <violationSeverity>warning</violationSeverity>
+              </configuration>
+            </execution>
           </executions>
       </plugin>
     </plugins>

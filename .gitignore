@@ -5,4 +5,12 @@
 .settings
 work
 keystore
+
+# IntelliJ IDEA project files
+*.iml
+*.iws
+*.ipr
 .idea
+
+# VSCode
+.vscode
