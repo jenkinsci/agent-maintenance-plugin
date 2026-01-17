@@ -26,6 +26,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: 21
+
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v4
         with:

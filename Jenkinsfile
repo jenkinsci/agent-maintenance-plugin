@@ -2,5 +2,5 @@ buildPlugin(
   useContainerAgent: true,
   forkCount: '0.5C',
   configurations: [
-    [platform: 'linux', jdk: 17]
+    [platform: 'linux', jdk: 21]
 ])
