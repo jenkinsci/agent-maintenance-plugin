@@ -19,9 +19,12 @@ public class CloudMaintenanceProvisioningListener extends CloudProvisioningListe
     try {
       MaintenanceTarget target = new MaintenanceTarget(MaintenanceTarget.TargetType.CLOUD, cloud.name);
       LOGGER.log(Level.FINER, "Checking for Maintenance Window for cloud {0}", cloud.name);
+
+      // Triggers automatic cleanup of expired windows.
+      MaintenanceWindow mw = MaintenanceHelper.getInstance().getMaintenance(target.toKey());
+      MaintenanceHelper.getInstance().checkRecurring(target.toKey());
       if (MaintenanceHelper.getInstance()
               .hasActiveMaintenanceWindows(target.toKey())) {
-
         return new CauseOfBlockage() {
           @Override
           public String getShortDescription() {
