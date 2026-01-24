@@ -1,0 +1,14 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form" xmlns:st="jelly:stapler">
+  <st:include class="${it.getRecurringMaintenanceWindowClass()}" page="config.jelly"/>
+
+  <f:entry field="keepUpWhenActive" title="${%keepUpWhenActive}" help="/plugin/agent-maintenance/help/help-keepUpWhenActive.html">
+    <f:checkbox default="true" checked="${mw.keepUpWhenActive}"/>
+  </f:entry>
+  <f:entry field="maxWaitMinutes" title="${%maxWaitMinutes}" help="/plugin/agent-maintenance/help/help-maxWaitMinutes.html">
+    <f:textbox default="-1" value="${mw.maxWaitMinutes}"/>
+  </f:entry>
+  <f:entry field="takeOnline" title="${%takeOnline}" help="/plugin/agent-maintenance/help/help-takeOnline.html">
+    <f:checkbox default="true" checked="${mw.takeOnline}"/>
+  </f:entry>
+</j:jelly>

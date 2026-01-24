@@ -48,11 +48,12 @@ class IntegrationTest extends BaseIntegrationTest {
     String id = mw.getId();
     project.getBuildersList().add(new SleepBuilder(1000 * 60 * 2));
     FreeStyleBuild build = project.scheduleBuild2(0).waitForStart();
-    maintenanceHelper.addMaintenanceWindow(agent.getNodeName(), mw);
+    MaintenanceTarget target = getTarget(MaintenanceTarget.TargetType.AGENT, agent.getNodeName());
+    maintenanceHelper.addMaintenanceWindow(target.toKey(), mw);
     assertThat(agent.toComputer().isAcceptingTasks(), is(false));
     waitForDisconnect(agent, mw);
     assertThat(build.getResult(), is(Result.SUCCESS));
-    maintenanceHelper.deleteMaintenanceWindow(agent.getNodeName(), id);
+    maintenanceHelper.deleteMaintenanceWindow(target.toKey(), id);
   }
 
   @Test
@@ -76,14 +77,15 @@ class IntegrationTest extends BaseIntegrationTest {
     String id = mw.getId();
     project.getBuildersList().add(new SleepBuilder(1000 * 60 * 7));
     FreeStyleBuild build = project.scheduleBuild2(0).waitForStart();
-    maintenanceHelper.addMaintenanceWindow(agent.getNodeName(), mw);
+    MaintenanceTarget target = getTarget(MaintenanceTarget.TargetType.AGENT, agent.getNodeName());
+    maintenanceHelper.addMaintenanceWindow(target.toKey(), mw);
     assertThat(agent.toComputer().isAcceptingTasks(), is(false));
     waitForDisconnect(agent, mw);
     assertThat(build.getResult(), is(Result.ABORTED));
     InterruptedBuildAction interruptedCauseAction = build.getAction(InterruptedBuildAction.class);
     assertThat(interruptedCauseAction, is(notNullValue()));
     assertThat(interruptedCauseAction.getCauses().get(0), instanceOf(MaintenanceInterruption.class));
-    maintenanceHelper.deleteMaintenanceWindow(agent.getNodeName(), id);
+    maintenanceHelper.deleteMaintenanceWindow(target.toKey(), id);
   }
 
   @Test
@@ -107,12 +109,13 @@ class IntegrationTest extends BaseIntegrationTest {
     String id = mw.getId();
     project.getBuildersList().add(new SleepBuilder(1000 * 60 * 7));
     FreeStyleBuild build = project.scheduleBuild2(0).waitForStart();
-    maintenanceHelper.addMaintenanceWindow(agent.getNodeName(), mw);
+    MaintenanceTarget target = getTarget(MaintenanceTarget.TargetType.AGENT, agent.getNodeName());
+    maintenanceHelper.addMaintenanceWindow(target.toKey(), mw);
     assertThat(agent.toComputer().isAcceptingTasks(), is(false));
     waitForDisconnect(agent, mw);
     assertThat(build.getResult(), is(Result.ABORTED));
     assertThat(build.getDuration(), lessThan(1000L * 60 * 3));
-    maintenanceHelper.deleteMaintenanceWindow(agent.getNodeName(), id);
+    maintenanceHelper.deleteMaintenanceWindow(target.toKey(), id);
   }
 
   @Test

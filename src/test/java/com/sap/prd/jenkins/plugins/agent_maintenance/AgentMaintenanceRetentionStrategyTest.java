@@ -40,13 +40,14 @@ class AgentMaintenanceRetentionStrategyTest extends BaseIntegrationTest {
             "5",
             "test",
             null);
+    MaintenanceTarget target = new MaintenanceTarget(MaintenanceTarget.TargetType.AGENT, agent.getNodeName());
     assertThat(agent.toComputer().isAcceptingTasks(), is(true));
     assertThat(agent.toComputer().isManualLaunchAllowed(), is(true));
-    maintenanceHelper.addMaintenanceWindow(agent.getNodeName(), mw);
+    maintenanceHelper.addMaintenanceWindow(target.toKey(), mw);
     assertThat(agent.toComputer().isAcceptingTasks(), is(false));
     assertThat(agent.toComputer().isManualLaunchAllowed(), is(false));
     waitForMaintenanceEnd(mw, agent);
-    assertThat(maintenanceHelper.getMaintenanceWindows(agent.getNodeName()).size(), is(0));
+    assertThat(maintenanceHelper.getMaintenanceWindows(target.toKey()).size(), is(0));
   }
 
   @Test
@@ -65,13 +66,14 @@ class AgentMaintenanceRetentionStrategyTest extends BaseIntegrationTest {
             "0",
             "test",
             null);
+    MaintenanceTarget target = new MaintenanceTarget(MaintenanceTarget.TargetType.AGENT, agent.getNodeName());
     String id = mw.getId();
     assertThat(agent.getChannel(), is(notNullValue()));
-    maintenanceHelper.addMaintenanceWindow(agent.getNodeName(), mw);
+    maintenanceHelper.addMaintenanceWindow(target.toKey(), mw);
     assertThat(mw.isMaintenanceScheduled(), is(true));
     waitForDisconnect(agent, mw);
     assertThat(agent.getChannel(), is(nullValue()));
-    maintenanceHelper.deleteMaintenanceWindow(agent.getNodeName(), id);
+    maintenanceHelper.deleteMaintenanceWindow(target.toKey(), id);
   }
 
   @Test
@@ -97,24 +99,24 @@ class AgentMaintenanceRetentionStrategyTest extends BaseIntegrationTest {
             "0",
             "test",
             null);
+    MaintenanceTarget target = new MaintenanceTarget(MaintenanceTarget.TargetType.AGENT, agentName);
     assertThat(agent.toComputer().isOnline(), is(true));
-    maintenanceHelper.addMaintenanceWindow(agentName, mw);
+    maintenanceHelper.addMaintenanceWindow(target.toKey(), mw);
     waitForDisconnect(agent, mw);
     // Instead of waiting for the maintenance window to be over just delete it
-    maintenanceHelper.deleteMaintenanceWindow(agentName, mw.getId());
+    maintenanceHelper.deleteMaintenanceWindow(target.toKey(), mw.getId());
     triggerCheckCycle(agent);
     while (!agent.toComputer().isOnline()) {
       TimeUnit.SECONDS.sleep(10);
     }
     assertThat(agent.toComputer().isOnline(), is(true));
-    assertThat(maintenanceHelper.hasMaintenanceWindows(agentName), is(false));
+    assertThat(maintenanceHelper.hasMaintenanceWindows(target.toKey()), is(false));
   }
 
   @Test
   @Timeout(600)
   void agentStaysOffline() throws Exception {
-    String agentName = "agentStaysOffline";
-    Slave agent = getAgent(agentName);
+    Slave agent = getAgent("agentStaysOffline");
     LocalDateTime start = LocalDateTime.now().minusMinutes(1);
     LocalDateTime end = start.plusMinutes(15);
     MaintenanceWindow mw =
@@ -127,16 +129,17 @@ class AgentMaintenanceRetentionStrategyTest extends BaseIntegrationTest {
             "0",
             "test",
             null);
-    maintenanceHelper.addMaintenanceWindow(agentName, mw);
+    MaintenanceTarget target = new MaintenanceTarget(MaintenanceTarget.TargetType.AGENT, agent.getNodeName());
+    maintenanceHelper.addMaintenanceWindow(target.toKey(), mw);
     waitForDisconnect(agent, mw);
     // Instead of waiting for the maintenance window to be over just delete it
-    maintenanceHelper.deleteMaintenanceWindow(agentName, mw.getId());
+    maintenanceHelper.deleteMaintenanceWindow(target.toKey(), mw.getId());
     triggerCheckCycle(agent);
     TimeUnit.MINUTES.sleep(1);
     assertThat(agent.getChannel(), is(nullValue()));
     OfflineCause oc = agent.toComputer().getOfflineCause();
     assertThat(oc, instanceOf(MaintenanceOfflineCause.class));
     assertThat(((MaintenanceOfflineCause) oc).isTakeOnline(), is(false));
-    assertThat(maintenanceHelper.hasMaintenanceWindows(agentName), is(false));
+    assertThat(maintenanceHelper.hasMaintenanceWindows(target.toKey()), is(false));
   }
 }
