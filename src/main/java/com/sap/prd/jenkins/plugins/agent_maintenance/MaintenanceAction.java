@@ -211,6 +211,29 @@ public class MaintenanceAction implements Action {
   }
 
   /**
+   * Checks if the user has permissions to delete MaintenanceWindows.
+   *
+   * @return true if they do.
+   */
+  public boolean hasDeletePermission() {
+    if (isAgent()) {
+      Computer c = Jenkins.get().getComputer(target.getName());
+      return c != null && (c.hasPermission(Computer.DISCONNECT) || c.hasPermission(Computer.CONFIGURE));
+    } else {
+      return Jenkins.get().hasPermission(Jenkins.ADMINISTER);
+    }
+  }
+
+  /**
+   * Checks if the user has permissions to delete Cloud windows.
+   *
+   * @return true if they do.
+   */
+  public boolean hasCloudDeletePermission() {
+    return Jenkins.get().hasPermission(Jenkins.ADMINISTER);
+  }
+
+  /**
    * The default start time shown in the UI when adding a new maintenance windows.
    * Current time.
    *

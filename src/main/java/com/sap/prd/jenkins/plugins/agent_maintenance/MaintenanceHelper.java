@@ -109,10 +109,10 @@ public class MaintenanceHelper {
   }
 
   /**
-   * Return whether there are active maintenance windows for a computer.
+   * Return whether there are active maintenance windows for a target.
    *
-   * @param targetKey The computer to check
-   * @return true when the given computer has an active maintenance window
+   * @param targetKey The target to check
+   * @return true when the given target has an active maintenance window
    * @throws IOException when reading the xml failed
    */
   public boolean hasActiveMaintenanceWindows(String targetKey) throws IOException {
@@ -132,11 +132,11 @@ public class MaintenanceHelper {
   }
 
   /**
-   * Adds a maintenance window to a computer.
+   * Adds a maintenance window to a target.
    *
-   * @param targetKey Name of the computer for which to add the maintenance
+   * @param targetKey Key of the target for which to add the maintenance
    *                     window
-   * @param mw           The maintance windows
+   * @param mw           The maintenance windows
    * @throws IOException when writing the xml failed
    */
   public void addMaintenanceWindow(String targetKey, MaintenanceWindow mw) throws IOException {
@@ -150,11 +150,11 @@ public class MaintenanceHelper {
   }
 
   /**
-   * Adds a maintenance window to a computer.
+   * Adds a maintenance window to a target.
    *
-   * @param targetKey Name of the computer for which to add the maintenance
+   * @param targetKey Key of the target for which to add the maintenance
    *                     window
-   * @param mw           The maintance windows
+   * @param mw           The maintenance windows
    * @throws IOException when writing the xml failed
    */
   public void addRecurringMaintenanceWindow(String targetKey, RecurringMaintenanceWindow mw) throws IOException {
@@ -168,9 +168,9 @@ public class MaintenanceHelper {
   }
 
   /**
-   * Delete maintenance window from computer.
+   * Delete maintenance window from a target.
    *
-   * @param targetKey Name of the computer
+   * @param targetKey Key of the target
    * @param id           Id of the maintenance window
    * @throws IOException when writing the xml failed
    */
@@ -187,9 +187,9 @@ public class MaintenanceHelper {
   }
 
   /**
-   * Delete maintenance window from computer.
+   * Delete maintenance window from a target.
    *
-   * @param targetKey Name of the computer
+   * @param targetKey Key of the target
    * @param id           Id of the maintenance window
    * @throws IOException when writing the xml failed
    */
@@ -206,10 +206,10 @@ public class MaintenanceHelper {
   }
 
   /**
-   * Returns the list of all configured maintenance windows for the computer with
-   * the given name.
+   * Returns the list of all configured maintenance windows for the target with
+   * the given key.
    *
-   * @param targetKey name of the agent for which to return maintenance windows
+   * @param targetKey key of the target for which to return maintenance windows
    * @return Set of maintenance windows
    * @throws IOException when an error occurred reading the xml
    */
@@ -220,10 +220,10 @@ public class MaintenanceHelper {
   }
 
   /**
-   * Returns the list of all configured recurring maintenance windows for the computer with
-   * the given name.
+   * Returns the list of all configured recurring maintenance windows for the target with
+   * the given key.
    *
-   * @param targetKey name of the agent for which to return maintenance windows
+   * @param targetKey key of the target for which to return maintenance windows
    * @return Set of recurring maintenance windows
    * @throws IOException when an error occurred reading the xml
    */
@@ -233,10 +233,10 @@ public class MaintenanceHelper {
   }
 
   /**
-   * Returns the maintenance definitions for an agent.
+   * Returns the maintenance definitions for a target.
    *
-   * @param targetKey name of the agent for which to return maintenance definitions
-   * @return The {@link MaintenanceDefinitions} of the agent
+   * @param targetKey key of the target for which to return maintenance definitions
+   * @return The {@link MaintenanceDefinitions} of the target
    * @throws IOException when an error occurred reading the xml
    */
   public MaintenanceDefinitions getMaintenanceDefinitions(String targetKey) throws IOException {
@@ -276,9 +276,9 @@ public class MaintenanceHelper {
   }
 
   /**
-   * Returns the maintenance window with the given id that is connected to the given computer.
+   * Returns the maintenance window with the given id that is connected to the given target.
    *
-   * @param targetKey name of the computer
+   * @param targetKey key of the target
    * @param id id of the maintenance
    * @return The maintenance window or null if not found
    */
@@ -299,7 +299,7 @@ public class MaintenanceHelper {
    * if configured maintenance windows are not active. All maintenance windows
    * that are finished are removed.
    *
-   * @param targetKey Name of computer
+   * @param targetKey Key of the target
    * @return active maintenance or null
    */
   public @CheckForNull MaintenanceWindow getMaintenance(String targetKey) {
@@ -341,10 +341,10 @@ public class MaintenanceHelper {
   }
 
   /**
-   * Converts for an agent any of the recurring maintenance windows into scheduled maintenance windows if
+   * Converts for a target any of the recurring maintenance windows into scheduled maintenance windows if
    * the lead time is reached.
    *
-   * @param targetKey name of the agent to check
+   * @param targetKey key of the target to check
    */
   public void checkRecurring(String targetKey) {
     LOGGER.log(Level.FINER, "Checking for recurring maintenance windows for {0}", getSafeTargetName(targetKey));
@@ -383,9 +383,9 @@ public class MaintenanceHelper {
   }
 
   /**
-   * Save maintenance window for computer.
+   * Save maintenance window for a target.
    *
-   * @param targetKey       Name of computer
+   * @param targetKey       Key of the target
    * @param md A set of maintenance windows
    * @throws IOException when writing the xml failed
    */

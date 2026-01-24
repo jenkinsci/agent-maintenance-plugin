@@ -38,7 +38,7 @@ import org.kohsuke.stapler.bind.JavaScriptMethod;
 import org.kohsuke.stapler.verb.POST;
 
 /**
- * Link on manage Jenkins page to list all maintenance windows of all agents.
+ * Link on manage Jenkins page to list all maintenance windows of all targets.
  */
 @Extension
 public class MaintenanceLink extends ManagementLink {
@@ -53,6 +53,14 @@ public class MaintenanceLink extends ManagementLink {
 
   @Override
   public String getDisplayName() {
+    boolean hasClouds = !getCloudTargets().isEmpty();
+    boolean hasAgents = !getAgentTargets().isEmpty();
+    if (hasAgents && !hasClouds) {
+      return Messages.MaintenanceLink_displayName_agent();
+    }
+    if (hasClouds && !hasAgents) {
+      return Messages.MaintenanceLink_displayName_cloud();
+    }
     return Messages.MaintenanceLink_displayName();
   }
 
@@ -151,41 +159,66 @@ public class MaintenanceLink extends ManagementLink {
 
   @Override
   public Badge getBadge() {
-    int active = 0;
-    int total = 0;
+    int activeAgents = 0;
+    int totalAgents = 0;
+    int activeClouds = 0;
+    int totalClouds = 0;
     List<MaintenanceAction> mwList = getTargets();
     for (MaintenanceAction ma : mwList) {
-      total++;
-      if (ma.hasActiveMaintenanceWindows()) {
-        active++;
+      if (ma.isAgent()) {
+        totalAgents++;
+        if (ma.hasActiveMaintenanceWindows()) {
+          activeAgents++;
+        }
+      } else if (ma.isCloud()) {
+        totalClouds++;
+        if (ma.hasActiveMaintenanceWindows()) {
+          activeClouds++;
+        }
       }
     }
-    if (total == 0) {
+    if (totalAgents + totalClouds == 0) {
       return null;
     }
-    String text = active + "/" + total;
-    String tooltip = active + getVerb(active) + " an active maintenance window.\n"
-        + total + getVerb(total) + " defined maintenance windows.";
+    String text = (activeAgents + activeClouds) + "/" + (totalAgents + totalClouds);
+    StringBuilder tooltip = new StringBuilder();
+
+    if (totalAgents > 0) {
+      tooltip.append(activeAgents)
+             .append("/")
+             .append(totalAgents)
+             .append(getVerb(activeAgents, "agent"))
+             .append(" an active maintenance window.\n");
+    }
+
+    if (totalClouds > 0) {
+      tooltip.append(activeClouds)
+             .append("/")
+             .append(totalClouds)
+             .append(getVerb(activeClouds, "cloud"))
+             .append(" an active maintenance window.\n");
+    }
+
     Badge.Severity severity = Badge.Severity.INFO;
-    if (active > 0) {
+    if ((activeAgents + activeClouds) > 0) {
       severity = Badge.Severity.WARNING;
     }
 
-    return new Badge(text, tooltip, severity);
+    return new Badge(text, tooltip.toString().trim(), severity);
   }
 
-  private String getVerb(int count) {
+  private String getVerb(int count, String target) {
     if (count == 1) {
-      return " agent has";
+      return " %s has".formatted(target);
     }
-    return " agents have";
+    return " %ss have".formatted(target);
   }
 
   /**
    * Delete given maintenance window.
    *
    * @param id The id of the maintenance to delete
-   * @param targetKey The name of the computer to which the maintenance belongs
+   * @param targetKey The key of the target to which the maintenance belongs
    */
   @JavaScriptMethod
   public boolean deleteMaintenance(String id, String targetKey) {
@@ -204,7 +237,7 @@ public class MaintenanceLink extends ManagementLink {
   /**
    * Delete selected maintenance windows.
    *
-   * @param json An json with maintenance ids to delete and corresponding computer names
+   * @param json An json with maintenance ids to delete and corresponding target keys
    */
   @JavaScriptMethod
   public String[] deleteMultiple(JSONObject json) {
@@ -270,7 +303,7 @@ public class MaintenanceLink extends ManagementLink {
   }
 
   /**
-   * Add a maintenance window to a list of machines.
+   * Add a maintenance window to a list of targets.
    *
    * @param req StaplerRequest2
    * @param rsp StaplerResponse2
