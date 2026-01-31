@@ -20,9 +20,11 @@ class MigrationTest extends BaseIntegrationTest {
   @Test
   @LocalData
   void readOldData() throws IOException {
+    MaintenanceHelper.getInstance().clearCache();
     Node agent = rule.jenkins.getNode("agent");
+    MaintenanceTarget target = getTarget(MaintenanceTarget.TargetType.AGENT, agent.getNodeName());
     RetentionStrategy retentionStrategy = agent.toComputer().getRetentionStrategy();
     assertThat(retentionStrategy, instanceOf(AgentMaintenanceRetentionStrategy.class));
-    assertThat(MaintenanceHelper.getInstance().hasMaintenanceWindows("agent"), is(true));
+    assertThat(MaintenanceHelper.getInstance().hasMaintenanceWindows2(target.toKey()), is(true));
   }
 }

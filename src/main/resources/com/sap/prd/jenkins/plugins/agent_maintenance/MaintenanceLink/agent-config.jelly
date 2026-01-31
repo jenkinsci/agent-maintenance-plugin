@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form" xmlns:l="/lib/layout" xmlns:st="jelly:stapler"
+         xmlns:p="/lib/permissions"
+>
+  <div class="am__modal" id="maintenance-add-form" data-title="${%Add Maintenance Window for multiple agents}">
+    <f:form action="add" method="post" name="config" class="no-json jenkins-!-padding-top-1">
+      <f:entry field="label" title="${%Label}" help="/plugin/agent-maintenance/help/help-label.html">
+        <f:textbox
+                checkUrl="${rootURL}/target-maintenances/checkLabel"
+                autoCompleteUrl="${rootURL}/target-maintenances/autoCompleteLabel"
+                autoCompleteDelimChar=" "
+                checkDependsOn=""
+        />
+      </f:entry>
+      <st:include class="${it.getMaintenanceWindowClass()}" page="agent-config.jelly"/>
+    </f:form>
+  </div>
+
+  <f:form action="delete" method="post" name="delete">
+    <j:set var="mwcount" value="0"/>
+    <table class="jenkins-table jenkins-table--small sortable am__table" id="maintenance-table">
+      <thead>
+        <tr style="width: auto">
+          <th/>
+          <th>${%Agent}</th>
+          <th>${%Start Time}</th>
+          <th>${%End Time}</th>
+          <th>${%Reason}</th>
+          <th>${%Keep Online}</th>
+          <th>${%Max Wait}</th>
+          <th>${%Auto Connect}</th>
+          <th>${%Created By}</th>
+          <th style="width: auto" data-sort-disable="true">
+            <l:rowSelectionController class="am__checkbox">
+              <button type="button" id="select-active" class="jenkins-button jenkins-button--tertiary">
+                <div class="jenkins-table__checkbox-dropdown__icon">
+                  <l:icon src="symbol-compatible"/>
+                </div>
+                ${%Active}
+              </button>
+              <button type="button" id="select-inactive" class="jenkins-button jenkins-button--tertiary">
+                <div class="jenkins-table__checkbox-dropdown__icon">
+                  <l:icon src="symbol-compatible"/>
+                </div>
+                ${%Inactive}
+              </button>
+            </l:rowSelectionController>
+          </th>
+          <th style="width: auto"/>
+        </tr>
+      </thead>
+      <tbody>
+        <j:forEach var="action" items="${it.getAgentTargets()}">
+          <j:if test="${action.visible}">
+            <j:set var="c" value="${action.getAgentComputer()}"/>
+            <j:set var="mwcount" value="${mwcount + action.maintenanceWindows.size()}"/>
+            <j:forEach var="m" items="${action.maintenanceWindows}">
+              <j:set var="mid" value="${h.escape(m.id)}"/>
+              <tr id="${mid}" class="${m.isMaintenanceScheduled() ? 'active': 'inactive'}"
+                  data-target-key="${action.target.toKey()}">
+
+                <td>
+                  <l:icon src="${c.iconClassName}" class="icon-sm am__table-icon"/>
+                </td>
+
+                <td>
+                  <nobr>
+                    <a href="${rootURL}/${c.url}"
+                       class="jenkins-table__link model-link inside">
+                      ${c.displayName}
+                    </a>
+                  </nobr>
+                </td>
+
+                <td>
+                  <nobr>${m.startTime}</nobr>
+                </td>
+                <td>
+                  <nobr>${m.endTime}</nobr>
+                </td>
+                <td>${m.reason}</td>
+                <td class="center">
+                  <f:checkbox checked="${m.keepUpWhenActive ? 'true' : null}" readOnlyMode="true"/>
+                </td>
+                <td class="right">${m.maxWaitMinutes}</td>
+                <td class="center">
+                  <f:checkbox checked="${m.takeOnline ? 'true' : null}" readonly="" readOnlyMode="true"/>
+                </td>
+                <td>${m.userid}</td>
+
+                <p:hasAnyPermission it="${c}" permissions="${action.CONFIGURE_AND_DISCONNECT}">
+                  <td>
+                    <f:checkbox class="am__checkbox" name="${mid}"/>
+                  </td>
+                  <td class="delete">
+                    <div class="am__link-delete"
+                         data-message="${%Delete Maintenance Window of} ${c.displayName}"
+                         data-message-success="${%Maintenance window was successfully deleted}">
+                      <l:icon src="symbol-trash-outline plugin-ionicons-api"
+                              class="icon-sm icon-red am__table-icon"
+                              tooltip="Delete this maintenance window for ${h.escape(c.displayName)}"/>
+                    </div>
+                  </td>
+                </p:hasAnyPermission>
+                <p:hasNoPermission it="${c}" permissions="${action.CONFIGURE_AND_DISCONNECT}">
+                  <td/>
+                  <td/>
+                </p:hasNoPermission>
+              </tr>
+            </j:forEach>
+          </j:if>
+        </j:forEach>
+      </tbody>
+    </table>
+    <j:if test="${it.hasError()}">
+      <br/>
+      <div class="error">
+        ${it.getError()}
+      </div>
+    </j:if>
+    <f:bottomButtonBar>
+      <button id="add-button" type="button" class="jenkins-button jenkins-button--primary">${%Add}</button>
+      <button id="delete-selected-button-link" type="button"
+              class="jenkins-button jenkins-button--primary ${mwcount==0?'jenkins-hidden':''} delete-selected-button"
+              data-table-id="maintenance-table"
+              data-message-success="${%All selected maintenance windows were deleted successfully}" disabled="true">
+        ${%Delete selected}
+      </button>
+    </f:bottomButtonBar>
+  </f:form>
+
+</j:jelly>

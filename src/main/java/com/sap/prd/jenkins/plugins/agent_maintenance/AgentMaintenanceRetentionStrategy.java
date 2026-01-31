@@ -43,7 +43,8 @@ public class AgentMaintenanceRetentionStrategy extends RetentionStrategy<SlaveCo
 
   @Override
   public boolean isAcceptingTasks(SlaveComputer c) {
-    MaintenanceWindow maintenance = MaintenanceHelper.getInstance().getMaintenance(c.getName());
+    MaintenanceTarget target = new MaintenanceTarget(MaintenanceTarget.TargetType.AGENT, c.getName());
+    MaintenanceWindow maintenance = MaintenanceHelper.getInstance().getMaintenance(target.toKey());
     if (maintenance != null) {
       return false;
     }
@@ -52,7 +53,8 @@ public class AgentMaintenanceRetentionStrategy extends RetentionStrategy<SlaveCo
 
   @Override
   public boolean isManualLaunchAllowed(final SlaveComputer c) {
-    MaintenanceWindow maintenance = MaintenanceHelper.getInstance().getMaintenance(c.getName());
+    MaintenanceTarget target = new MaintenanceTarget(MaintenanceTarget.TargetType.AGENT, c.getName());
+    MaintenanceWindow maintenance = MaintenanceHelper.getInstance().getMaintenance(target.toKey());
     if (maintenance != null) {
       return false;
     }
@@ -62,8 +64,9 @@ public class AgentMaintenanceRetentionStrategy extends RetentionStrategy<SlaveCo
   @Override
   @GuardedBy("hudson.model.Queue.lock")
   public synchronized long check(final SlaveComputer c) {
-    MaintenanceWindow maintenance = MaintenanceHelper.getInstance().getMaintenance(c.getName());
-    MaintenanceHelper.getInstance().checkRecurring(c.getName());
+    MaintenanceTarget target = new MaintenanceTarget(MaintenanceTarget.TargetType.AGENT, c.getName());
+    MaintenanceWindow maintenance = MaintenanceHelper.getInstance().getMaintenance(target.toKey());
+    MaintenanceHelper.getInstance().checkRecurring(target.toKey());
     LOGGER.log(Level.FINER, "Checking for Maintenance Window for agent {0}. online = {1}, idle = {2}",
         new Object[] { c.getName(), c.isOnline(), c.isIdle() });
     if (maintenance != null) {
@@ -74,13 +77,10 @@ public class AgentMaintenanceRetentionStrategy extends RetentionStrategy<SlaveCo
         if (maintenance.isKeepUpWhenActive()) {
           if (!maintenance.isMaxWaitTimeFinished()) {
             if (c.isIdle()) {
-              Queue.withLock(new Runnable() {
-                @Override
-                public void run() {
-                  LOGGER.log(Level.INFO, "Disconnecting agent {0} as it was idle when maintenance window started.",
-                      new Object[] { c.getName() });
-                  c.disconnect(maintenance.getOfflineCause(c.getName()));
-                }
+              Queue.withLock(() -> {
+                LOGGER.log(Level.INFO, "Disconnecting agent {0} as it was idle when maintenance window started.",
+                    new Object[] { c.getName() });
+                c.disconnect(maintenance.getOfflineCause(c.getName()));
               });
             }
           } else {

@@ -2,7 +2,12 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
          xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:p="/lib/permissions">
   <l:layout title="${%Planned Maintenances}" norefresh="true">
-    <st:include it="${it.computer}" page="sidepanel.jelly"/>
+    <j:if test="${it.isAgent()}">
+      <st:include it="${it.getAgentComputer()}" page="sidepanel.jelly"/>
+    </j:if>
+    <j:if test="${it.isCloud()}">
+      <st:include it="${it.getCloud()}" page="sidepanel.jelly"/>
+    </j:if>
 
     <l:header>
       <script src="${resURL}/jsbundles/components/row-selection-controller.js" type="text/javascript" defer="true" />
@@ -11,14 +16,19 @@
     <l:main-panel>
       <st:bind var="maintenanceJavaScriptBind" value="${it}"/>
       <st:adjunct includes="com.sap.prd.jenkins.plugins.agent_maintenance.agent-maintenance"/>
-      <j:if test="${it.enabled}">
+      <j:if test="${it.isVisible()}">
         <h1>${%Planned Maintenances}</h1>
 
-<div class="am__modal" id="maintenance-add-form" data-title="${%Add Maintenance Window}">
-  <f:form action="add" method="post" name="config" class="no-json jenkins-!-padding-top-1">
-    <st:include class="${it.getMaintenanceWindowClass()}" page="config.jelly"/>
-  </f:form>
-</div>
+        <div class="am__modal" id="maintenance-add-form" data-title="${%Add Maintenance Window}">
+          <f:form action="add" method="post" name="config" class="no-json jenkins-!-padding-top-1">
+            <j:if test="${it.isAgent()}">
+              <st:include class="${it.getMaintenanceWindowClass()}" page="agent-config.jelly"/>
+            </j:if>
+            <j:if test="${it.isCloud()}">
+              <st:include class="${it.getMaintenanceWindowClass()}" page="cloud-config.jelly"/>
+            </j:if>
+          </f:form>
+        </div>
 
         <f:form action="deleteMultiple" method="post" name="delete">
           <j:set var="mw" value="${it.maintenanceWindows}"/>
@@ -30,9 +40,11 @@
                 </th>
                 <th>${%End Time}</th>
                 <th>${%Reason}</th>
-                <th>${%Keep Online}</th>
-                <th>${%Max Wait}</th>
-                <th>${%Auto Connect}</th>
+                <j:if test="${it.isAgent()}">
+                  <th>${%Keep Online}</th>
+                  <th>${%Max Wait}</th>
+                  <th>${%Auto Connect}</th>
+                </j:if>
                 <th>${%Created By}</th>
                 <p:hasAnyPermission permissions="${it.CONFIGURE_AND_DISCONNECT}">
                   <th data-sort-disable="true">
@@ -47,7 +59,7 @@
                         <div class="jenkins-table__checkbox-dropdown__icon">
                           <l:icon src="symbol-compatible" />
                         </div>
-                        ${%Inctive}
+                        ${%Inactive}
                       </button>
                     </l:rowSelectionController>
                   </th>
@@ -62,9 +74,11 @@
                   <td>${m.startTime}</td>
                   <td>${m.endTime}</td>
                   <td>${m.reason}</td>
-                  <td class="center" ><f:checkbox readOnlyMode="true" checked="${m.keepUpWhenActive ? 'true' : null}"/></td>
-                  <td class="right">${m.maxWaitMinutes}</td>
-                  <td class="center"><f:checkbox readOnlyMode="true" checked="${m.takeOnline ? 'true' : null}"/></td>
+                  <j:if test="${it.isAgent()}">
+                    <td class="center" ><f:checkbox readOnlyMode="true" checked="${m.keepUpWhenActive ? 'true' : null}"/></td>
+                    <td class="right">${m.maxWaitMinutes}</td>
+                    <td class="center"><f:checkbox readOnlyMode="true" checked="${m.takeOnline ? 'true' : null}"/></td>
+                  </j:if>
                   <td>${m.userid}</td>
                   <p:hasAnyPermission permissions="${it.CONFIGURE_AND_DISCONNECT}">
                     <td>
@@ -99,8 +113,13 @@
         <br/>
         <h1>${%Recurring Maintenances}</h1>
         <div class="am__modal" id="recurring-maintenance-add-form" data-title="${%Add Recurring Maintenance Window}">
-          <f:form action="addRecurring" method="post" name="config" class="no-json jenkins-!-padding-top-1">
-            <st:include class="${it.getRecurringMaintenanceWindowClass()}" page="config.jelly"/>
+          <f:form action="addRecurring" method="post" name="configRecurring" class="no-json jenkins-!-padding-top-1">
+            <j:if test="${it.isAgent()}">
+              <st:include class="${it.getRecurringMaintenanceWindowClass()}" page="agent-config.jelly"/>
+            </j:if>
+            <j:if test="${it.isCloud()}">
+              <st:include class="${it.getRecurringMaintenanceWindowClass()}" page="cloud-config.jelly"/>
+            </j:if>
           </f:form>
         </div>
         <f:form action="deleteMultipleRecurring" method="post" name="delete">
@@ -111,9 +130,11 @@
                 <th>${%Schedule}</th>
                 <th>${%Duration}</th>
                 <th>${%Reason}</th>
-                <th>${%Keep Online}</th>
-                <th>${%Max Wait}</th>
-                <th>${%Auto Connect}</th>
+                <j:if test="${it.isAgent()}">
+                  <th>${%Keep Online}</th>
+                  <th>${%Max Wait}</th>
+                  <th>${%Auto Connect}</th>
+                </j:if>
                 <th>${%Created By}</th>
                 <p:hasAnyPermission permissions="${it.CONFIGURE_AND_DISCONNECT}">
                   <th data-sort-disable="true">
@@ -130,9 +151,11 @@
                   <td>${m.startTimeSpec}</td>
                   <td>${m.duration}</td>
                   <td>${m.reason}</td>
-                  <td class="center" ><f:checkbox readOnlyMode="true" checked="${m.keepUpWhenActive ? 'true' : null}"/></td>
-                  <td class="right">${m.maxWaitMinutes}</td>
-                  <td class="center"><f:checkbox readOnlyMode="true" checked="${m.takeOnline ? 'true' : null}"/></td>
+                  <j:if test="${it.isAgent()}">
+                    <td class="center" ><f:checkbox readOnlyMode="true" checked="${m.keepUpWhenActive ? 'true' : null}"/></td>
+                    <td class="right">${m.maxWaitMinutes}</td>
+                    <td class="center"><f:checkbox readOnlyMode="true" checked="${m.takeOnline ? 'true' : null}"/></td>
+                  </j:if>
                   <td>${m.userid}</td>
                   <p:hasAnyPermission permissions="${it.CONFIGURE_AND_DISCONNECT}">
                     <td>
@@ -163,23 +186,31 @@
         </f:form>
         <br/>
         <br/>
-        <l:hasPermission permission="${it.computer.CONFIGURE}">
-          <f:entry title="${%Disable Agent Maintenance Availability}" help="/plugin/agent-maintenance/help/help-disable.html">
+        <j:if test="${it.isAgent()}">
+          <l:hasPermission permission="${it.getAgentComputer().CONFIGURE}">
+            <f:entry title="${%Disable Agent Maintenance Availability}" help="/plugin/agent-maintenance/help/help-disable.html">
               <button class="jenkins-button jenkins-button--primary am__disable"
                       data-message="${%Disable Agent Maintenance Availability}">${%Disable}</button>
-          </f:entry>
-        </l:hasPermission>
-
+            </f:entry>
+          </l:hasPermission>
+        </j:if>
       </j:if>
-      <j:if test="${!it.enabled}">
-        <l:hasPermission permission="${it.computer.CONFIGURE}">
-          <f:entry title="${%Enable Agent Maintenance Availability}" help="/plugin/agent-maintenance/help/help-enable.html">
+
+      <j:if test="${it.isCloud()}">
+        <div>Cloud maintenance blocks new provisioning</div>
+      </j:if>
+
+      <j:if test="${it.isAgent()}">
+        <j:if test="${!it.enabled}">
+          <l:hasPermission permission="${it.getAgentComputer().CONFIGURE}">
+            <f:entry title="${%Enable Agent Maintenance Availability}" help="/plugin/agent-maintenance/help/help-enable.html">
               <button class="jenkins-button jenkins-button--primary am__enable"
-              data-message="${%Enable Agent Maintenance Availability}">${%Enable}</button>
-          </f:entry>
-        </l:hasPermission>
-        <j:if test="${!h.hasPermission(it, it.computer.CONFIGURE)}">
-          ${%missingPermission}
+                      data-message="${%Enable Agent Maintenance Availability}">${%Enable}</button>
+            </f:entry>
+          </l:hasPermission>
+          <j:if test="${!it.hasPermissions()}">
+            ${%missingPermission}
+          </j:if>
         </j:if>
       </j:if>
     </l:main-panel>

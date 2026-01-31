@@ -112,6 +112,19 @@ public class RecurringMaintenanceWindow extends AbstractDescribableImpl<Recurrin
     this.id = id;
   }
 
+  /**
+   * Simplified constructor for cloud recurring maintenance windows.
+   * Agent specific fields are set to safe defaults
+   *
+   * @param startTimeSpec Start time
+   * @param reason Reason
+   * @param duration Duration (in minutes)
+   */
+  public RecurringMaintenanceWindow(String startTimeSpec, String reason, String duration) {
+    this(startTimeSpec, reason, false, false,
+            "-1", duration, null, null, 0L);
+  }
+
   protected synchronized Object readResolve() throws ObjectStreamException {
     cron = parser.parse(startTimeSpec);
     return this;

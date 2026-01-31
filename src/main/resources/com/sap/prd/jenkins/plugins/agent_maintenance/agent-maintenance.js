@@ -1,30 +1,83 @@
 function openForm(formName) {
-    const formTemplate = document.getElementById(formName);
-    const form = formTemplate.firstElementChild.cloneNode(true);
-    const title = formTemplate.dataset.title;
-    form.classList.remove("no-json");
-    dialog.form(form, {
-      title: title,
-      okText: dialog.translations.add,
-      minWidth: "900px",
-      submitButton: false,
-    }).then(formData => {
-      buildFormTree(form);
-      fetch(form.action, {
-        body: new URLSearchParams(new FormData(form)),
-        method: "post",
-        headers: crumb.wrap({
-          "Content-Type": "application/x-www-form-urlencoded",
-        }),
-      });
+  const formTemplate = document.getElementById(formName);
+  const form = formTemplate.firstElementChild.cloneNode(true);
+  const title = formTemplate.dataset.title;
+  form.classList.remove("no-json");
+  dialog.form(form, {
+    title: title,
+    okText: dialog.translations.add,
+    minWidth: "900px",
+    submitButton: false,
+  }).then(formData => {
+    if (formName === 'cloud-maintenance-add-form') {
+      submitCloudForm(form);
+    } else {
+      submitAgentForm(form);
+    }
+  })
+}
+
+function submitAgentForm(form) {
+  buildFormTree(form);
+  fetch(form.action, {
+    body: new URLSearchParams(new FormData(form)),
+    method: "post",
+    headers: crumb.wrap({
+      "Content-Type": "application/x-www-form-urlencoded",
+    }),
+  }).then(() => location.reload());
+}
+
+// Custom cloud submission form
+function submitCloudForm(form) {
+  const select = form.querySelector('#clouds-select');
+  const selectedClouds = Array.from(select.selectedOptions).map(opt => opt.value);
+
+  if (selectedClouds.length === 0) {
+    notificationBar.show("Please select at least one cloud", notificationBar.WARNING);
+    return;
+  }
+
+  const formData = new URLSearchParams();
+
+  // Add each selected cloud as separate parameter
+  selectedClouds.forEach(cloud => {
+    formData.append('clouds', cloud);
+  });
+
+  const startTime = form.querySelector('input[name="startTime"]');
+  const endTime = form.querySelector('input[name="endTime"]');
+  const reason = form.querySelector('input[name="reason"]');
+
+  if (!startTime || !endTime) {
+    console.error("Missing required fields!", {startTime, endTime, reason});
+    notificationBar.show("Missing required fields", notificationBar.ERROR);
+    return;
+  }
+
+  formData.append('startTime', startTime.value);
+  formData.append('endTime', endTime.value);
+  formData.append('reason', reason ? reason.value : '');
+
+  fetch(form.action, {
+    body: formData,
+    method: "POST",
+    headers: crumb.wrap({
+      "Content-Type": "application/x-www-form-urlencoded",
+    }),
+  }).then(response => {
+    if (response.ok) {
       location.reload();
-    })
+    } else {
+      notificationBar.show("Failed to add maintenance window", notificationBar.ERROR);
+    }
+  });
 }
 
 function refresh() {
   let table = document.getElementById("maintenance-table");
   let tBody = table.tBodies[0];
-  maintenanceJavaScriptBind.getMaintenanceStatus(function(response) {
+  maintenanceJavaScriptBind.getMaintenanceStatus(function (response) {
     let result = response.responseObject();
     for (let rowid = tBody.rows.length - 1; rowid >= 0; rowid--) {
       let row = tBody.rows[rowid];
@@ -59,7 +112,7 @@ window.addEventListener("DOMContentLoaded", (event) => {
   window.setInterval(refresh, 20000);
 });
 
-let selectMaintenanceWindows = function(button, toggle, className) {
+let selectMaintenanceWindows = function (button, toggle, className) {
   const table = document.getElementById("maintenance-table");
   const inputs = table.querySelectorAll('tr' + className + ' input.am__checkbox');
   for (let input of inputs) {
@@ -72,14 +125,14 @@ let selectMaintenanceWindows = function(button, toggle, className) {
   button.dispatchEvent(ev);
 };
 
-Behaviour.specify(".am__action-delete", 'agent-maintenance', 0, function(e) {
+Behaviour.specify(".am__action-delete", 'agent-maintenance', 0, function (e) {
   e.onclick = function () {
     let row = this.closest("TR");
     let message = this.getAttribute("data-message");
     let messageSuccess = this.getAttribute("data-message-success");
     let id = row.id;
-    dialog.confirm(message).then( () => {
-      maintenanceJavaScriptBind.deleteMaintenance(id, function(response) {
+    dialog.confirm(message).then(() => {
+      maintenanceJavaScriptBind.deleteMaintenance(id, function (response) {
         let result = response.responseObject();
         if (result) {
           let tbody = row.parentNode;
@@ -98,14 +151,14 @@ Behaviour.specify(".am__action-delete", 'agent-maintenance', 0, function(e) {
   }
 });
 
-Behaviour.specify(".am__action-delete-recurring", 'agent-maintenance', 0, function(e) {
+Behaviour.specify(".am__action-delete-recurring", 'agent-maintenance', 0, function (e) {
   e.onclick = function () {
     let row = this.closest("TR");
     let message = this.getAttribute("data-message");
     let messageSuccess = this.getAttribute("data-message-success");
     let id = row.id;
-    dialog.confirm(message).then( () => {
-      maintenanceJavaScriptBind.deleteRecurringMaintenance(id, function(response) {
+    dialog.confirm(message).then(() => {
+      maintenanceJavaScriptBind.deleteRecurringMaintenance(id, function (response) {
         let result = response.responseObject();
         if (result) {
           let tbody = row.parentNode;
@@ -124,15 +177,15 @@ Behaviour.specify(".am__action-delete-recurring", 'agent-maintenance', 0, functi
   }
 });
 
-Behaviour.specify(".am__link-delete", 'agent-maintenance', 0, function(e) {
+Behaviour.specify(".am__link-delete", 'agent-maintenance', 0, function (e) {
   e.onclick = function () {
     let message = this.getAttribute("data-message");
     let messageSuccess = this.getAttribute("data-message-success");
     let row = this.closest("TR");
     let id = row.id;
-    let computerName = row.getAttribute("data-computer-name");
-    dialog.confirm(message).then( () => {
-      maintenanceJavaScriptBind.deleteMaintenance(id, computerName, function(response) {
+    let targetKey = row.getAttribute("data-target-key");
+    dialog.confirm(message).then(() => {
+      maintenanceJavaScriptBind.deleteMaintenance(id, targetKey, function (response) {
         let result = response.responseObject();
         if (result) {
           let tbody = row.parentNode;
@@ -150,81 +203,87 @@ Behaviour.specify(".am__link-delete", 'agent-maintenance', 0, function(e) {
   }
 });
 
-Behaviour.specify(".am__disable", 'agent-maintenance', 0, function(e) {
-  e.onclick = function() {
+Behaviour.specify(".am__disable", 'agent-maintenance', 0, function (e) {
+  e.onclick = function () {
     let message = this.getAttribute("data-message");
-    dialog.confirm(message).then( () => {
-      fetch("disable",  {
-          method: "POST",
-          headers: crumb.wrap({}),
-        }
+    dialog.confirm(message).then(() => {
+      fetch("disable", {
+            method: "POST",
+            headers: crumb.wrap({}),
+          }
       );
       location.reload();
     });
   }
 });
 
-Behaviour.specify(".am__enable", 'agent-maintenance', 0, function(e) {
-  e.onclick = function() {
+Behaviour.specify(".am__enable", 'agent-maintenance', 0, function (e) {
+  e.onclick = function () {
     let message = this.getAttribute("data-message");
-    dialog.confirm(message).then( () => {
-      fetch("enable",  {
-          method: "POST",
-          headers: crumb.wrap({}),
-        }
+    dialog.confirm(message).then(() => {
+      fetch("enable", {
+            method: "POST",
+            headers: crumb.wrap({}),
+          }
       );
       location.reload();
     });
   }
 });
 
-Behaviour.specify("#add-button", 'agent-maintenance', 0, function(e) {
-  e.onclick = function() {
+Behaviour.specify("#add-button", 'agent-maintenance', 0, function (e) {
+  e.onclick = function () {
     openForm("maintenance-add-form")
   };
 });
 
-Behaviour.specify("#add-recurring", 'agent-maintenance', 0, function(e) {
-    e.onclick = function() {
+Behaviour.specify("#add-button-clouds", 'agent-maintenance', 0, function (e) {
+  e.onclick = function () {
+    openForm("cloud-maintenance-add-form")
+  };
+});
+
+Behaviour.specify("#add-recurring", 'agent-maintenance', 0, function (e) {
+  e.onclick = function () {
     openForm("recurring-maintenance-add-form")
-    };
+  };
 });
 
-Behaviour.specify("#edit-button", 'agent-maintenance', 0, function(e) {
-    e.onclick = function() {
-      location.href='config';
-    }
-    let table = document.getElementById("maintenance-table");
-    let tbody = table.tBodies[0];
+Behaviour.specify("#edit-button", 'agent-maintenance', 0, function (e) {
+  e.onclick = function () {
+    location.href = 'config';
+  }
+  let table = document.getElementById("maintenance-table");
+  let tbody = table.tBodies[0];
 });
 
-Behaviour.specify("#edit-recurring", 'agent-maintenance', 0, function(e) {
-    e.onclick = function() {
-      location.href='config';
-    }
-    let table = document.getElementById("recurring-maintenance-table");
-    let tbody = table.tBodies[0];
-    if (tbody.children.length == 0) {
-      e.classList.add("jenkins-hidden");
-    }
+Behaviour.specify("#edit-recurring", 'agent-maintenance', 0, function (e) {
+  e.onclick = function () {
+    location.href = 'config';
+  }
+  let table = document.getElementById("recurring-maintenance-table");
+  let tbody = table.tBodies[0];
+  if (tbody.children.length == 0) {
+    e.classList.add("jenkins-hidden");
+  }
 });
 
-Behaviour.specify("#cancel-button", 'agent-maintenance', 0, function(e) {
-    e.onclick = function() {
-      closeForm("maintenance-add-form");
-    }
+Behaviour.specify("#cancel-button", 'agent-maintenance', 0, function (e) {
+  e.onclick = function () {
+    closeForm("maintenance-add-form");
+  }
 });
 
-Behaviour.specify("#recurring-cancel-button", 'agent-maintenance', 0, function(e) {
-    e.onclick = function() {
-      closeForm("recurring-maintenance-add-form");
-    }
+Behaviour.specify("#recurring-cancel-button", 'agent-maintenance', 0, function (e) {
+  e.onclick = function () {
+    closeForm("recurring-maintenance-add-form");
+  }
 });
 
 const anyCheckboxesSelected = (table) => {
   return (
-    table.querySelectorAll("input.am__checkbox:checked:not(:disabled)")
-      .length > 0
+      table.querySelectorAll("input.am__checkbox:checked:not(:disabled)")
+          .length > 0
   );
 };
 
@@ -234,7 +293,7 @@ const updateDeleteSelectedButton = (table) => {
   deleteSelectedButton.disabled = !anyCheckboxesSelected(table);
 };
 
-Behaviour.specify(".am__table", "agent-maintenance", 0, function(table) {
+Behaviour.specify(".am__table", "agent-maintenance", 0, function (table) {
   const checkboxes = table.querySelectorAll("input.am__checkbox");
 
   checkboxes.forEach((checkbox) => {
@@ -244,11 +303,11 @@ Behaviour.specify(".am__table", "agent-maintenance", 0, function(table) {
   });
 });
 
-Behaviour.specify("#delete-selected-button-action", 'agent-maintenance', 0, function(e) {
+Behaviour.specify("#delete-selected-button-action", 'agent-maintenance', 0, function (e) {
   let table = document.getElementById("maintenance-table");
   let tbody = table.tBodies[0];
   let messageSuccess = e.getAttribute("data-message-success");
-  e.onclick = function() {
+  e.onclick = function () {
     let checkedRows = tbody.querySelectorAll("input.am__checkbox:checked");
     let checkedList = [];
     for (let checked of checkedRows) {
@@ -257,7 +316,7 @@ Behaviour.specify("#delete-selected-button-action", 'agent-maintenance', 0, func
       checkedList.push(id);
     }
     if (checkedList.length > 0) {
-      maintenanceJavaScriptBind.deleteMultiple(checkedList, function(response) {
+      maintenanceJavaScriptBind.deleteMultiple(checkedList, function (response) {
         let result = response.responseObject();
         let error = false;
         if (result.length != checkedList.length) {
@@ -281,11 +340,11 @@ Behaviour.specify("#delete-selected-button-action", 'agent-maintenance', 0, func
   }
 });
 
-Behaviour.specify("#delete-selected-recurring-action", 'agent-maintenance', 0, function(e) {
+Behaviour.specify("#delete-selected-recurring-action", 'agent-maintenance', 0, function (e) {
   let table = document.getElementById("recurring-maintenance-table");
   let tbody = table.tBodies[0];
   let messageSuccess = e.getAttribute("data-message-success");
-  e.onclick = function() {
+  e.onclick = function () {
     let checkedRows = tbody.querySelectorAll("input.am__checkbox:checked");
     let checkedList = [];
     for (let checked of checkedRows) {
@@ -294,7 +353,7 @@ Behaviour.specify("#delete-selected-recurring-action", 'agent-maintenance', 0, f
       checkedList.push(id);
     }
     if (checkedList.length > 0) {
-      maintenanceJavaScriptBind.deleteMultipleRecurring(checkedList, function(response) {
+      maintenanceJavaScriptBind.deleteMultipleRecurring(checkedList, function (response) {
         let result = response.responseObject();
         let error = false;
         if (result.length != checkedList.length) {
@@ -321,23 +380,24 @@ Behaviour.specify("#delete-selected-recurring-action", 'agent-maintenance', 0, f
   }
 });
 
-Behaviour.specify("#delete-selected-button-link", 'agent-maintenance', 0, function(e) {
-  let table = document.getElementById("maintenance-table");
+Behaviour.specify("#delete-selected-button-link, #delete-selected-clouds", 'agent-maintenance', 0, function (e) {
+  let tableId = e.getAttribute("data-table-id");
+  let table = document.getElementById(tableId);
   let tbody = table.tBodies[0];
   let messageSuccess = e.getAttribute("data-message-success");
-  e.onclick = function() {
+  e.onclick = function () {
     let checkedRows = tbody.querySelectorAll("input.am__checkbox:checked");
     let checkedList = {};
     let size = 0;
     for (let checked of checkedRows) {
       let row = checked.closest("TR");
       let id = row.id;
-      let computerName = row.getAttribute("data-computer-name");
-      checkedList[id] = computerName;
+      let targetKey = row.getAttribute("data-target-key");
+      checkedList[id] = targetKey;
       size++;
     }
     if (size > 0) {
-      maintenanceJavaScriptBind.deleteMultiple(checkedList, function(response) {
+      maintenanceJavaScriptBind.deleteMultiple(checkedList, function (response) {
         let result = response.responseObject();
         let error = false;
         if (result.length != size) {
@@ -360,21 +420,21 @@ Behaviour.specify("#delete-selected-button-link", 'agent-maintenance', 0, functi
   }
 });
 
-Behaviour.specify("[data-select='all'], [data-select='none'], .jenkins-table__checkbox", 'agent-maintenance', 0, function(e) {
-  e.addEventListener("click", function() {
+Behaviour.specify("[data-select='all'], [data-select='none'], .jenkins-table__checkbox", 'agent-maintenance', 0, function (e) {
+  e.addEventListener("click", function () {
     const table = e.closest(".jenkins-table");
     updateDeleteSelectedButton(table);
   });
 });
 
-Behaviour.specify("#select-active", 'agent-maintenance', 0, function(e) {
-  e.addEventListener("click", function() {
+Behaviour.specify("#select-active", 'agent-maintenance', 0, function (e) {
+  e.addEventListener("click", function () {
     selectMaintenanceWindows(e, true, ".active");
   });
 });
 
-Behaviour.specify("#select-inactive", 'agent-maintenance', 0, function(e) {
-  e.addEventListener("click", function() {
+Behaviour.specify("#select-inactive", 'agent-maintenance', 0, function (e) {
+  e.addEventListener("click", function () {
     selectMaintenanceWindows(e, true, ".inactive");
   });
 });

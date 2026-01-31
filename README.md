@@ -8,16 +8,27 @@ Agent Maintenance Plugin for Jenkins
 [![REUSE status](https://api.reuse.software/badge/github.com/jenkinsci/agent-maintenance-plugin)](https://api.reuse.software/info/github.com/jenkinsci/agent-maintenance-plugin)
 
 
-This plugin allows to take agents offline for one or more dedicated time windows on specific dates (e.g. due to a hardware/network maintenance)
+This plugin allows scheduling maintenance windows for permanent agents and clouds, ensuring builds are not interrupted during planned infrastructure maintenance (e.g. due to a hardware/network maintenance)
 while allowing to configure any of the other availability strategies (e.g. *Keep online as much as possible* or *Bring this agent online according to a schedule*) for the times when no maintenance window is active.
 
-Maintenance activities are usually scheduled on weekends or outside normal business hours during the night. When you have many permanent agents this plugin helps to ensure that your builds are not unexpectedly killed because of a planned network interruption, an OS update or a reboot of the machine.
+Maintenance activities are usually scheduled on weekends or outside normal business hours during the night.
+When you have many permanent agents or cloud providers,
+this plugin helps to ensure that your builds are not unexpectedly killed because of a planned network interruption,
+an OS update or a reboot of the machine.
 
+## Supported Targets
+The plugin supports maintenance windows for:
+- **Permanent Agents**: Statically configured agents that remain connected to Jenkins.
+- **Cloud Providers**: Dynamic agent provisioning systems such as EC2, Azure, Kubernetes, or Docker clouds.
+
+For cloud providers, maintenance windows prevent new agents from being provisioned during the specified time periods.
+Existing cloud agents that are already running will complete their current builds according to the configured waiting time.
 
 ## Configuration
 
 On the Jenkins main configuration page you can enable that for newly created (permanent) agents, the agent maintenance availability is automatically injected.
 (this does not apply to cloud agents where it doesn't make sense as the agent is deleted right after it was used for a build usually. Not all Cloud implementations inherit from the corresponding classes so that they are detected).
+Cloud providers can be configured individually through their respective maintenance window pages.
 
 Using the button *Inject* will inject it to all existing agents when not already configured. The currently configured availability will be set as the regular availability.
 This is useful directly after installing the plugin.
@@ -35,15 +46,15 @@ To define or delete maintenance windows the user needs the `Computer.CONFIGURE` 
 Use the "x" to directly delete a single maintenance window or use the checkboxes to mark multiple windows and delete with the "Delete selected" button.
 Users with the [Computer.ExtendedRead](https://plugins.jenkins.io/extended-read-permission/) permission can see the defined maintenance windows.
 
-### Individually for a single agent
-Maintenance windows can be defined by opening the corresponding link on the agents overview page.
+### Individually for a single agent or cloud
+Maintenance windows can be defined by opening the corresponding link on the agents' or clouds' overview page.
 Using the "Add" button you can directly define a new maintenance window.
 Via the "Edit" button one can edit existing maintenance windows (and also add and delete).
 
 
-### For many agents simultaneously
-Going to "Manage Jenkins->Agent Maintenance" will present you a list of all currently defined maintenance windows of all agents.
-Using the button "Add" allows to use a label expression to select a list of agents for which to apply the maintenance window.
+### For multiple targets simultaneously
+Going to "Manage Jenkins → Target Maintenance" will present you a list of all currently defined maintenance windows of all targets, currently bifurcated by Agent and Cloud target types.
+Using the button "Add" allows to use a label expression to select a list of targets for which to apply the maintenance window.
 
 ## Recurring maintenance windows
 It is also possible to define recurring maintenance windows. Using a cron syntax you can specify the start time of the downtime and a duration.
@@ -55,7 +66,7 @@ Changing a recurring maintenance will not change already scheduled maintenance w
 
 ## Best practices
 
-When defining a maintenance window one has to consider the time it takes for any running build to finish. So if the actual maintenance starts at 8 AM and your builds usually run for 30 minutes you might set the start time to 7:15 AM and define a "Max waiting time in minutes for builds to finish" of 45 minutes.
+When defining a maintenance window on agents, one has to consider the time it takes for any running build to finish. So if the actual maintenance starts at 8 AM and your builds usually run for 30 minutes you might set the start time to 7:15 AM and define a "Max waiting time in minutes for builds to finish" of 45 minutes.
 
 At 7:15 the agent will stop accepting new tasks, running builds should have enough time to finish. If a build is still running when the max waiting time is reached an abort request is sent to the build. 
 

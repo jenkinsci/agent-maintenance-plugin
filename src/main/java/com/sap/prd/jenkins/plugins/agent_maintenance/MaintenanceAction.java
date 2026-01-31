@@ -7,12 +7,14 @@ import hudson.Util;
 import hudson.model.Action;
 import hudson.model.Computer;
 import hudson.security.Permission;
-import hudson.slaves.SlaveComputer;
+import hudson.slaves.Cloud;
 import hudson.util.FormApply;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -21,6 +23,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -30,30 +33,62 @@ import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.bind.JavaScriptMethod;
 import org.kohsuke.stapler.verb.POST;
 
-/** Action to display link to maintenance window configuration. */
+/**
+ * Action to display link to maintenance window configuration.
+ */
 public class MaintenanceAction implements Action {
+
+  protected final MaintenanceTarget target;
 
   private static final Logger LOGGER = Logger.getLogger(MaintenanceAction.class.getName());
 
   @SuppressFBWarnings(value = "MS_PKGPROTECT", justification = "called by Jelly")
   @Restricted(NoExternalUse.class)
-  public static final Permission[] CONFIGURE_AND_DISCONNECT = new Permission[] { Computer.DISCONNECT, Computer.CONFIGURE }; 
+  public static final Permission[] CONFIGURE_AND_DISCONNECT = new Permission[]{Computer.DISCONNECT, Computer.CONFIGURE};
 
-  private final SlaveComputer computer;
-
-  public MaintenanceAction(SlaveComputer computer) {
-    this.computer = computer;
+  /**
+   * Creates MaintenanceAction. Including UUID for clouds.
+   */
+  public MaintenanceAction(MaintenanceTarget target) {
+    this.target = target;
   }
 
-  public Computer getComputer() {
-    return computer;
-  }
-  
-
+  /**
+   * Checks if the action is visible based on permissions.
+   *
+   * @return true if visible.
+   */
   @Restricted(NoExternalUse.class)
   public boolean isVisible() {
-    return (computer.hasPermission(Computer.DISCONNECT) || computer.hasPermission(Computer.CONFIGURE)
-        || computer.hasPermission(Computer.EXTENDED_READ)) && computer.getNode() != null;
+    try {
+      if (!MaintenanceHelper.getInstance().isValidTarget(target.toKey())) {
+        return false;
+      }
+
+      if (isAgent()) {
+        Computer computer = Jenkins.get().getComputer(target.getName());
+        return computer != null
+                && (computer.hasPermission(Computer.DISCONNECT)
+                        || computer.hasPermission(Computer.CONFIGURE)
+                        || computer.hasPermission(Computer.EXTENDED_READ))
+                && computer.getNode() != null;
+      }
+      return Jenkins.get().hasPermission(Jenkins.ADMINISTER);
+    } catch (IOException e) {
+      return false;
+    }
+  }
+
+  protected void checkPermission(Permission... permissions) {
+    if (isAgent()) {
+      Computer c = Jenkins.get().getComputer(target.getName());
+      if (c == null) {
+        throw new IllegalStateException("Agent '" + target.getName() + "' no longer exists");
+      }
+      c.checkAnyPermission(permissions);
+    } else { // For cloud
+      Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+    }
   }
 
   @Override
@@ -68,7 +103,7 @@ public class MaintenanceAction implements Action {
   @Override
   public String getDisplayName() {
     if (isVisible()) {
-      if (computer.hasPermission(Computer.DISCONNECT) || computer.hasPermission(Computer.CONFIGURE)) {
+      if (hasPermissions()) {
         return Messages.MaintenanceAction_maintenanceWindows();
       } else {
         return Messages.MaintenanceAction_view();
@@ -80,11 +115,24 @@ public class MaintenanceAction implements Action {
 
   @Override
   public String getUrlName() {
-    if (isVisible()) {
-      return "maintenanceWindows";
-    } else {
-      return null;
-    }
+    return "maintenanceWindows";
+  }
+
+  /**
+   * Gets the target of this maintenance action.
+   *
+   * @return the maintenance target
+   */
+  public MaintenanceTarget getTarget() {
+    return target;
+  }
+
+  public boolean isAgent() {
+    return target.getType() == MaintenanceTarget.TargetType.AGENT;
+  }
+
+  public boolean isCloud() {
+    return target.getType() == MaintenanceTarget.TargetType.CLOUD;
   }
 
   public Class<MaintenanceWindow> getMaintenanceWindowClass() {
@@ -95,8 +143,97 @@ public class MaintenanceAction implements Action {
     return RecurringMaintenanceWindow.class;
   }
 
+  /**
+   * Checks if Agent's retention strategy is enabled.
+   *
+   * @return true if it is.
+   */
   public boolean isEnabled() {
-    return computer.getRetentionStrategy() instanceof AgentMaintenanceRetentionStrategy;
+    if (!isAgent()) {
+      return false;
+    }
+    Computer computer = Jenkins.get().getComputer(target.getName());
+    return computer != null && computer.getRetentionStrategy() instanceof AgentMaintenanceRetentionStrategy;
+  }
+
+  /**
+   * Gets the Cloud associated with the maintenance action.
+   *
+   * @return <code>Cloud</code> instance of the maintenance action.
+   */
+  public Cloud getCloud() {
+    if (!isCloud()) {
+      return null;
+    }
+    return CloudUuidStore.getInstance().getCloudByTarget(target);
+  }
+
+  /**
+   * Gets the Agent associated with the maintenance action.
+   *
+   * @return <code>Computer</code> instance of the maintenance action.
+   */
+  public Computer getAgentComputer() {
+    Computer c = null;
+    if (isAgent()) {
+      c = Jenkins.get().getComputer(target.getName());
+    }
+    return c;
+  }
+
+  /**
+   * Checks if the user has permissions to access MaintenanceWindows.
+   *
+   * @return true if they do.
+   */
+  public boolean hasPermissions() {
+    if (isAgent()) {
+      Computer c = Jenkins.get().getComputer(target.getName());
+      return c != null
+              && (c.hasPermission(Computer.DISCONNECT)
+              || c.hasPermission(Computer.CONFIGURE)
+              || c.hasPermission(Computer.EXTENDED_READ));
+    } else {
+      return Jenkins.get().hasPermission(Jenkins.ADMINISTER);
+    }
+  }
+
+  /**
+   * Checks the given permissions.
+   *
+   * @param permissions A group of permissions to be checked.
+   * @return true if all permissions are granted.
+   */
+  public boolean hasPermissions(Permission... permissions) {
+    if (isAgent()) {
+      Computer c = Jenkins.get().getComputer(target.getName());
+      return c != null && Arrays.stream(permissions).allMatch(c::hasPermission);
+    } else {
+      return Jenkins.get().hasPermission(Jenkins.ADMINISTER);
+    }
+  }
+
+  /**
+   * Checks if the user has permissions to delete MaintenanceWindows.
+   *
+   * @return true if they do.
+   */
+  public boolean hasDeletePermission() {
+    if (isAgent()) {
+      Computer c = Jenkins.get().getComputer(target.getName());
+      return c != null && (c.hasPermission(Computer.DISCONNECT) || c.hasPermission(Computer.CONFIGURE));
+    } else {
+      return Jenkins.get().hasPermission(Jenkins.ADMINISTER);
+    }
+  }
+
+  /**
+   * Checks if the user has permissions to delete Cloud windows.
+   *
+   * @return true if they do.
+   */
+  public boolean hasCloudDeletePermission() {
+    return Jenkins.get().hasPermission(Jenkins.ADMINISTER);
   }
 
   /**
@@ -129,7 +266,7 @@ public class MaintenanceAction implements Action {
    */
   public boolean hasMaintenanceWindows() {
     try {
-      return MaintenanceHelper.getInstance().hasMaintenanceWindows(computer.getName());
+      return MaintenanceHelper.getInstance().hasMaintenanceWindows(target.toKey());
     } catch (IOException e) {
       return false;
     }
@@ -142,7 +279,7 @@ public class MaintenanceAction implements Action {
    */
   public boolean hasActiveMaintenanceWindows() {
     try {
-      return MaintenanceHelper.getInstance().hasActiveMaintenanceWindows(computer.getName());
+      return MaintenanceHelper.getInstance().hasActiveMaintenanceWindows(target.toKey());
     } catch (IOException e) {
       return false;
     }
@@ -155,7 +292,7 @@ public class MaintenanceAction implements Action {
    */
   public SortedSet<MaintenanceWindow> getMaintenanceWindows() {
     try {
-      return Collections.unmodifiableSortedSet(MaintenanceHelper.getInstance().getMaintenanceWindows(computer.getName()));
+      return Collections.unmodifiableSortedSet(MaintenanceHelper.getInstance().getMaintenanceWindows(target.toKey()));
     } catch (IOException e) {
       return Collections.emptySortedSet();
     }
@@ -168,7 +305,7 @@ public class MaintenanceAction implements Action {
    */
   public Set<RecurringMaintenanceWindow> getRecurringMaintenanceWindows() {
     try {
-      return Collections.unmodifiableSet(MaintenanceHelper.getInstance().getRecurringMaintenanceWindows(computer.getName()));
+      return Collections.unmodifiableSet(MaintenanceHelper.getInstance().getRecurringMaintenanceWindows(target.toKey()));
     } catch (IOException e) {
       return Collections.emptySortedSet();
     }
@@ -184,11 +321,11 @@ public class MaintenanceAction implements Action {
    */
   @POST
   public HttpResponse doAdd(StaplerRequest2 req) throws IOException, ServletException {
-    computer.checkAnyPermission(CONFIGURE_AND_DISCONNECT);
+    checkPermission(CONFIGURE_AND_DISCONNECT);
 
     JSONObject src = req.getSubmittedForm();
     MaintenanceWindow mw = req.bindJSON(MaintenanceWindow.class, src);
-    MaintenanceHelper.getInstance().addMaintenanceWindow(computer.getName(), mw);
+    MaintenanceHelper.getInstance().addMaintenanceWindow(target.toKey(), mw);
     return FormApply.success(".");
   }
 
@@ -202,11 +339,11 @@ public class MaintenanceAction implements Action {
    */
   @POST
   public void doAddRecurring(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
-    computer.checkAnyPermission(CONFIGURE_AND_DISCONNECT);
+    checkPermission(CONFIGURE_AND_DISCONNECT);
 
     JSONObject src = req.getSubmittedForm();
     RecurringMaintenanceWindow rmw = req.bindJSON(RecurringMaintenanceWindow.class, src);
-    MaintenanceHelper.getInstance().addRecurringMaintenanceWindow(computer.getName(), rmw);
+    MaintenanceHelper.getInstance().addRecurringMaintenanceWindow(target.toKey(), rmw);
     rsp.sendRedirect(".");
   }
 
@@ -217,11 +354,11 @@ public class MaintenanceAction implements Action {
    */
   @JavaScriptMethod
   public String[] deleteMultiple(String[] ids) {
-    computer.checkAnyPermission(CONFIGURE_AND_DISCONNECT);
+    checkPermission(CONFIGURE_AND_DISCONNECT);
     List<String> deletedList = new ArrayList<>();
     for (String id : ids) {
       try {
-        MaintenanceHelper.getInstance().deleteMaintenanceWindow(computer.getName(), id);
+        MaintenanceHelper.getInstance().deleteMaintenanceWindow(target.toKey(), id);
         deletedList.add(id);
       } catch (Throwable e) {
         LOGGER.log(Level.WARNING, "Error while deleting maintenance window", e);
@@ -238,9 +375,9 @@ public class MaintenanceAction implements Action {
   @JavaScriptMethod
   public Map<String, Boolean> getMaintenanceStatus() {
     Map<String, Boolean> statusList = new HashMap<>();
-    if (computer.hasAnyPermission(Computer.DISCONNECT, Computer.CONFIGURE, Computer.EXTENDED_READ)) {
+    if (hasPermissions()) {
       try {
-        for (MaintenanceWindow mw : MaintenanceHelper.getInstance().getMaintenanceWindows(computer.getName())) {
+        for (MaintenanceWindow mw : MaintenanceHelper.getInstance().getMaintenanceWindows(target.toKey())) {
           if (!mw.isMaintenanceOver()) {
             statusList.put(mw.getId(), mw.isMaintenanceScheduled());
           }
@@ -259,11 +396,11 @@ public class MaintenanceAction implements Action {
    */
   @JavaScriptMethod
   public String[] deleteMultipleRecurring(String[] ids) {
-    computer.checkAnyPermission(CONFIGURE_AND_DISCONNECT);
+    checkPermission(CONFIGURE_AND_DISCONNECT);
     List<String> deletedList = new ArrayList<>();
     for (String id : ids) {
       try {
-        MaintenanceHelper.getInstance().deleteRecurringMaintenanceWindow(computer.getName(), id);
+        MaintenanceHelper.getInstance().deleteRecurringMaintenanceWindow(target.toKey(), id);
         deletedList.add(id);
       } catch (Throwable e) {
         LOGGER.log(Level.WARNING, "Error while deleting maintenance window", e);
@@ -279,19 +416,22 @@ public class MaintenanceAction implements Action {
    */
   @JavaScriptMethod
   public boolean deleteMaintenance(String id) {
-    if (computer.hasAnyPermission(CONFIGURE_AND_DISCONNECT)) {
+    try {
+      checkPermission(CONFIGURE_AND_DISCONNECT);
       if (Util.fixEmptyAndTrim(id) == null) {
         return false;
       }
       try {
-        MaintenanceHelper.getInstance().deleteMaintenanceWindow(computer.getName(), id);
+        MaintenanceHelper.getInstance().deleteMaintenanceWindow(target.toKey(), id);
         return true;
       } catch (IOException ioe) {
         LOGGER.log(Level.WARNING, "Failed to delete maintenance window.", ioe);
         return false;
       }
+    } catch (Exception e) {
+      LOGGER.log(Level.WARNING, "Access denied.", e);
+      return false;
     }
-    return false;
   }
 
   /**
@@ -301,19 +441,22 @@ public class MaintenanceAction implements Action {
    */
   @JavaScriptMethod
   public boolean deleteRecurringMaintenance(String id) {
-    if (computer.hasAnyPermission(CONFIGURE_AND_DISCONNECT)) {
+    try {
+      checkPermission(CONFIGURE_AND_DISCONNECT);
       if (Util.fixEmptyAndTrim(id) == null) {
         return false;
       }
       try {
-        MaintenanceHelper.getInstance().deleteRecurringMaintenanceWindow(computer.getName(), id);
+        MaintenanceHelper.getInstance().deleteRecurringMaintenanceWindow(target.toKey(), id);
         return true;
       } catch (IOException ioe) {
         LOGGER.log(Level.WARNING, "Failed to delete recurring maintenance window.", ioe);
         return false;
       }
+    } catch (Exception e) {
+      LOGGER.log(Level.WARNING, "Access denied.", e);
+      return false;
     }
-    return false;
   }
 
   /**
@@ -326,15 +469,15 @@ public class MaintenanceAction implements Action {
    */
   @POST
   public synchronized HttpResponse doConfigSubmit(StaplerRequest2 req) throws IOException, ServletException {
-    computer.checkPermission(Computer.CONFIGURE);
+    checkPermission(Computer.CONFIGURE);
 
     JSONObject src = req.getSubmittedForm();
 
     List<MaintenanceWindow> newTargets = req.bindJSONToList(MaintenanceWindow.class, src.get("maintenanceWindows"));
     List<RecurringMaintenanceWindow> newRecurringTargets = req.bindJSONToList(RecurringMaintenanceWindow.class,
-        src.get("recurringMaintenanceWindows"));
+            src.get("recurringMaintenanceWindows"));
 
-    MaintenanceDefinitions md = MaintenanceHelper.getInstance().getMaintenanceDefinitions(computer.getName());
+    MaintenanceDefinitions md = MaintenanceHelper.getInstance().getMaintenanceDefinitions(target.toKey());
     synchronized (md) {
       SortedSet<MaintenanceWindow> scheduled = md.getScheduled();
       Set<RecurringMaintenanceWindow> recurring = md.getRecurring();
@@ -342,7 +485,7 @@ public class MaintenanceAction implements Action {
       scheduled.addAll(newTargets);
       recurring.clear();
       recurring.addAll(newRecurringTargets);
-      MaintenanceHelper.getInstance().saveMaintenanceWindows(computer.getName(), md);
+      MaintenanceHelper.getInstance().saveMaintenanceWindows(target.toKey(), md);
     }
     return FormApply.success(".");
   }
@@ -355,9 +498,11 @@ public class MaintenanceAction implements Action {
    */
   @POST
   public void doEnable(StaplerResponse2 rsp) throws IOException {
-    computer.checkPermission(Computer.CONFIGURE);
-
-    MaintenanceHelper.getInstance().injectRetentionStrategy(computer);
+    Computer c = getAgentComputer();
+    if (c != null) {
+      c.checkPermission(Computer.CONFIGURE);
+      MaintenanceHelper.getInstance().injectRetentionStrategy(c);
+    }
     rsp.sendRedirect(".");
   }
 
@@ -369,9 +514,38 @@ public class MaintenanceAction implements Action {
    */
   @POST
   public void doDisable(StaplerResponse2 rsp) throws IOException {
-    computer.checkPermission(Computer.CONFIGURE);
+    Computer c = getAgentComputer();
+    if (c != null) {
+      c.checkPermission(Computer.CONFIGURE);
+      MaintenanceHelper.getInstance().removeRetentionStrategy(c);
+    }
 
-    MaintenanceHelper.getInstance().removeRetentionStrategy(computer);
     rsp.sendRedirect(".");
+  }
+
+  /**
+   * Entry point for the maintenance windows page.
+   * Checks permission before showing content.
+   */
+  public void doIndex(StaplerRequest2 req, StaplerResponse2 rsp)
+          throws IOException, ServletException {
+
+    if (isAgent()) {
+      Computer c = Jenkins.get().getComputer(target.getName());
+      if (c == null) {
+        rsp.sendError(HttpServletResponse.SC_NOT_FOUND);  // 404
+        return;
+      }
+      c.checkAnyPermission(Computer.EXTENDED_READ, Computer.CONFIGURE, Computer.DISCONNECT);
+    } else {
+      Cloud cloud = getCloud();
+      if (cloud == null) {
+        rsp.sendError(HttpServletResponse.SC_NOT_FOUND);
+        return;
+      }
+      Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+    }
+
+    req.getView(this, "index.jelly").forward(req, rsp);
   }
 }

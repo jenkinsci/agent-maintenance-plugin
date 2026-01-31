@@ -1,11 +1,13 @@
 package com.sap.prd.jenkins.plugins.agent_maintenance;
 
 import hudson.model.Slave;
+import hudson.slaves.Cloud;
 import hudson.slaves.RetentionStrategy;
 import hudson.slaves.RetentionStrategy.Always;
 import hudson.slaves.SlaveComputer;
 import java.time.LocalDateTime;
 import java.util.concurrent.TimeUnit;
+import jenkins.model.Jenkins;
 import org.junit.jupiter.api.BeforeEach;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
@@ -23,6 +25,8 @@ abstract class BaseIntegrationTest {
   @BeforeEach
   void setup(JenkinsRule rule) throws Exception {
     this.rule = rule;
+    maintenanceHelper.clearCache(); // Cache clear before each test
+    Jenkins.get().clouds.clear();
   }
 
   protected Slave getAgent(String name) throws Exception {
@@ -62,5 +66,16 @@ abstract class BaseIntegrationTest {
     if (computer != null) {
       computer.getRetentionStrategy().check(computer);
     }
+  }
+
+  protected MaintenanceTarget getTarget(MaintenanceTarget.TargetType targetType, String name) {
+    MaintenanceTarget target;
+    if (targetType == MaintenanceTarget.TargetType.CLOUD) {
+      Cloud testCloud = new TestCloud(name);
+      target = new MaintenanceTarget(MaintenanceTarget.TargetType.CLOUD, testCloud.name);
+    } else {
+      target = new MaintenanceTarget(targetType, name);
+    }
+    return target;
   }
 }

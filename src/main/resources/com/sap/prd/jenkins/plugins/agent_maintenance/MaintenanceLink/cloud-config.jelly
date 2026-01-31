@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form" xmlns:l="/lib/layout" xmlns:st="jelly:stapler"
+         xmlns:p="/lib/permissions"
+>
+  <div class="am__modal" id="cloud-maintenance-add-form" data-title="${%Add Maintenance Window for multiple clouds}">
+    <f:form action="add" method="post" name="configCloud">
+      <f:entry title="${%Select Clouds}">
+        <select id="clouds-select" name="clouds" multiple="multiple" size="5"
+                style="width: 100%; min-height: 120px;" class="jenkins-select__input">
+          <j:forEach var="cloud" items="${it.getAvailableClouds()}">
+            <option value="${cloud.getValue()}">${cloud.getDisplayName()}</option>
+          </j:forEach>
+        </select>
+      </f:entry>
+      <st:include class="${it.getMaintenanceWindowClass()}" page="cloud-config.jelly"/>
+    </f:form>
+  </div>
+
+  <f:form action="deleteCloud" method="post" name="deleteClouds">
+    <j:set var="cloudMwCount" value="0"/>
+    <table class="jenkins-table jenkins-table--small sortable am__table"
+           id="cloud-maintenance-table">
+      <thead>
+        <tr style="width:auto">
+          <th/>
+          <th>${%Cloud}</th>
+          <th>${%Start Time}</th>
+          <th>${%End Time}</th>
+          <th>${%Reason}</th>
+          <th>${%Created By}</th>
+          <th style="width:auto" data-sort-disable="true">
+            <l:rowSelectionController class="am__checkbox"/>
+          </th>
+          <th style="width:auto"/>
+        </tr>
+      </thead>
+      <tbody>
+        <j:forEach var="action" items="${it.cloudTargets}">
+          <j:if test="${action.visible}">
+            <j:set var="c" value="${action.getCloud()}"/>
+            <j:set var="cloudMwCount"
+                   value="${cloudMwCount + action.maintenanceWindows.size()}"/>
+            <j:forEach var="m" items="${action.maintenanceWindows}">
+              <j:set var="mid" value="${h.escape(m.id)}"/>
+              <tr id="${mid}"
+                  class="${m.isMaintenanceScheduled() ? 'active' : 'inactive'}"
+                  data-target-key="${action.target.toKey()}">
+
+                <td>
+                  <l:icon src="symbol-cloud-outline plugin-ionicons-api"
+                          class="icon-sm am__table-icon"/>
+                </td>
+
+                <td>
+                  <nobr>
+                    <a href="${rootURL}/cloud/${action.target.name}"
+                       class="jenkins-table__link model-link inside">
+                      ${action.target.name}
+                    </a>
+                  </nobr>
+                </td>
+
+                <td>
+                  <nobr>${m.startTime}</nobr>
+                </td>
+                <td>
+                  <nobr>${m.endTime}</nobr>
+                </td>
+                <td>${m.reason}</td>
+                <td>${m.userid}</td>
+
+                <l:hasPermission it="${app}" permission="${app.ADMINISTER}">
+                  <td>
+                    <f:checkbox class="am__checkbox" name="${mid}"/>
+                  </td>
+                  <td class="delete">
+                    <div class="am__link-delete"
+                         data-message="${%Delete Maintenance Window of} ${c.getDisplayName()}"
+                         data-message-success="${%Maintenance window was successfully deleted}">
+                      <l:icon src="symbol-trash-outline plugin-ionicons-api"
+                              class="icon-sm icon-red am__table-icon"
+                              tooltip="Delete this maintenance window for ${h.escape(c.getDisplayName())}"/>
+                    </div>
+                  </td>
+                </l:hasPermission>
+                <j:if test="${!action.hasCloudDeletePermission()}">
+                  <td/>
+                  <td/>
+                </j:if>
+
+              </tr>
+            </j:forEach>
+          </j:if>
+        </j:forEach>
+      </tbody>
+    </table>
+    <j:if test="${it.hasError()}">
+      <br/>
+      <div class="error">
+        ${it.getError()}
+      </div>
+    </j:if>
+    <f:bottomButtonBar>
+      <button id="add-button-clouds" type="button"
+              class="jenkins-button jenkins-button--primary">${%Add}
+      </button>
+      <button id="delete-selected-clouds" type="button"
+              class="jenkins-button jenkins-button--primary ${cloudMwCount==0?'jenkins-hidden':''} delete-selected-button"
+              data-table-id="cloud-maintenance-table"
+              data-message-success="${%All selected maintenance windows were deleted successfully}"
+              disabled="true">
+        ${%Delete selected}
+      </button>
+    </f:bottomButtonBar>
+  </f:form>
+
+</j:jelly>
