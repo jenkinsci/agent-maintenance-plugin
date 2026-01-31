@@ -34,6 +34,8 @@ public class MaintenanceHelper {
 
   private static final MaintenanceHelper INSTANCE = new MaintenanceHelper();
 
+  private static final CloudUuidStore CLOUD_UUID_STORE = CloudUuidStore.getInstance();
+
   private final Map<String, MaintenanceDefinitions> cache = new ConcurrentHashMap<>();
 
   private MaintenanceHelper() {
@@ -80,16 +82,17 @@ public class MaintenanceHelper {
   public boolean isValidTarget(String targetKey) throws IOException {
     MaintenanceTarget target = MaintenanceTarget.fromKey(targetKey);
     String name = target.getName();
-
+    String uuid = target.getUuid();
+    Jenkins j = Jenkins.get();
     return switch (target.getType()) {
-      case AGENT -> Jenkins.get().getComputer(name) != null;
+      case AGENT -> j.getComputer(name) != null;
       case CLOUD -> {
-        try {
-          yield Jenkins.get().getCloud(name) != null;
-        } catch (Exception e) {
-          yield Jenkins.get().clouds != null
-                  && Jenkins.get().clouds.stream().anyMatch(c -> c.name.equals(name));
+        if (uuid == null) {
+          yield j.getCloud(name) != null;
         }
+        yield j.clouds.stream()
+            .anyMatch(c -> c.name.equals(name)
+                && uuid.equals(CLOUD_UUID_STORE.getUuidIfPresent(c)));
       }
     };
   }
@@ -398,13 +401,24 @@ public class MaintenanceHelper {
   private XmlFile getMaintenanceWindowsFile(String targetKey) throws IOException {
     MaintenanceTarget target = MaintenanceTarget.fromKey(targetKey);
     String name = target.getName();
+    String uuid = target.getUuid();
 
     File baseDir = getTargetDirectory(target.getType());
+
+    if (MaintenanceTarget.TargetType.CLOUD.equals(target.getType())
+            && uuid != null) {
+      File cloudDir = new File(baseDir, name);
+      File uuidDir = new File(cloudDir, uuid);
+      if (!uuidDir.mkdirs() && !uuidDir.exists()) {
+        throw new IOException("Failed to create " + uuid + " directory: " + uuidDir);
+      }
+      return new XmlFile(new File(uuidDir, "maintenance-windows.xml"));
+    }
 
     return new XmlFile(new File(new File(baseDir, name), "maintenance-windows.xml"));
   }
 
-  private File getTargetDirectory(MaintenanceTarget.TargetType target) throws IOException {
+  public File getTargetDirectory(MaintenanceTarget.TargetType target) throws IOException {
     // jenkins.model.Nodes#getNodesDirectory() is private, so we have to duplicate
     // it here.
     String type = switch (target) {
@@ -412,10 +426,8 @@ public class MaintenanceHelper {
       case CLOUD -> "clouds";
     };
     File targetDir = new File(Jenkins.get().getRootDir(), type);
-    if (!targetDir.exists()) {
-      if (!targetDir.mkdirs() && !targetDir.exists()) {
-        throw new IOException("Failed to create " + type + " directory: " + targetDir);
-      }
+    if (!targetDir.mkdirs() && !targetDir.exists()) {
+      throw new IOException("Failed to create " + type + " directory: " + targetDir);
     } else if (!targetDir.isDirectory()) {
       throw new IOException(targetDir + " is not a directory");
     }
@@ -433,13 +445,15 @@ public class MaintenanceHelper {
    * @param newName new name of the agent
    */
   public void renameAgent(String oldName, String newName) {
-    MaintenanceDefinitions md = cache.get(oldName);
+    MaintenanceTarget oldTarget = new MaintenanceTarget(MaintenanceTarget.TargetType.AGENT, oldName);
+    MaintenanceTarget newTarget = new MaintenanceTarget(MaintenanceTarget.TargetType.AGENT, newName);
+    MaintenanceDefinitions md = cache.get(oldTarget.toKey());
     if (md != null) {
       LOGGER.log(Level.FINEST, "Persisting existing maintenance windows after agent rename");
-      cache.remove(oldName);
-      cache.put(newName, md);
+      cache.remove(oldTarget.toKey());
+      cache.put(newTarget.toKey(), md);
       try {
-        saveMaintenanceWindows(newName, md);
+        saveMaintenanceWindows(newTarget.toKey(), md);
       } catch (IOException e) {
         LOGGER.log(Level.WARNING, "Failed to persists agent maintenance windows after agent rename {0}", newName);
       }
@@ -447,7 +461,8 @@ public class MaintenanceHelper {
   }
 
   public void createAgent(String nodeName) {
-    cache.put(nodeName, new MaintenanceDefinitions(new TreeSet<>(), new HashSet<>()));
+    MaintenanceTarget target = new MaintenanceTarget(MaintenanceTarget.TargetType.AGENT, nodeName);
+    cache.put(target.toKey(), new MaintenanceDefinitions(new TreeSet<>(), new HashSet<>()));
   }
 
   @Restricted(NoExternalUse.class)
@@ -491,6 +506,7 @@ public class MaintenanceHelper {
   public boolean removeRetentionStrategy(Computer c) {
     if (c instanceof SlaveComputer computer) {
       String computerName = computer.getName();
+      MaintenanceTarget target = new MaintenanceTarget(MaintenanceTarget.TargetType.AGENT, computerName);
       @SuppressWarnings("unchecked")
       RetentionStrategy<SlaveComputer> strategy = computer.getRetentionStrategy();
       if (strategy instanceof AgentMaintenanceRetentionStrategy maintenanceStrategy) {
@@ -499,8 +515,8 @@ public class MaintenanceHelper {
           node.setRetentionStrategy(maintenanceStrategy.getRegularRetentionStrategy());
           try {
             node.save();
-            deleteAgent(computerName);
-            XmlFile maintenanceFile = getMaintenanceWindowsFile(computerName);
+            deleteAgent(target.toKey());
+            XmlFile maintenanceFile = getMaintenanceWindowsFile(target.toKey());
             if (maintenanceFile.exists()) {
               maintenanceFile.delete();
             }

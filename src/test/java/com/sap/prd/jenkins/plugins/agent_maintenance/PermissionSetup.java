@@ -43,12 +43,10 @@ abstract class PermissionSetup extends BaseIntegrationTest {
     // System read and computer configure on agent, but not on agentRestricted
     matrixAuth.add(Jenkins.READ, configure);
     matrixAuth.add(Jenkins.SYSTEM_READ, configure);
-    matrixAuth.add(Computer.CONFIGURE, configure);
 
     // System read and computer configure on agent, but not on agentRestricted
     matrixAuth.add(Jenkins.READ, disconnect);
     matrixAuth.add(Jenkins.SYSTEM_READ, disconnect);
-    matrixAuth.add(Computer.DISCONNECT, disconnect);
 
     // system manage
     PermissionEntry manage = new PermissionEntry(AuthorizationType.USER, MANAGE);
@@ -73,7 +71,5 @@ abstract class PermissionSetup extends BaseIntegrationTest {
     Jenkins.MANAGE.setEnabled(true);
     Jenkins.SYSTEM_READ.setEnabled(true);
     Computer.EXTENDED_READ.setEnabled(true);
-    Computer.CONFIGURE.setEnabled(true);
-    Computer.DISCONNECT.setEnabled(true);
   }
 }

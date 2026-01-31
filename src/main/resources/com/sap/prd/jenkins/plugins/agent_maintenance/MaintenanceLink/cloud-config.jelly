@@ -8,8 +8,8 @@
       <f:entry title="${%Select Clouds}">
         <select id="clouds-select" name="clouds" multiple="multiple" size="5"
                 style="width: 100%; min-height: 120px;" class="jenkins-select__input">
-          <j:forEach var="cloud" items="${app.clouds}">
-            <option value="${cloud.name}">${cloud.name}</option>
+          <j:forEach var="cloud" items="${it.getAvailableClouds()}">
+            <option value="${cloud.getValue()}">${cloud.getDisplayName()}</option>
           </j:forEach>
         </select>
       </f:entry>
@@ -76,7 +76,7 @@
                   </td>
                   <td class="delete">
                     <div class="am__link-delete"
-                         data-message="${%deleteMaintenanceOf} ${c.getDisplayName()}"
+                         data-message="${%Delete Maintenance Window of} ${c.getDisplayName()}"
                          data-message-success="${%Maintenance window was successfully deleted}">
                       <l:icon src="symbol-trash-outline plugin-ionicons-api"
                               class="icon-sm icon-red am__table-icon"
@@ -87,7 +87,7 @@
                 <j:if test="${!action.hasCloudDeletePermission()}">
                   <td/>
                   <td/>
-                </j:if>>
+                </j:if>
 
               </tr>
             </j:forEach>
@@ -107,6 +107,7 @@
       </button>
       <button id="delete-selected-clouds" type="button"
               class="jenkins-button jenkins-button--primary ${cloudMwCount==0?'jenkins-hidden':''} delete-selected-button"
+              data-table-id="cloud-maintenance-table"
               data-message-success="${%All selected maintenance windows were deleted successfully}"
               disabled="true">
         ${%Delete selected}

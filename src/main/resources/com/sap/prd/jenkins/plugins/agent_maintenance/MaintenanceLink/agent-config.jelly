@@ -95,7 +95,7 @@
                   </td>
                   <td class="delete">
                     <div class="am__link-delete"
-                         data-message="${%deleteMaintenanceOf} ${c.displayName}"
+                         data-message="${%Delete Maintenance Window of} ${c.displayName}"
                          data-message-success="${%Maintenance window was successfully deleted}">
                       <l:icon src="symbol-trash-outline plugin-ionicons-api"
                               class="icon-sm icon-red am__table-icon"
@@ -103,6 +103,10 @@
                     </div>
                   </td>
                 </p:hasAnyPermission>
+                <p:hasNoPermission it="${c}" permissions="${action.CONFIGURE_AND_DISCONNECT}">
+                  <td/>
+                  <td/>
+                </p:hasNoPermission>
               </tr>
             </j:forEach>
           </j:if>
@@ -119,6 +123,7 @@
       <button id="add-button" type="button" class="jenkins-button jenkins-button--primary">${%Add}</button>
       <button id="delete-selected-button-link" type="button"
               class="jenkins-button jenkins-button--primary ${mwcount==0?'jenkins-hidden':''} delete-selected-button"
+              data-table-id="maintenance-table"
               data-message-success="${%All selected maintenance windows were deleted successfully}" disabled="true">
         ${%Delete selected}
       </button>

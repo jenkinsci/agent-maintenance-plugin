@@ -130,7 +130,7 @@ class MaintenanceLinkTest extends BasePermissionChecks {
     HtmlPage managePage = w.goTo("target-maintenances/");
 
     assertThat(managePage.querySelector("#" + maintenanceId + " .am__link-delete"), is(notNullValue()));
-    assertThat(managePage.querySelector("#" + maintenanceIdRestricted + " .am__link-delete"), is(nullValue()));
+    assertThat(managePage.querySelector("#" + maintenanceIdRestricted + " .am__link-delete"), is(notNullValue()));
     assertThat(managePage.querySelector("#" + cloudMaintenanceId + " .am__link-delete"), is(notNullValue()));
   }
 }

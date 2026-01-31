@@ -44,6 +44,8 @@ import org.kohsuke.stapler.verb.POST;
 public class MaintenanceLink extends ManagementLink {
   private static final Logger LOGGER = Logger.getLogger(MaintenanceLink.class.getName());
 
+  private static final CloudUuidStore CLOUD_UUID_STORE = CloudUuidStore.getInstance();
+
   private transient Throwable error;
 
   @Override
@@ -53,8 +55,14 @@ public class MaintenanceLink extends ManagementLink {
 
   @Override
   public String getDisplayName() {
-    boolean hasClouds = !getCloudTargets().isEmpty();
-    boolean hasAgents = !getAgentTargets().isEmpty();
+    boolean hasClouds, hasAgents;
+    try {
+      hasClouds = !getCloudTargets().isEmpty();
+      hasAgents = !getAgentTargets().isEmpty();
+    } catch (IOException e) {
+      LOGGER.log(Level.WARNING, "Error while reading cloud metadata", e);
+      throw new RuntimeException(e);
+    }
     if (hasAgents && !hasClouds) {
       return Messages.MaintenanceLink_displayName_agent();
     }
@@ -85,11 +93,12 @@ public class MaintenanceLink extends ManagementLink {
    *
    * @return List of actions
    */
-  public List<MaintenanceAction> getTargets() {
+  public List<MaintenanceAction> getTargets() throws IOException {
     List<MaintenanceAction> targetList = new ArrayList<>();
+    Jenkins j = Jenkins.get();
 
     // Existing agent specific logic
-    for (Node node : Jenkins.get().getNodes()) {
+    for (Node node : j.getNodes()) {
       Computer computer = node.toComputer();
       if (computer instanceof SlaveComputer) {
         MaintenanceTarget target = new MaintenanceTarget(MaintenanceTarget.TargetType.AGENT, node.getNodeName());
@@ -101,12 +110,17 @@ public class MaintenanceLink extends ManagementLink {
     }
 
     // New: Adding clouds to the list
-    for (Cloud cloud : Jenkins.get().clouds) {
-      MaintenanceTarget target = new MaintenanceTarget(MaintenanceTarget.TargetType.CLOUD, cloud.name);
-      MaintenanceAction action = new MaintenanceAction(target);
+    for (Cloud cloud : j.clouds) {
+      try {
+        String uuid = CloudUuidStore.getInstance().getUuidIfPresent(cloud);
+        MaintenanceTarget target = new MaintenanceTarget(MaintenanceTarget.TargetType.CLOUD, cloud.name, uuid);
+        MaintenanceAction action = new MaintenanceAction(target);
 
-      if (action.hasMaintenanceWindows()) {
-        targetList.add(action);
+        if (action.hasMaintenanceWindows()) {
+          targetList.add(action);
+        }
+      } catch (Exception e) {
+        LOGGER.log(Level.WARNING, "Error while processing metadata for cloud: " + cloud.name, e);
       }
     }
 
@@ -118,7 +132,7 @@ public class MaintenanceLink extends ManagementLink {
    *
    * @return List of all Agent actions.
    */
-  public List<MaintenanceAction> getAgentTargets() {
+  public List<MaintenanceAction> getAgentTargets() throws IOException {
     List<MaintenanceAction> allTargets = getTargets();
     return allTargets.stream()
             .filter(MaintenanceAction::isAgent)
@@ -130,7 +144,7 @@ public class MaintenanceLink extends ManagementLink {
    *
    * @return List of all Cloud actions.
    */
-  public List<MaintenanceAction> getCloudTargets() {
+  public List<MaintenanceAction> getCloudTargets() throws IOException {
     List<MaintenanceAction> allTargets = getTargets();
     return allTargets.stream()
             .filter(MaintenanceAction::isCloud)
@@ -163,7 +177,13 @@ public class MaintenanceLink extends ManagementLink {
     int totalAgents = 0;
     int activeClouds = 0;
     int totalClouds = 0;
-    List<MaintenanceAction> mwList = getTargets();
+    List<MaintenanceAction> mwList;
+    try {
+      mwList = getTargets();
+    } catch (IOException e) {
+      LOGGER.log(Level.WARNING, "Error while reading maintenance windows", e);
+      return null;
+    }
     for (MaintenanceAction ma : mwList) {
       if (ma.isAgent()) {
         totalAgents++;
@@ -264,7 +284,7 @@ public class MaintenanceLink extends ManagementLink {
    * @return A Map containing for each maintenance window whether it is active or not.
    */
   @JavaScriptMethod
-  public Map<String, Boolean> getMaintenanceStatus() {
+  public Map<String, Boolean> getMaintenanceStatus() throws IOException {
     Map<String, Boolean> statusList = new HashMap<>();
     for (MaintenanceAction action : getTargets()) {
       try {
@@ -285,6 +305,29 @@ public class MaintenanceLink extends ManagementLink {
       }
     }
     return statusList;
+  }
+
+  /**
+   * Returns list of available clouds for multi select.
+   *
+   * @return List of available clouds
+   */
+  public List<CloudOption> getAvailableClouds() {
+    List<CloudOption> options = new ArrayList<>();
+    Map<String, Boolean> duplicateMap = new HashMap<>();
+    Jenkins j = Jenkins.get();
+
+    for (Cloud cloud : j.clouds) {
+      duplicateMap.put(cloud.name, CLOUD_UUID_STORE.hasDuplicates(cloud.name));
+    }
+
+    for (Cloud cloud : j.clouds) {
+      String uuid = CLOUD_UUID_STORE.getUuidIfPresent(cloud);
+      boolean hasDuplicate = duplicateMap.getOrDefault(cloud.name, false);
+      String shortUuid = (uuid == null) ? null : uuid.substring(0, 8);
+      options.add(new CloudOption(cloud.name, uuid, shortUuid, hasDuplicate));
+    }
+    return options;
   }
 
   private boolean hasPermission(String targetKey) {
@@ -329,14 +372,34 @@ public class MaintenanceLink extends ManagementLink {
 
       MaintenanceWindow maintenanceWindow = new MaintenanceWindow(startTime, endTime, reason);
 
-      for (String cloudName : cloudParams) {
-        Cloud cloud = j.clouds.getByName(cloudName);
+      for (String cloudParam : cloudParams) {
+        String[] parts = cloudParam.split("::", 2);
+        if (parts.length != 2) {
+          LOGGER.log(Level.WARNING, "Invalid cloud parameter format: {0}", cloudParam);
+          continue;
+        }
+        String cloudName = parts[0];
+        String uuidStr = parts[1];
+        String uuid = "null".equals(uuidStr) ? null : uuidStr;
+        Cloud cloud = null;
+        if (uuid == null) {
+          cloud = j.getCloud(cloudName);
+        } else {
+          for (Cloud c : j.clouds) {
+            if (c.name.equals(cloudName) && uuid.equals(CLOUD_UUID_STORE.getUuidIfPresent(c))) {
+              cloud = c;
+              break;
+            }
+          }
+        }
+
         if (cloud == null) {
+          LOGGER.warning("Could not find cloud with name " + cloudName + " and UUID " + uuid);
           continue;
         }
 
         try {
-          MaintenanceTarget target = new MaintenanceTarget(MaintenanceTarget.TargetType.CLOUD, cloud.name);
+          MaintenanceTarget target = new MaintenanceTarget(MaintenanceTarget.TargetType.CLOUD, cloud.name, uuid);
           MaintenanceHelper.getInstance().addMaintenanceWindow(target.toKey(), maintenanceWindow);
         } catch (Exception e) {
           LOGGER.log(Level.WARNING, "Error adding cloud maintenance window", e);
@@ -374,6 +437,23 @@ public class MaintenanceLink extends ManagementLink {
     }
     rsp.sendRedirect(".");
   }
+
+    /**
+     * Helper class for cloud selection in the UI.
+     */
+    public record CloudOption(String name, String uuid, String shortUuid, boolean hasDuplicate) {
+
+    public String getValue() {
+        return name + "::" + (uuid == null ? "null" : uuid);
+      }
+
+      public String getDisplayName() {
+        if (hasDuplicate) {
+          return name + " (" + shortUuid + ")";
+        }
+        return name;
+      }
+    }
 
   public Class<MaintenanceWindow> getMaintenanceWindowClass() {
     return MaintenanceWindow.class;

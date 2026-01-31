@@ -19,16 +19,16 @@
       <j:if test="${it.isVisible()}">
         <h1>${%Planned Maintenances}</h1>
 
-<div class="am__modal" id="maintenance-add-form" data-title="${%Add Maintenance Window}">
-  <f:form action="add" method="post" name="config" class="no-json jenkins-!-padding-top-1">
-    <j:if test="${it.isAgent()}">
-      <st:include class="${it.getMaintenanceWindowClass()}" page="agent-config.jelly"/>
-    </j:if>
-    <j:if test="${it.isCloud()}">
-      <st:include class="${it.getMaintenanceWindowClass()}" page="cloud-config.jelly"/>
-    </j:if>
-  </f:form>
-</div>
+        <div class="am__modal" id="maintenance-add-form" data-title="${%Add Maintenance Window}">
+          <f:form action="add" method="post" name="config" class="no-json jenkins-!-padding-top-1">
+            <j:if test="${it.isAgent()}">
+              <st:include class="${it.getMaintenanceWindowClass()}" page="agent-config.jelly"/>
+            </j:if>
+            <j:if test="${it.isCloud()}">
+              <st:include class="${it.getMaintenanceWindowClass()}" page="cloud-config.jelly"/>
+            </j:if>
+          </f:form>
+        </div>
 
         <f:form action="deleteMultiple" method="post" name="delete">
           <j:set var="mw" value="${it.maintenanceWindows}"/>

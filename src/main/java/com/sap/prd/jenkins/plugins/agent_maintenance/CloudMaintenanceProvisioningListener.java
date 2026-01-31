@@ -17,7 +17,9 @@ public class CloudMaintenanceProvisioningListener extends CloudProvisioningListe
   @Override
   public CauseOfBlockage canProvision(Cloud cloud, Cloud.CloudState state, int numExecutors) {
     try {
-      MaintenanceTarget target = new MaintenanceTarget(MaintenanceTarget.TargetType.CLOUD, cloud.name);
+      String uuid = CloudUuidStore.getInstance().getUuidIfPresent(cloud);
+      MaintenanceTarget target = new MaintenanceTarget(MaintenanceTarget.TargetType.CLOUD, cloud.name, uuid);
+
       LOGGER.log(Level.FINER, "Checking for Maintenance Window for cloud {0}", cloud.name);
 
       // Triggers automatic cleanup of expired windows.

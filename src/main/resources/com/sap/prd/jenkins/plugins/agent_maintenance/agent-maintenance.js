@@ -183,9 +183,9 @@ Behaviour.specify(".am__link-delete", 'agent-maintenance', 0, function (e) {
     let messageSuccess = this.getAttribute("data-message-success");
     let row = this.closest("TR");
     let id = row.id;
-    let computerName = row.getAttribute("data-computer-name");
+    let targetKey = row.getAttribute("data-target-key");
     dialog.confirm(message).then(() => {
-      maintenanceJavaScriptBind.deleteMaintenance(id, computerName, function (response) {
+      maintenanceJavaScriptBind.deleteMaintenance(id, targetKey, function (response) {
         let result = response.responseObject();
         if (result) {
           let tbody = row.parentNode;
@@ -380,8 +380,9 @@ Behaviour.specify("#delete-selected-recurring-action", 'agent-maintenance', 0, f
   }
 });
 
-Behaviour.specify("#delete-selected-button-link", 'agent-maintenance', 0, function (e) {
-  let table = document.getElementById("maintenance-table");
+Behaviour.specify("#delete-selected-button-link, #delete-selected-clouds", 'agent-maintenance', 0, function (e) {
+  let tableId = e.getAttribute("data-table-id");
+  let table = document.getElementById(tableId);
   let tbody = table.tBodies[0];
   let messageSuccess = e.getAttribute("data-message-success");
   e.onclick = function () {
@@ -391,8 +392,8 @@ Behaviour.specify("#delete-selected-button-link", 'agent-maintenance', 0, functi
     for (let checked of checkedRows) {
       let row = checked.closest("TR");
       let id = row.id;
-      let computerName = row.getAttribute("data-computer-name");
-      checkedList[id] = computerName;
+      let targetKey = row.getAttribute("data-target-key");
+      checkedList[id] = targetKey;
       size++;
     }
     if (size > 0) {

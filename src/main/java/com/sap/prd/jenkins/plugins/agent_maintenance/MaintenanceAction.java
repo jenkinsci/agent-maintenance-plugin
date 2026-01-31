@@ -46,6 +46,9 @@ public class MaintenanceAction implements Action {
   @Restricted(NoExternalUse.class)
   public static final Permission[] CONFIGURE_AND_DISCONNECT = new Permission[]{Computer.DISCONNECT, Computer.CONFIGURE};
 
+  /**
+   * Creates MaintenanceAction. Including UUID for clouds.
+   */
   public MaintenanceAction(MaintenanceTarget target) {
     this.target = target;
   }
@@ -159,10 +162,10 @@ public class MaintenanceAction implements Action {
    * @return <code>Cloud</code> instance of the maintenance action.
    */
   public Cloud getCloud() {
-    if (isCloud()) {
-      return Jenkins.get().getCloud(target.getName());
+    if (!isCloud()) {
+      return null;
     }
-    return null;
+    return CloudUuidStore.getInstance().getCloudByTarget(target);
   }
 
   /**
@@ -535,6 +538,11 @@ public class MaintenanceAction implements Action {
       }
       c.checkAnyPermission(Computer.EXTENDED_READ, Computer.CONFIGURE, Computer.DISCONNECT);
     } else {
+      Cloud cloud = getCloud();
+      if (cloud == null) {
+        rsp.sendError(HttpServletResponse.SC_NOT_FOUND);
+        return;
+      }
       Jenkins.get().checkPermission(Jenkins.ADMINISTER);
     }
 
