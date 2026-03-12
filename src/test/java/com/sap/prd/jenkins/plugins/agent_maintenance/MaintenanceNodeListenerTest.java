@@ -29,6 +29,7 @@ class MaintenanceNodeListenerTest extends BaseIntegrationTest {
   private File folder;
 
   private Slave agent;
+  private MaintenanceTarget target;
 
   /**
    * Setup from some tests.
@@ -43,11 +44,12 @@ class MaintenanceNodeListenerTest extends BaseIntegrationTest {
     AgentMaintenanceRetentionStrategy strategy =
         new AgentMaintenanceRetentionStrategy(new Always());
     agent.setRetentionStrategy(strategy);
+    target = getTarget(MaintenanceTarget.TargetType.AGENT, agent.getNodeName());
   }
 
   @AfterEach
   void tearDown() throws IOException {
-    maintenanceHelper.getMaintenanceWindows(agent.getNodeName()).clear();
+    maintenanceHelper.getMaintenanceWindows(target.toKey()).clear();
   }
 
   @Test
@@ -64,10 +66,10 @@ class MaintenanceNodeListenerTest extends BaseIntegrationTest {
             "5",
             "test",
             null);
-    maintenanceHelper.addMaintenanceWindow(agent.getNodeName(), mw);
+    maintenanceHelper.addMaintenanceWindow(target.toKey(), mw);
     assertThat(agent.toComputer().isAcceptingTasks(), is(false));
     rule.jenkins.removeNode(agent);
-    assertThat(maintenanceHelper.hasMaintenanceWindows(agent.getNodeName()), is(false));
+    assertThat(maintenanceHelper.hasMaintenanceWindows(target.toKey()), is(false));
   }
 
   @Test
@@ -84,14 +86,15 @@ class MaintenanceNodeListenerTest extends BaseIntegrationTest {
             "5",
             "test",
             null);
-    maintenanceHelper.addMaintenanceWindow(agent.getNodeName(), mw);
+    maintenanceHelper.addMaintenanceWindow(target.toKey(), mw);
     assertThat(agent.toComputer().isAcceptingTasks(), is(false));
     Slave newAgent =
         new DumbSlave(
             "newAgent", newFolder(folder, "junit").getAbsolutePath(), rule.createComputerLauncher(null));
+    MaintenanceTarget newTarget = getTarget(MaintenanceTarget.TargetType.AGENT, newAgent.getNodeName());
     rule.jenkins.getNodesObject().replaceNode(agent, newAgent);
-    assertThat(maintenanceHelper.hasMaintenanceWindows(agent.getNodeName()), is(false));
-    assertThat(maintenanceHelper.hasMaintenanceWindows(newAgent.getNodeName()), is(true));
+    assertThat(maintenanceHelper.hasMaintenanceWindows(target.toKey()), is(false));
+    assertThat(maintenanceHelper.hasMaintenanceWindows(newTarget.toKey()), is(true));
   }
 
   @Test

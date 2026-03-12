@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form" xmlns:l="/lib/layout" xmlns:st="jelly:stapler"
+         xmlns:p="/lib/permissions"
+>
+  <div class="am__modal" id="cloud-maintenance-add-form" data-title="${%Add Maintenance Window for multiple clouds}">
+    <f:form action="add" method="post" name="configCloud">
+      <f:entry title="${%Select Clouds}">
+        <select id="clouds-select" name="clouds" multiple="multiple" size="5"
+                style="width: 100%; min-height: 120px;" class="jenkins-select__input">
+          <j:forEach var="cloud" items="${app.clouds}">
+            <option value="${cloud.name}">${cloud.name}</option>
+          </j:forEach>
+        </select>
+      </f:entry>
+      <st:include class="${it.getMaintenanceWindowClass()}" page="cloud-config.jelly"/>
+    </f:form>
+  </div>
+
+  <div class="am__modal" id="cloud-link-recurring-add-form" data-title="${%Add Recurring Maintenance Window for multiple clouds}">
+    <f:form action="add" method="post" name="configCloudRecurring">
+      <f:entry title="${%Select Clouds}">
+        <select id="clouds-select-recurring" name="clouds" multiple="multiple" size="5"
+                style="width: 100%; min-height: 120px;" class="jenkins-select__input">
+          <j:forEach var="cloud" items="${app.clouds}">
+            <option value="${cloud.name}">${cloud.name}</option>
+          </j:forEach>
+        </select>
+      </f:entry>
+      <st:include class="${it.getRecurringMaintenanceWindowClass()}" page="cloud-config.jelly"/>
+    </f:form>
+  </div>
+  <h1 id="cloud-section-title" style="margin-top:2em">${%Planned} ${%Cloud Maintenances}</h1>
+
+  <div class="tabBar" id="cloud-tab-bar">
+    <div class="tab active am__panel-tab"
+         data-panel="cloud-planned-panel"
+         data-title-target="cloud-section-title"
+         data-title="${%Planned} ${%Cloud Maintenances}">
+      <a href="#">${%Planned}</a>
+    </div>
+    <div class="tab am__panel-tab"
+         data-panel="cloud-recurring-panel"
+         data-title-target="cloud-section-title"
+         data-title="${%Recurring} ${%Cloud Maintenances}">
+      <a href="#">${%Recurring}</a>
+    </div>
+  </div>
+
+  <div id="cloud-planned-panel">
+    <f:form action="deleteCloud" method="post" name="deleteClouds">
+    <j:set var="cloudMwCount" value="0"/>
+    <table class="jenkins-table jenkins-table--small sortable am__table"
+           id="cloud-maintenance-table">
+      <thead>
+        <tr style="width:auto">
+          <th/>
+          <th>${%Cloud}</th>
+          <th>${%Start Time}</th>
+          <th>${%End Time}</th>
+          <th>${%Reason}</th>
+          <th>${%Created By}</th>
+          <th style="width:auto" data-sort-disable="true">
+            <l:rowSelectionController class="am__checkbox"/>
+          </th>
+          <th style="width:auto"/>
+        </tr>
+      </thead>
+      <tbody>
+        <j:forEach var="action" items="${it.cloudTargets}">
+          <j:if test="${action.visible}">
+            <j:set var="c" value="${action.getCloud()}"/>
+            <j:set var="cloudMwCount"
+                   value="${cloudMwCount + action.maintenanceWindows.size()}"/>
+            <j:forEach var="m" items="${action.maintenanceWindows}">
+              <j:set var="mid" value="${h.escape(m.id)}"/>
+              <tr id="${mid}"
+                  class="${m.isMaintenanceScheduled() ? 'active' : 'inactive'}"
+                  data-target-key="${action.target.toKey()}">
+
+                <td>
+                  <l:icon src="symbol-cloud-outline plugin-ionicons-api"
+                          class="icon-sm am__table-icon"/>
+                </td>
+
+                <td>
+                  <nobr>
+                    <a href="${rootURL}/cloud/${action.target.name}"
+                       class="jenkins-table__link model-link inside">
+                      ${action.target.name}
+                    </a>
+                  </nobr>
+                </td>
+
+                <td>
+                  <nobr>${m.startTime}</nobr>
+                </td>
+                <td>
+                  <nobr>${m.endTime}</nobr>
+                </td>
+                <td>${m.reason}</td>
+                <td>${m.userid}</td>
+
+                <j:if test="${action.hasDeletePermission()}">
+                  <td>
+                    <f:checkbox class="am__checkbox" name="${mid}"/>
+                  </td>
+                  <td class="delete">
+                    <div class="am__link-delete"
+                         data-message="${%Delete Maintenance Window of} ${c.getDisplayName()}"
+                         data-message-success="${%Maintenance window was successfully deleted}">
+                      <l:icon src="symbol-trash-outline plugin-ionicons-api"
+                              class="icon-sm icon-red am__table-icon"
+                              tooltip="Delete this maintenance window for ${h.escape(c.getDisplayName())}"/>
+                    </div>
+                  </td>
+                </j:if>
+                <j:if test="${!action.hasDeletePermission()}">
+                  <td/>
+                  <td/>
+                </j:if>
+
+              </tr>
+            </j:forEach>
+          </j:if>
+        </j:forEach>
+      </tbody>
+    </table>
+    <j:if test="${it.hasError()}">
+      <br/>
+      <div class="error">
+        ${it.getError()}
+      </div>
+    </j:if>
+    <f:bottomButtonBar>
+      <button id="add-button-clouds" type="button"
+              class="jenkins-button jenkins-button--primary">${%Add}
+      </button>
+      <button id="delete-selected-clouds" type="button"
+              class="jenkins-button jenkins-button--primary ${cloudMwCount==0?'jenkins-hidden':''} delete-selected-button"
+              data-message-success="${%All selected maintenance windows were deleted successfully}"
+              disabled="true">
+        ${%Delete selected}
+      </button>
+    </f:bottomButtonBar>
+  </f:form>
+  </div>
+
+  <div id="cloud-recurring-panel" style="display:none;">
+    <f:form action="deleteCloudRecurring" method="post" name="deleteCloudRecurring">
+      <j:set var="cloudRmwCount" value="0"/>
+      <table class="jenkins-table jenkins-table--small sortable am__table"
+             id="cloud-recurring-table">
+        <thead>
+          <tr style="width:auto">
+            <th/>
+            <th>${%Cloud}</th>
+            <th>${%Schedule}</th>
+            <th>${%Duration}</th>
+            <th>${%Reason}</th>
+            <th>${%Created By}</th>
+            <th style="width:auto" data-sort-disable="true">
+              <l:rowSelectionController class="am__checkbox"/>
+            </th>
+            <th style="width:auto"/>
+          </tr>
+        </thead>
+        <tbody>
+          <j:forEach var="action" items="${it.cloudTargets}">
+            <j:if test="${action.visible}">
+              <j:set var="c" value="${action.getCloud()}"/>
+              <j:set var="cloudRmwCount"
+                     value="${cloudRmwCount + action.recurringMaintenanceWindows.size()}"/>
+              <j:forEach var="m" items="${action.recurringMaintenanceWindows}">
+                <j:set var="mid" value="${h.escape(m.id)}"/>
+                <tr id="${mid}"
+                    data-target-key="${action.target.toKey()}">
+                  <td>
+                    <l:icon src="symbol-cloud-outline plugin-ionicons-api"
+                            class="icon-sm am__table-icon"/>
+                  </td>
+                  <td>
+                    <nobr>
+                      <a href="${rootURL}/cloud/${action.target.name}"
+                         class="jenkins-table__link model-link inside">
+                        ${action.target.name}
+                      </a>
+                    </nobr>
+                  </td>
+                  <td><nobr>${m.startTimeSpec}</nobr></td>
+                  <td>${m.duration}</td>
+                  <td>${m.reason}</td>
+                  <td>${m.userid}</td>
+                  <j:if test="${action.hasDeletePermission()}">
+                    <td>
+                      <f:checkbox class="am__checkbox" name="${mid}"/>
+                    </td>
+                    <td class="delete">
+                      <div class="am__link-delete-recurring"
+                           data-message="${%Delete Recurring Maintenance of} ${c.getDisplayName()}"
+                           data-message-success="${%Recurring maintenance was successfully deleted}">
+                        <l:icon src="symbol-trash-outline plugin-ionicons-api"
+                                class="icon-sm icon-red am__table-icon"
+                                tooltip="Delete this recurring maintenance for ${h.escape(c.getDisplayName())}"/>
+                      </div>
+                    </td>
+                  </j:if>
+                  <j:if test="${!action.hasDeletePermission()}">
+                    <td/><td/>
+                  </j:if>
+                </tr>
+              </j:forEach>
+            </j:if>
+          </j:forEach>
+        </tbody>
+      </table>
+      <j:if test="${it.hasError()}">
+        <br/>
+        <div class="error">${it.getError()}</div>
+      </j:if>
+      <f:bottomButtonBar>
+        <button id="add-link-button-clouds-recurring" type="button"
+                class="jenkins-button jenkins-button--primary">${%Add}
+        </button>
+        <button id="delete-selected-clouds-recurring" type="button"
+                class="jenkins-button jenkins-button--primary ${cloudRmwCount==0?'jenkins-hidden':''} delete-selected-button"
+                data-table-id="cloud-recurring-table"
+                data-message-success="${%All selected recurring maintenance windows were deleted successfully}"
+                disabled="true">
+          ${%Delete selected}
+        </button>
+      </f:bottomButtonBar>
+    </f:form>
+  </div>
+
+</j:jelly>

@@ -94,7 +94,7 @@ public class MaintenanceWindow extends AbstractDescribableImpl<MaintenanceWindow
     this.endDateTime = endTime;
     this.reason = reason;
     this.takeOnline = takeOnline;
-    this.maxWaitMinutes = MaintenanceHelper.parseDurationString(maxWaitMinutes);
+    this.maxWaitMinutes = MaintenanceHelper.parseDurationString((maxWaitMinutes != null) ? maxWaitMinutes : "-1");
     this.keepUpWhenActive = keepUpWhenActive;
     if (Util.fixEmptyAndTrim(userid) == null) {
       Authentication auth = Jenkins.getAuthentication2();
@@ -113,6 +113,16 @@ public class MaintenanceWindow extends AbstractDescribableImpl<MaintenanceWindow
     this.id = id;
   }
 
+  /**
+   * Create a maintenance window for clouds (no agent-specific fields).
+   *
+   * @param startTime Start time
+   * @param endTime   End time
+   * @param reason    Reason
+   */
+  public MaintenanceWindow(String startTime, String endTime, String reason) {
+    this(startTime, endTime, reason, false, false, "-1", null, null);
+  }
 
   public String getId() {
     return id;
@@ -195,8 +205,8 @@ public class MaintenanceWindow extends AbstractDescribableImpl<MaintenanceWindow
     return !now.isBefore(endDateTime);
   }
 
-  public OfflineCause getOfflineCause(String computerName) {
-    return new MaintenanceOfflineCause(this, computerName);
+  public OfflineCause getOfflineCause(String targetName) {
+    return new MaintenanceOfflineCause(this, targetName);
   }
 
   /** Descriptor for UI only. */

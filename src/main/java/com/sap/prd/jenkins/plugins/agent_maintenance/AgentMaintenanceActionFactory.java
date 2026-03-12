@@ -12,7 +12,7 @@ import jenkins.model.TransientActionFactory;
 
 /** Inject the action link to agents. */
 @Extension
-public class MaintenanceActionFactory extends TransientActionFactory<SlaveComputer> {
+public class AgentMaintenanceActionFactory extends TransientActionFactory<SlaveComputer> {
 
   @Override
   @NonNull
@@ -20,9 +20,9 @@ public class MaintenanceActionFactory extends TransientActionFactory<SlaveComput
     List<Action> result = new ArrayList<>();
     if (!(target instanceof AbstractCloudComputer)
         && target.getActions().stream().noneMatch(x -> x instanceof MaintenanceAction)) {
-      MaintenanceAction action = new MaintenanceAction(target);
+      MaintenanceTarget mt = new MaintenanceTarget(MaintenanceTarget.TargetType.AGENT, target.getName());
+      MaintenanceAction action = new MaintenanceAction(mt);
       result.add(action);
-      target.addAction(new MaintenanceAction(target));
     }
     return result;
   }

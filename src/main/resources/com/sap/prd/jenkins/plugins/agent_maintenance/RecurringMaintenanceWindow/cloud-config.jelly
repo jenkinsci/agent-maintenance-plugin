@@ -1,0 +1,14 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form" xmlns:st="jelly:stapler">
+  <st:include class="${it.getRecurringMaintenanceWindowClass()}" page="config.jelly"/>
+
+  <f:invisibleEntry>
+    <f:textbox field="takeOnline" value="false"/>
+  </f:invisibleEntry>
+  <f:invisibleEntry>
+    <f:textbox field="keepUpWhenActive" value="false"/>
+  </f:invisibleEntry>
+  <f:invisibleEntry>
+    <f:textbox field="maxWaitMinutes" value="-1"/>
+  </f:invisibleEntry>
+</j:jelly>
