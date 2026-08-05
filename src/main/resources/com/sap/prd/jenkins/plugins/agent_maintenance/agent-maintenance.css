@@ -62,10 +62,6 @@
   height: 0;
 }
 
-#am__div--select {
-  flex-grow: 1;
-}
-
 .jenkins-buttons-row {
   flex-wrap: wrap;
   row-gap: 5px;

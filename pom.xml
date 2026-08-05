@@ -36,7 +36,7 @@
     <changelist>999999-SNAPSHOT</changelist>
     <gitHubRepo>jenkinsci/agent-maintenance-plugin</gitHubRepo>
     <!-- https://www.jenkins.io/doc/developer/plugin-development/choosing-jenkins-baseline/ -->
-    <jenkins.baseline>2.516</jenkins.baseline>
+    <jenkins.baseline>2.568</jenkins.baseline>
     <jenkins.version>${jenkins.baseline}.1</jenkins.version>
     <checkstyle.version>13.0.0</checkstyle.version>
     <ban-junit4-imports.skip>false</ban-junit4-imports.skip>
@@ -49,7 +49,7 @@
       <dependency>
         <groupId>io.jenkins.tools.bom</groupId>
         <artifactId>bom-${jenkins.baseline}.x</artifactId>
-        <version>5933.vcf06f7b_5d1a_2</version>
+        <version>6783.v88c6c30f4b_db_</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>

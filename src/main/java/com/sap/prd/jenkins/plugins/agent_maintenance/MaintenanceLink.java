@@ -21,7 +21,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -44,6 +43,7 @@ public class MaintenanceLink extends ManagementLink {
   private static final Logger LOGGER = Logger.getLogger(MaintenanceLink.class.getName());
 
   private transient Throwable error;
+  private transient String errorMessage;
 
   @Override
   public String getDescription() {
@@ -95,20 +95,29 @@ public class MaintenanceLink extends ManagementLink {
     this.error = error;
   }
 
+  private void setError(String message) {
+    this.errorMessage = message;
+  }
+
   /**
    * The message of the last error that occured.
    *
    * @return error message
    */
   public String getError() {
-    StringWriter message = new StringWriter();
-    error.printStackTrace(new PrintWriter(message));
-    error = null;
-    return message.toString();
+    if (error != null) {
+      StringWriter message = new StringWriter();
+      error.printStackTrace(new PrintWriter(message));
+      error = null;
+      return message.toString();
+    }
+    String message = errorMessage;
+    errorMessage = null;
+    return message;
   }
 
   public boolean hasError() {
-    return error != null;
+    return error != null || errorMessage != null;
   }
 
   @Override
@@ -245,26 +254,39 @@ public class MaintenanceLink extends ManagementLink {
     JSONObject src = req.getSubmittedForm();
     String labelString = src.optString("label");
     Label label = j.getLabel(labelString);
-    if (label != null) {
-      Set<Node> nodes = label.getNodes();
-      MaintenanceWindow mw = req.bindJSON(MaintenanceWindow.class, src);
-      LOGGER.log(Level.FINER, "Adding maintenance windows {0}", mw);
-      LOGGER.log(Level.FINER, "Adding maintenance windows for agents: {0}", nodes);
-  
-      nodes.stream()
-          .filter(n -> n.toComputer() instanceof SlaveComputer && !(n.toComputer() instanceof AbstractCloudComputer)
-              && Objects.requireNonNull(n.toComputer()).getRetentionStrategy() instanceof AgentMaintenanceRetentionStrategy
-              && n.hasAnyPermission(MaintenanceAction.CONFIGURE_AND_DISCONNECT))
-          .forEach(n -> {
-            try {
-              SlaveComputer computer = (SlaveComputer) n.toComputer();
-              MaintenanceWindow maintenanceWindow = req.bindJSON(MaintenanceWindow.class, src);
-              MaintenanceHelper.getInstance().addMaintenanceWindow(computer.getName(), maintenanceWindow);
-            } catch (Exception e) {
-              LOGGER.log(Level.WARNING, "Error while adding maintenance window", e);
-              setError(e);
-            }
-          });
+    if (label == null) {
+      LOGGER.log(Level.FINE, "No label given, no maintenance window added");
+      setError(Messages.MaintenanceLink_noLabel());
+      rsp.sendRedirect(".");
+      return;
+    }
+
+    Set<Node> nodes = label.getNodes();
+    MaintenanceWindow mw = req.bindJSON(MaintenanceWindow.class, src);
+    LOGGER.log(Level.FINER, "Adding maintenance windows {0}", mw);
+    LOGGER.log(Level.FINER, "Adding maintenance windows for agents: {0}", nodes);
+
+    int added = 0;
+    for (Node node : nodes) {
+      Computer computer = node.toComputer();
+      if (!(computer instanceof SlaveComputer) || computer instanceof AbstractCloudComputer
+          || !(computer.getRetentionStrategy() instanceof AgentMaintenanceRetentionStrategy)
+          || !node.hasAnyPermission(MaintenanceAction.CONFIGURE_AND_DISCONNECT)) {
+        continue;
+      }
+      try {
+        MaintenanceWindow maintenanceWindow = req.bindJSON(MaintenanceWindow.class, src);
+        MaintenanceHelper.getInstance().addMaintenanceWindow(computer.getName(), maintenanceWindow);
+        added++;
+      } catch (Exception e) {
+        LOGGER.log(Level.WARNING, "Error while adding maintenance window", e);
+        setError(e);
+      }
+    }
+
+    if (added == 0 && !hasError()) {
+      LOGGER.log(Level.FINE, "Label {0} matched no agent with maintenance enabled", labelString);
+      setError(Messages.MaintenanceLink_noMatchingAgents(labelString));
     }
     rsp.sendRedirect(".");
   }
