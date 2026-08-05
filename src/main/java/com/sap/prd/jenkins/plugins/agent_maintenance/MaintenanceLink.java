@@ -246,7 +246,6 @@ public class MaintenanceLink extends ManagementLink {
     JSONObject src = req.getSubmittedForm();
     String labelString = src.optString("label");
     Label label = j.getLabel(labelString);
-    JSONObject response = new JSONObject();
     if (labelString == null || labelString.isBlank() || label == null) {
       JSONObject data = new JSONObject();
       data.put("status", "warning");
