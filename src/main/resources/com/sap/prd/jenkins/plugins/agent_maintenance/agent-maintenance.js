@@ -1,3 +1,29 @@
+const AM_GENERIC_ERROR = "Something went wrong. Please check the logs.";
+
+function hide(element) {
+  if (element != null) {
+    element.classList.add("jenkins-hidden");
+  }
+}
+
+function hideTableControls(table) {
+  if (table == null) {
+    return;
+  }
+  table.querySelectorAll(".jenkins-table__checkbox-container>button").forEach(button => {
+    button.disabled = true;
+    button.classList.remove("jenkins-table__checkbox--all");
+  });
+  const form = table.closest("form");
+  if (form != null) {
+    hide(form.querySelector(".delete-selected-button"));
+  }
+}
+
+function reloadWindow() {
+  location.reload();
+}
+
 function openForm(formName) {
     const formTemplate = document.getElementById(formName);
     const form = formTemplate.firstElementChild.cloneNode(true);
@@ -16,8 +42,29 @@ function openForm(formName) {
         headers: crumb.wrap({
           "Content-Type": "application/x-www-form-urlencoded",
         }),
+      }).then(rsp => {
+        if (rsp.ok) {
+            rsp.json().then((json) => {
+              if ((json.status === "ok")) {
+                  location.reload();
+              }
+              if (json.status === "error") {
+                if (json.data.status === "warning" || json.data.status === "info") {
+                  notificationBar.show(json.message, notificationBar.WARNING);
+                  if (json.data.status === "info") {
+                    window.setInterval(reloadWindow, 3000);
+                  }
+                } else {
+                  notificationBar.show(json.message, notificationBar.ERROR);
+                }
+              }
+            });
+        } else {
+          notificationBar.show(AM_GENERIC_ERROR, notificationBar.ERROR);
+        }
+      }).catch(() => {
+        notificationBar.show(AM_GENERIC_ERROR, notificationBar.ERROR);
       });
-      location.reload();
     })
 }
 
@@ -44,13 +91,9 @@ function refresh() {
         tBody.removeChild(row);
       }
     }
-    if (tBody.children.length == 0) {
-      document.querySelector(".delete-selected-button").classList.add("jenkins-hidden");
-      let editButton = document.getElementById("edit-button");
-      if (editButton != null) {
-        document.getElementById("edit-button").classList.add("jenkins-hidden");
-      }
-      document.getElementById("am__div--select").classList.add("jenkins-hidden");
+    if (tBody.children.length === 0) {
+      hide(document.getElementById("edit-button"));
+      hideTableControls(table);
     }
   });
 }
@@ -86,9 +129,8 @@ Behaviour.specify(".am__action-delete", 'agent-maintenance', 0, function(e) {
           tbody.removeChild(row);
           notificationBar.show(messageSuccess, notificationBar.SUCCESS)
           if (tbody.children.length == 0) {
-            document.getElementById("edit-button").classList.add("jenkins-hidden");
-            document.getElementById("delete-selected-button-action").classList.add("jenkins-hidden");
-            document.getElementById("am__div--select").classList.add("jenkins-hidden");
+            hide(document.getElementById("edit-button"));
+            hideTableControls(document.getElementById("maintenance-table"));
           }
         } else {
           notificationBar.show("Something went wrong. Please check the logs.", notificationBar.ERROR);
@@ -112,9 +154,8 @@ Behaviour.specify(".am__action-delete-recurring", 'agent-maintenance', 0, functi
           tbody.removeChild(row);
           notificationBar.show(messageSuccess, notificationBar.SUCCESS)
           if (tbody.children.length == 0) {
-            document.getElementById("edit-recurring").classList.add("jenkins-hidden");
-            document.getElementById("delete-selected-recurring-action").classList.add("jenkins-hidden");
-            document.getElementById("am__div--select").classList.add("jenkins-hidden");
+            hide(document.getElementById("edit-recurring"));
+            hideTableControls(document.getElementById("recurring-maintenance-table"));
           }
         } else {
           notificationBar.show("Something went wrong. Please check the logs.", notificationBar.ERROR);
@@ -139,8 +180,7 @@ Behaviour.specify(".am__link-delete", 'agent-maintenance', 0, function(e) {
           tbody.removeChild(row);
           notificationBar.show(messageSuccess, notificationBar.SUCCESS)
           if (tbody.children.length == 0) {
-            document.getElementById("delete-selected-button-link").classList.add("jenkins-hidden");
-            document.getElementById("am__div--select").classList.add("jenkins-hidden");
+            hideTableControls(document.getElementById("maintenance-table"));
           }
         } else {
           notificationBar.show("Something went wrong. Please check the logs.", notificationBar.ERROR);
@@ -273,8 +313,9 @@ Behaviour.specify("#delete-selected-button-action", 'agent-maintenance', 0, func
           notificationBar.show(messageSuccess, notificationBar.SUCCESS)
         }
         if (tbody.children.length == 0) {
-          document.getElementById("edit-button").classList.add("jenkins-hidden");
-          e.classList.add("jenkins-hidden");
+          hideTableControls(document.getElementById("maintenance-table"));
+          hide(e);
+          hide(document.getElementById("edit-button"));
         }
       });
     }
@@ -310,14 +351,15 @@ Behaviour.specify("#delete-selected-recurring-action", 'agent-maintenance', 0, f
           notificationBar.show(messageSuccess, notificationBar.SUCCESS)
         }
         if (tbody.children.length == 0) {
-          document.getElementById("edit-recurring").classList.add("jenkins-hidden");
-          e.classList.add("jenkins-hidden");
+          hideTableControls(table);
+          hide(document.getElementById("edit-recurring"));
+          hide(e);
         }
       });
     }
   }
   if (tbody.children.length == 0) {
-    e.classList.add("jenkins-hidden");
+    hide(e);
   }
 });
 
@@ -353,6 +395,7 @@ Behaviour.specify("#delete-selected-button-link", 'agent-maintenance', 0, functi
           notificationBar.show(messageSuccess, notificationBar.SUCCESS)
         }
         if (tbody.children.length == 0) {
+          hideTableControls(document.getElementById("maintenance-table"));
           e.classList.add("jenkins-hidden");
         }
       });

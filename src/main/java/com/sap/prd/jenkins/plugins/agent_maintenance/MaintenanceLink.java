@@ -12,6 +12,7 @@ import hudson.security.Permission;
 import hudson.slaves.AbstractCloudComputer;
 import hudson.slaves.SlaveComputer;
 import hudson.util.FormValidation;
+import hudson.util.HttpResponses;
 import jakarta.servlet.ServletException;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -23,6 +24,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.management.Badge;
@@ -30,6 +32,7 @@ import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.StaplerResponse2;
@@ -234,39 +237,62 @@ public class MaintenanceLink extends ManagementLink {
    * Add a maintenance window to a list of machines.
    *
    * @param req StaplerRequest2
-   * @param rsp StaplerResponse2
-   * @throws IOException      when saving xml failed
    * @throws ServletException when reading the form failed
    */
   @POST
-  public void doAdd(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
+  public HttpResponse doAdd(StaplerRequest2 req) throws ServletException {
     Jenkins j = Jenkins.get();
 
     JSONObject src = req.getSubmittedForm();
     String labelString = src.optString("label");
     Label label = j.getLabel(labelString);
-    if (label != null) {
-      Set<Node> nodes = label.getNodes();
-      MaintenanceWindow mw = req.bindJSON(MaintenanceWindow.class, src);
-      LOGGER.log(Level.FINER, "Adding maintenance windows {0}", mw);
-      LOGGER.log(Level.FINER, "Adding maintenance windows for agents: {0}", nodes);
-  
-      nodes.stream()
-          .filter(n -> n.toComputer() instanceof SlaveComputer && !(n.toComputer() instanceof AbstractCloudComputer)
-              && Objects.requireNonNull(n.toComputer()).getRetentionStrategy() instanceof AgentMaintenanceRetentionStrategy
-              && n.hasAnyPermission(MaintenanceAction.CONFIGURE_AND_DISCONNECT))
-          .forEach(n -> {
-            try {
-              SlaveComputer computer = (SlaveComputer) n.toComputer();
-              MaintenanceWindow maintenanceWindow = req.bindJSON(MaintenanceWindow.class, src);
-              MaintenanceHelper.getInstance().addMaintenanceWindow(computer.getName(), maintenanceWindow);
-            } catch (Exception e) {
-              LOGGER.log(Level.WARNING, "Error while adding maintenance window", e);
-              setError(e);
-            }
-          });
+    JSONObject response = new JSONObject();
+    if (labelString == null || labelString.isBlank() || label == null) {
+      JSONObject data = new JSONObject();
+      data.put("status", "warning");
+      return HttpResponses.errorJSON(Messages.MaintenanceLink_noLabel(), data);
     }
-    rsp.sendRedirect(".");
+    Set<Node> nodes = label.getNodes();
+
+    if (nodes.isEmpty()) {
+      JSONObject data = new JSONObject();
+      data.put("status", "warning");
+      return HttpResponses.errorJSON(Messages.MaintenanceLink_noMatchingAgents(labelString), data);
+    }
+
+    MaintenanceWindow mw = req.bindJSON(MaintenanceWindow.class, src);
+    LOGGER.log(Level.FINER, "Adding maintenance windows {0}", mw);
+    LOGGER.log(Level.FINER, "Adding maintenance windows for agents: {0}", nodes);
+
+    AtomicInteger added = new AtomicInteger(0);
+    nodes.stream()
+        .filter(n -> n.toComputer() instanceof SlaveComputer && !(n.toComputer() instanceof AbstractCloudComputer)
+            && Objects.requireNonNull(n.toComputer()).getRetentionStrategy() instanceof AgentMaintenanceRetentionStrategy
+            && n.hasAnyPermission(MaintenanceAction.CONFIGURE_AND_DISCONNECT))
+        .forEach(n -> {
+          try {
+            SlaveComputer computer = (SlaveComputer) n.toComputer();
+            MaintenanceWindow maintenanceWindow = req.bindJSON(MaintenanceWindow.class, src);
+            MaintenanceHelper.getInstance().addMaintenanceWindow(computer.getName(), maintenanceWindow);
+            added.incrementAndGet();
+          } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "Error while adding maintenance window", e);
+            setError(e);
+          }
+        });
+
+    if (hasError()) {
+      JSONObject data = new JSONObject();
+      data.put("status", "error");
+      return HttpResponses.errorJSON(Messages.MaintenanceLink_errorAddingMaintenanceWindow(), data);
+    }
+
+    if (added.get() != nodes.size() && !hasError()) {
+      JSONObject data = new JSONObject();
+      data.put("status", "info");
+      return HttpResponses.errorJSON(Messages.MaintenanceLink_notAllAgents(labelString, added.get()), data);
+    }
+    return HttpResponses.okJSON();
   }
 
   public Class<MaintenanceWindow> getMaintenanceWindowClass() {

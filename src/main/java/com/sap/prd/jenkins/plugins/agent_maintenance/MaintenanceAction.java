@@ -9,6 +9,7 @@ import hudson.model.Computer;
 import hudson.security.Permission;
 import hudson.slaves.SlaveComputer;
 import hudson.util.FormApply;
+import hudson.util.HttpResponses;
 import jakarta.servlet.ServletException;
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -189,7 +190,7 @@ public class MaintenanceAction implements Action {
     JSONObject src = req.getSubmittedForm();
     MaintenanceWindow mw = req.bindJSON(MaintenanceWindow.class, src);
     MaintenanceHelper.getInstance().addMaintenanceWindow(computer.getName(), mw);
-    return FormApply.success(".");
+    return HttpResponses.okJSON();
   }
 
   /**
@@ -201,13 +202,13 @@ public class MaintenanceAction implements Action {
    * @throws ServletException if an error occurs reading the form
    */
   @POST
-  public void doAddRecurring(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
+  public HttpResponse doAddRecurring(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
     computer.checkAnyPermission(CONFIGURE_AND_DISCONNECT);
 
     JSONObject src = req.getSubmittedForm();
     RecurringMaintenanceWindow rmw = req.bindJSON(RecurringMaintenanceWindow.class, src);
     MaintenanceHelper.getInstance().addRecurringMaintenanceWindow(computer.getName(), rmw);
-    rsp.sendRedirect(".");
+    return HttpResponses.okJSON();
   }
 
   /**

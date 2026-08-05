@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>plugin</artifactId>
-    <version>6.2116.v7501b_67dc517</version>
+    <version>6.2211.v27f680c93c53</version>
     <relativePath/>
   </parent>
 
@@ -36,23 +36,26 @@
     <changelist>999999-SNAPSHOT</changelist>
     <gitHubRepo>jenkinsci/agent-maintenance-plugin</gitHubRepo>
     <!-- https://www.jenkins.io/doc/developer/plugin-development/choosing-jenkins-baseline/ -->
-    <jenkins.baseline>2.516</jenkins.baseline>
-    <jenkins.version>${jenkins.baseline}.1</jenkins.version>
+    <jenkins.baseline>2.555</jenkins.baseline>
+    <jenkins.version>${jenkins.baseline}.3</jenkins.version>
     <checkstyle.version>13.0.0</checkstyle.version>
+    <hpi.strictBundledArtifacts>true</hpi.strictBundledArtifacts>
+    <hpi.bundledArtifacts>cron-utils</hpi.bundledArtifacts>
     <ban-junit4-imports.skip>false</ban-junit4-imports.skip>
     <ban-commons-lang-2.skip>false</ban-commons-lang-2.skip>
+    <ban-deprecated-stapler.skip>false</ban-deprecated-stapler.skip>
     <hpi.compatibleSinceVersion>2.0</hpi.compatibleSinceVersion>
   </properties>
 
   <dependencyManagement>
     <dependencies>
-      <dependency>
-        <groupId>io.jenkins.tools.bom</groupId>
-        <artifactId>bom-${jenkins.baseline}.x</artifactId>
-        <version>5933.vcf06f7b_5d1a_2</version>
-        <type>pom</type>
-        <scope>import</scope>
-      </dependency>
+        <dependency>
+            <groupId>io.jenkins.tools.bom</groupId>
+            <artifactId>bom-${jenkins.baseline}.x</artifactId>
+            <version>6783.v88c6c30f4b_db_</version>
+            <type>pom</type>
+            <scope>import</scope>
+        </dependency>
     </dependencies>
   </dependencyManagement>
   <dependencies>
@@ -69,6 +72,12 @@
       <groupId>com.cronutils</groupId>
       <artifactId>cron-utils</artifactId>
       <version>9.2.1</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-api</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.mockito</groupId>
