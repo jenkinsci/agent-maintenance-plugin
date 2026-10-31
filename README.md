@@ -1,7 +1,7 @@
 Agent Maintenance Plugin for Jenkins
 =========================
 
-[![Build Status](https://ci.jenkins.io/job/Plugins/job/agent-maintenance-plugin/job/main/badge/icon)](https://ci.jenkins.io/job/Plugins/job/agent-maintenance-plugin/job/main/)
+[![Build Status](https://ci.jenkins.io/buildStatus/icon?job=Plugins%2Fagent-maintenance-plugin%2Fmain)](https://ci.jenkins.io/job/Plugins/job/agent-maintenance-plugin/job/main/)
 [![Jenkins Plugin](https://img.shields.io/jenkins/plugin/v/agent-maintenance)](https://plugins.jenkins.io/agent-maintenance)
 [![GitHub release](https://img.shields.io/github/release/jenkinsci/agent-maintenance-plugin.svg?label=release)](https://github.com/jenkinsci/agent-maintenance-plugin/releases/latest)
 [![Jenkins Plugin Installs](https://img.shields.io/jenkins/plugin/i/agent-maintenance.svg?color=blue)](https://plugins.jenkins.io/agent-maintenance)
