@@ -2,13 +2,9 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
          xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:p="/lib/permissions"
          >
-  <l:layout title="${%Planned Maintenances}" norefresh="true" permissions="${app.MANAGE_AND_SYSTEM_READ}">
-    <st:include page="sidepanel.jelly" it="${app}"/>
-    <l:header>
+  <l:settings-subpage permissions="${app.MANAGE_AND_SYSTEM_READ}" title="${%Planned Maintenances}" wide="true" header="${null}" includeSidepanel="true">
       <script src="${resURL}/jsbundles/components/row-selection-controller.js" type="text/javascript" defer="true" />
-    </l:header>
 
-    <l:main-panel>
       <st:bind var="maintenanceJavaScriptBind" value="${it}"/>
       <st:adjunct includes="com.sap.prd.jenkins.plugins.agent_maintenance.agent-maintenance"/>
       <h1>${%Planned Maintenances}</h1>
@@ -41,7 +37,7 @@
               <th>${%Max Wait}</th>
               <th>${%Auto Connect}</th>
               <th>${%Created By}</th>
-              <th style="width: auto" data-sort-disable="true">
+              <th data-sort-disable="true" class="am__checkbox_container jenkins-table__cell--tight">
                 <l:rowSelectionController class="am__checkbox">
                   <button type="button" id="select-active" class="jenkins-button jenkins-button--tertiary">
                     <div class="jenkins-table__checkbox-dropdown__icon">
@@ -57,7 +53,7 @@
                   </button>
                 </l:rowSelectionController>
               </th>
-              <th style="width: auto"/>
+              <th class="delete jenkins-table__cell--tight"/>
             </tr>
           </thead>
           <tbody>
@@ -78,10 +74,10 @@
                   <td class="center"><f:checkbox checked="${m.takeOnline ? 'true' : null}" readonly="" readOnlyMode="true"/></td>
                   <td>${m.userid}</td>
                   <p:hasAnyPermission it="${c}" permissions="${a.CONFIGURE_AND_DISCONNECT}">
-                    <td>
+                    <td class="am__checkbox_container jenkins-table__cell--tight">
                       <f:checkbox class="am__checkbox" name="${mid}"/>
                     </td>
-                    <td class="delete">
+                    <td class="delete jenkins-table__cell--tight">
                       <div class="am__link-delete"
                            data-message="${%deleteMaintenanceOf} ${c.displayName}"
                            data-message-success="${%Maintenance window was successfully deleted}">
@@ -91,8 +87,8 @@
                     </td>
                   </p:hasAnyPermission>
                   <p:hasNoPermission it="${c}" permissions="${a.CONFIGURE_AND_DISCONNECT}">
-                    <td/>
-                    <td/>
+                    <td class="am__checkbox_container jenkins-table__cell--tight"/>
+                    <td class="delete jenkins-table__cell--tight"/>
                   </p:hasNoPermission>
                 </tr>
               </j:forEach>
@@ -100,12 +96,11 @@
           </j:forEach>
           </tbody>
         </table>
-        <f:bottomButtonBar>
+        <f:bottomButtonBar borderless="true">
           <button id="add-button" type="button" class="jenkins-button jenkins-button--primary">${%Add}</button>
           <button id="delete-selected-button-link" type="button" class="jenkins-button jenkins-button--primary ${mwcount==0?'jenkins-hidden':''} delete-selected-button"
                   data-message-success="${%All selected maintenance windows were deleted successfully}" disabled="true">${%Delete selected}</button>
         </f:bottomButtonBar>
       </f:form>
-    </l:main-panel>
-  </l:layout>
+  </l:settings-subpage>
 </j:jelly>

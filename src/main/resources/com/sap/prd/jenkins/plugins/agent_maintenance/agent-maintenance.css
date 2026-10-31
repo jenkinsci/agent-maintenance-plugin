@@ -5,8 +5,7 @@
 
 .am__table
 {
-  width: auto;
-  margin-bottom: 0px;
+  max-width: 1700px;
 }
 
 .am__action-delete,
@@ -16,9 +15,13 @@
   cursor: pointer;
 }
 
+td.delete, th.delete {
+  text-align: center !important;
+  width: 2rem;
+}
 .am__table > tbody > tr.active > td
 {
-  background: var(--medium-grey);
+  background: oklch(from var(--text-color-secondary) l c h / 0.05);
 }
 
 
@@ -37,6 +40,11 @@
 .am__checkbox
 {
     vertical-align: middle;
+}
+
+.am__checkbox_container {
+  text-align: left !important;
+  width: 2rem;
 }
 
 .right {
@@ -69,4 +77,9 @@
 
 .jenkins-dialog__contents {
   padding-top: 5px;
+}
+
+.app-settings-container__inner {
+  width: 70vw;
+  max-width: 1700px;
 }
