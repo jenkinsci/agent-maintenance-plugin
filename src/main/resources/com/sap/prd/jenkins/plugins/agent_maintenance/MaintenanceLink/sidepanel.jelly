@@ -1,0 +1,4 @@
+<?jelly escape-by-default='true'?>
+<jelly xmlns="jelly:core" xmlns:st="jelly:stapler">
+    <st:include page="sidepanel.jelly" it="${app}" />
+</jelly>

@@ -271,9 +271,11 @@ public class MaintenanceLink extends ManagementLink {
         .forEach(n -> {
           try {
             SlaveComputer computer = (SlaveComputer) n.toComputer();
-            MaintenanceWindow maintenanceWindow = req.bindJSON(MaintenanceWindow.class, src);
-            MaintenanceHelper.getInstance().addMaintenanceWindow(computer.getName(), maintenanceWindow);
-            added.incrementAndGet();
+            if (computer != null) {
+              MaintenanceWindow maintenanceWindow = req.bindJSON(MaintenanceWindow.class, src);
+              MaintenanceHelper.getInstance().addMaintenanceWindow(computer.getName(), maintenanceWindow);
+              added.incrementAndGet();
+            }
           } catch (Exception e) {
             LOGGER.log(Level.WARNING, "Error while adding maintenance window", e);
             setError(e);

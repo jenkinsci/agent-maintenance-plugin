@@ -35,7 +35,7 @@
                 <th>${%Auto Connect}</th>
                 <th>${%Created By}</th>
                 <p:hasAnyPermission permissions="${it.CONFIGURE_AND_DISCONNECT}">
-                  <th data-sort-disable="true">
+                  <th data-sort-disable="true" class="am__checkbox_container jenkins-table__cell--tight">
                     <l:rowSelectionController class="am__checkbox">
                       <button type="button" id="select-active" class="jenkins-button jenkins-button--tertiary">
                         <div class="jenkins-table__checkbox-dropdown__icon">
@@ -51,7 +51,7 @@
                       </button>
                     </l:rowSelectionController>
                   </th>
-                  <th/>
+                  <th class="delete jenkins-table__cell--tight"/>
                 </p:hasAnyPermission>
               </tr>
             </thead>
@@ -67,10 +67,10 @@
                   <td class="center"><f:checkbox readOnlyMode="true" checked="${m.takeOnline ? 'true' : null}"/></td>
                   <td>${m.userid}</td>
                   <p:hasAnyPermission permissions="${it.CONFIGURE_AND_DISCONNECT}">
-                    <td>
+                    <td class="am__checkbox_container jenkins-table__cell--tight">
                       <f:checkbox class="am__checkbox" name="${mid}"/>
                     </td>
-                    <td class="delete">
+                    <td class="delete jenkins-table__cell--tight">
                       <div class="am__action-delete"
                          data-message="${%Delete maintenance window}"
                          data-message-success="${%Maintenance window was successfully deleted}"
@@ -85,7 +85,7 @@
             </tbody>
           </table>
           <p:hasAnyPermission permissions="${it.CONFIGURE_AND_DISCONNECT}">
-            <f:bottomButtonBar>
+            <f:bottomButtonBar borderless="true">
               <button type="button" id="edit-button" class="jenkins-button jenkins-button--primary  ${mw.size() == 0?'jenkins-hidden':''}">${%Edit}</button>
               <button id="add-button" type="button"
                       class="jenkins-button jenkins-button--primary">${%Add}</button>
@@ -116,10 +116,10 @@
                 <th>${%Auto Connect}</th>
                 <th>${%Created By}</th>
                 <p:hasAnyPermission permissions="${it.CONFIGURE_AND_DISCONNECT}">
-                  <th data-sort-disable="true">
+                  <th data-sort-disable="true" class="am__checkbox_container jenkins-table__cell--tight">
                     <l:rowSelectionController class="am__checkbox"/>
                   </th>
-                  <th></th>
+                  <th class="delete"></th>
                 </p:hasAnyPermission>
               </tr>
             </thead>
@@ -135,10 +135,10 @@
                   <td class="center"><f:checkbox readOnlyMode="true" checked="${m.takeOnline ? 'true' : null}"/></td>
                   <td>${m.userid}</td>
                   <p:hasAnyPermission permissions="${it.CONFIGURE_AND_DISCONNECT}">
-                    <td>
+                    <td class="am__checkbox_container jenkins-table__cell--tight">
                       <f:checkbox class="am__checkbox" name="${mid}"/>
                     </td>
-                    <td class="delete">
+                    <td class="delete jenkins-table__cell--tight">
                       <div class="am__action-delete-recurring"
                            data-message="${%Delete recurring maintenance window}"
                            data-message-success="${%Recurring maintenance window was successfully deleted}"
@@ -153,7 +153,7 @@
             </tbody>
           </table>
           <p:hasAnyPermission permissions="${it.CONFIGURE_AND_DISCONNECT}">
-            <f:bottomButtonBar>
+            <f:bottomButtonBar borderless="true">
               <button type="button" id="edit-recurring" class="jenkins-button jenkins-button--primary ${recurring.size() == 0?'jenkins-hidden':''}">${%Edit}</button>
               <button type="button" id="add-recurring" class="jenkins-button jenkins-button--primary">${%Add}</button>
               <button type="button" id="delete-selected-recurring-action" class="jenkins-button delete-selected-button jenkins-button--primary ${recurring.size() == 0?'jenkins-hidden':''}"
